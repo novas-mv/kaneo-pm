@@ -1,0 +1,53 @@
+# Kaneo on Coolify, built from this repository's source (a fork with local changes).
+#
+# Same stack as compose.coolify.yml, but the kaneo service is built from
+# Dockerfile.kaneo instead of pulling ghcr.io/usekaneo/kaneo, so fork changes ship on deploy.
+#
+#   Public Repository -> https://github.com/novas-mv/kaneo-pm
+#   Build Pack: Docker Compose | Base Directory: / | Compose Location: /compose.coolify.fork.yml
+#
+# Assign a domain to the "kaneo" service using its container port, e.g. https://kaneo.example.com:5173
+# The only required environment variable is KANEO_CLIENT_URL (your public URL, without :5173).
+# Do NOT set KANEO_API_URL: the entrypoint derives it from KANEO_CLIENT_URL.
+# The first build compiles the API and web app, so it takes several minutes.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=kaneo
+      - POSTGRES_USER=kaneo
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES:?}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaneo -d kaneo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kaneo:
+    build:
+      context: .
+      dockerfile: Dockerfile.kaneo
+    environment:
+      - KANEO_CLIENT_URL=${KANEO_CLIENT_URL:?}
+      - AUTH_SECRET=${SERVICE_HEX_64_KANEO:?}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=kaneo
+      - POSTGRES_USER=kaneo
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5173/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  postgres_data:
