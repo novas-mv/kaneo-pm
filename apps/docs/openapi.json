@@ -19675,6 +19675,369 @@
         }
       }
     },
+    "/google-calendar-integration/project/{projectId}": {
+      "get": {
+        "operationId": "getGoogleCalendarIntegration",
+        "tags": [
+          "Google Calendar"
+        ],
+        "summary": "Get Google Calendar integration",
+        "description": "Get the Google Calendar sync settings for a project, plus whether this instance has a Google service account and which address to share the calendar with.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync settings and instance status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": {
+                      "type": "boolean",
+                      "description": "Whether this Kaneo instance has a Google service account configured."
+                    },
+                    "serviceAccountEmail": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The address the calendar must be shared with."
+                    },
+                    "integration": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "type": "string"
+                        },
+                        "calendarId": {
+                          "type": "string"
+                        },
+                        "timeZone": {
+                          "type": "string"
+                        },
+                        "lastSyncAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastError": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "isActive": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "projectId",
+                        "calendarId",
+                        "timeZone",
+                        "lastSyncAt",
+                        "lastError",
+                        "isActive"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "serviceAccountEmail",
+                    "integration"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing project:read permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      },
+      "put": {
+        "operationId": "saveGoogleCalendarIntegration",
+        "tags": [
+          "Google Calendar"
+        ],
+        "summary": "Connect a Google Calendar",
+        "description": "Start two-way sync between the project's dated tasks and a shared Google Calendar. The calendar must be shared with the instance's service account with permission to make changes to events. Replaces any calendar already connected.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendarId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The calendar's ID from its Google Calendar settings, such as an address ending in group.calendar.google.com."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "IANA time zone used to decide which day a task date falls on. Defaults to Indian/Maldives."
+                  }
+                },
+                "required": [
+                  "calendarId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync settings and instance status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": {
+                      "type": "boolean",
+                      "description": "Whether this Kaneo instance has a Google service account configured."
+                    },
+                    "serviceAccountEmail": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The address the calendar must be shared with."
+                    },
+                    "integration": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "type": "string"
+                        },
+                        "calendarId": {
+                          "type": "string"
+                        },
+                        "timeZone": {
+                          "type": "string"
+                        },
+                        "lastSyncAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastError": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "isActive": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "projectId",
+                        "calendarId",
+                        "timeZone",
+                        "lastSyncAt",
+                        "lastError",
+                        "isActive"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "serviceAccountEmail",
+                    "integration"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The calendar is invalid or not shared with the service account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing workspace:manage_settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteGoogleCalendarIntegration",
+        "tags": [
+          "Google Calendar"
+        ],
+        "summary": "Disconnect the Google Calendar",
+        "description": "Stop syncing. Events already on the calendar are left in place and are no longer updated.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The integration was removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing workspace:manage_settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or Google Calendar integration not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
     "/discord-integration/project/{projectId}": {
       "get": {
         "operationId": "getDiscordIntegration",

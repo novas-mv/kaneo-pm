@@ -6,6 +6,7 @@ import {
 import type { IntegrationId } from "@/components/project/integrations/integration-definitions";
 import useGetDiscordIntegration from "@/hooks/queries/discord-integration/use-get-discord-integration";
 import useGetGenericWebhookIntegration from "@/hooks/queries/generic-webhook-integration/use-get-generic-webhook-integration";
+import useGetGoogleCalendarIntegration from "@/hooks/queries/google-calendar-integration/use-get-google-calendar-integration";
 import useGetGiteaIntegration from "@/hooks/queries/gitea-integration/use-get-gitea-integration";
 import useGetGithubIntegration from "@/hooks/queries/github-integration/use-get-github-integration";
 import useGetGitlabIntegration from "@/hooks/queries/gitlab-integration/use-get-gitlab-integration";
@@ -24,6 +25,7 @@ export function useIntegrationStatuses(projectId: string) {
   const mattermost = useGetMattermostIntegration(projectId);
   const telegram = useGetTelegramIntegration(projectId);
   const webhook = useGetGenericWebhookIntegration(projectId);
+  const googleCalendar = useGetGoogleCalendarIntegration(projectId);
 
   const statuses = {
     github: getIntegrationStatus({
@@ -87,6 +89,13 @@ export function useIntegrationStatuses(projectId: string) {
       configured: Boolean(webhook.data?.webhookConfigured),
       isActive: webhook.data?.isActive,
     }),
+    "google-calendar": getIntegrationStatus({
+      queryStatus: googleCalendar.status,
+      hasData: googleCalendar.data !== undefined,
+      configured: Boolean(googleCalendar.data?.integration),
+      isActive: googleCalendar.data?.integration?.isActive,
+      detail: googleCalendar.data?.integration?.calendarId,
+    }),
   };
   const queries = {
     github,
@@ -97,6 +106,7 @@ export function useIntegrationStatuses(projectId: string) {
     mattermost,
     telegram,
     webhook,
+    "google-calendar": googleCalendar,
   };
 
   return {

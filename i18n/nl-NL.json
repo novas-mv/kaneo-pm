@@ -831,7 +831,9 @@
 			"statusPaused": "Gepauzeerd",
 			"connect": "Verbinden",
 			"configure": "Configureren",
-			"done": "Klaar"
+			"done": "Klaar",
+			"googleCalendarSectionSubtitle": "Keep task dates in sync with a shared Google Calendar, in both directions.",
+			"googleCalendarSectionTitle": "Google Calendar"
 		},
 		"projectVisibility": {
 			"pageTitle": "Projectzichtbaarheid",
@@ -2370,6 +2372,25 @@
 		},
 		"shared": {
 			"autosave": "Wijzigingen worden automatisch opgeslagen"
+		},
+		"googleCalendarIntegration": {
+			"calendarIdLabel": "Calendar ID",
+			"connect": "Connect calendar",
+			"disconnectDescription": "Tasks stop syncing. Events already on the calendar stay where they are.",
+			"disconnectTitle": "Disconnect Google Calendar?",
+			"firstSyncPending": "The first sync runs within a minute.",
+			"lastSynced": "Last synced {{time}}",
+			"loadError": "Could not load the Google Calendar settings. Try again in a moment.",
+			"notConfigured": "Google Calendar is not set up on this Kaneo instance. Ask an administrator to add a Google service account.",
+			"shareHint": "Share your Google Calendar with this address and allow \"Make changes to events\":",
+			"syncError": "Last sync failed: {{message}}",
+			"timeZoneLabel": "Time zone",
+			"toast": {
+				"removed": "Google Calendar disconnected",
+				"removeError": "Failed to disconnect Google Calendar",
+				"saved": "Google Calendar connected",
+				"saveError": "Failed to connect Google Calendar"
+			}
 		}
 	},
 	"navigation": {

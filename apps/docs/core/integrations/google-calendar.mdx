@@ -1,0 +1,51 @@
+---
+title: Google Calendar
+description: Keep a project's task dates in sync with a shared Google Calendar. Changes made in Kaneo or in Google Calendar show up on both sides.
+---
+
+Each project can sync with one shared Google Calendar. Every task with a start or due date becomes an all-day event. Moving or renaming the event in Google Calendar updates the task.
+
+<Info>
+Sync is per project and needs one Google service account for the whole instance. The service account is a robot login, so nobody has to connect a personal Google account and no token expires when someone changes a password.
+</Info>
+
+## What syncs
+
+| In Kaneo | In Google Calendar |
+| --- | --- |
+| Task title | Event title |
+| Start and due date | All-day event spanning those days. A task with one date is a one-day event. |
+| Project and status | Event description, with a link back to the task |
+| Task without dates | No event |
+| Task deleted or moved to another project | Event removed |
+
+Kaneo to Google runs as soon as a task changes. Google to Kaneo is checked once a minute. Kaneo remembers what it last wrote to each event, so only the fields you changed in Google are applied. If both sides changed the same field, the Kaneo value wins. Deleting an event in Google leaves the task alone, and events created directly in Google do not become tasks.
+
+## Set up the instance
+
+1. In the [Google Cloud console](https://console.cloud.google.com/), create or choose a project and enable the **Google Calendar API**.
+2. Under **IAM & Admin → Service accounts**, create a service account. Create a JSON key for it and download the file.
+3. Add the whole contents of that file to your server's `.env`. Base64-encoded JSON also works, which is easier for hosts that dislike multi-line values:
+
+```env
+GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON=<contents of the key file>
+```
+
+4. Recreate Kaneo so it picks up the variable.
+
+## Connect a project
+
+1. In Google Calendar, create a calendar for the team, or choose an existing one.
+2. Open its **Settings and sharing**. Under **Share with specific people**, add the service account's email address with the permission **Make changes to events**. The address is also shown in the project's Google Calendar settings in Kaneo.
+3. Copy the **Calendar ID** from **Integrate calendar**.
+4. In Kaneo, open **Settings → Projects → your project → Integrations → Google Calendar**, paste the Calendar ID, check the time zone, and click **Connect calendar**.
+
+The first sync runs within a minute and pushes every task that has a date. Tasks added to the calendar later show up as they change.
+
+## Time zones
+
+The time zone decides which day a task date falls on, so a task due late in the evening does not land on the next day. It defaults to `Indian/Maldives`.
+
+## Turn it off
+
+Disconnect the calendar in the project's integration settings. Events already on the calendar stay where they are and are no longer updated.

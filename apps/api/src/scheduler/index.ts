@@ -4,6 +4,7 @@ import { replayDeferredIssueEdits } from "../plugins/github/services/deferred-is
 import { replayDeferredLabelFields } from "../plugins/sync/replay-deferred-label-fields";
 import * as Sentry from "@sentry/node";
 import { Cron } from "croner";
+import { syncGoogleCalendars } from "../plugins/google-calendar/pull";
 import { checkDueDateReminders } from "./due-date-reminders";
 import { checkProjectWebhookReminders } from "./project-webhook-reminders";
 import { reconcileWorkspaceSeats } from "./seat-reconciliation";
@@ -74,6 +75,13 @@ export function initializeScheduler(): void {
       "31 * * * *",
       { protect: true },
       withCheckIn("draft-upload-cleanup", cleanupDraftUploads),
+    ),
+  );
+  jobs.push(
+    new Cron(
+      "* * * * *",
+      { protect: true },
+      withCheckIn("google-calendar-sync", syncGoogleCalendars),
     ),
   );
   jobs.push(

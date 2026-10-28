@@ -1,5 +1,6 @@
 import { discordPlugin } from "./discord";
 import { genericWebhookPlugin } from "./generic-webhook";
+import { googleCalendarPlugin } from "./google-calendar";
 import { giteaPlugin } from "./gitea";
 import { githubPlugin, initializeGitHubPlugin } from "./github";
 import { gitlabPlugin } from "./gitlab";
@@ -19,6 +20,7 @@ export function initializePlugins() {
   registerPlugin(discordPlugin);
   registerPlugin(genericWebhookPlugin);
   registerPlugin(telegramPlugin);
+  registerPlugin(googleCalendarPlugin);
   initializeGitHubPlugin();
   initializeEventSubscriptions();
 

@@ -1673,6 +1673,8 @@
 			"discordSectionSubtitle": "Send project task updates into a Discord channel with a webhook.",
 			"genericWebhookSectionTitle": "Webhooks",
 			"genericWebhookSectionSubtitle": "Send project task events to any HTTP endpoint as JSON.",
+			"googleCalendarSectionTitle": "Google Calendar",
+			"googleCalendarSectionSubtitle": "Keep task dates in sync with a shared Google Calendar, in both directions.",
 			"slackSectionTitle": "Slack Integration",
 			"slackSectionSubtitle": "Send project task updates into a Slack channel with an incoming webhook.",
 			"mattermostSectionTitle": "Mattermost Integration",
@@ -1975,6 +1977,25 @@
 			"webhookHint": "Create an incoming webhook in Mattermost and paste it here.",
 			"connect": "Connect Mattermost",
 			"update": "Update Mattermost"
+		},
+		"googleCalendarIntegration": {
+			"loadError": "Could not load the Google Calendar settings. Try again in a moment.",
+			"notConfigured": "Google Calendar is not set up on this Kaneo instance. Ask an administrator to add a Google service account.",
+			"shareHint": "Share your Google Calendar with this address and allow \"Make changes to events\":",
+			"calendarIdLabel": "Calendar ID",
+			"timeZoneLabel": "Time zone",
+			"connect": "Connect calendar",
+			"lastSynced": "Last synced {{time}}",
+			"firstSyncPending": "The first sync runs within a minute.",
+			"syncError": "Last sync failed: {{message}}",
+			"disconnectTitle": "Disconnect Google Calendar?",
+			"disconnectDescription": "Tasks stop syncing. Events already on the calendar stay where they are.",
+			"toast": {
+				"saved": "Google Calendar connected",
+				"saveError": "Failed to connect Google Calendar",
+				"removed": "Google Calendar disconnected",
+				"removeError": "Failed to disconnect Google Calendar"
+			}
 		},
 		"genericWebhookIntegration": {
 			"validation": {

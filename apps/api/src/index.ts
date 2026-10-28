@@ -47,6 +47,7 @@ import discordIntegration from "./discord-integration";
 import { eventContext } from "./events";
 import externalLink from "./external-link";
 import genericWebhookIntegration from "./generic-webhook-integration";
+import googleCalendarIntegration from "./google-calendar-integration";
 import giteaIntegration, { handleGiteaWebhookRoute } from "./gitea-integration";
 import githubIntegration, {
   handleGithubWebhookRoute,
@@ -834,6 +835,10 @@ export function createApp() {
     "/generic-webhook-integration",
     genericWebhookIntegration,
   );
+  const googleCalendarIntegrationApi = api.route(
+    "/google-calendar-integration",
+    googleCalendarIntegration,
+  );
   const discordIntegrationApi = api.route(
     "/discord-integration",
     discordIntegration,
@@ -970,6 +975,7 @@ export function createApp() {
     discordIntegrationApi,
     externalLinkApi,
     genericWebhookIntegrationApi,
+    googleCalendarIntegrationApi,
     integrationSyncApi,
     githubIntegrationApi,
     giteaIntegrationApi,
@@ -1103,6 +1109,7 @@ const {
   discordIntegrationApi,
   externalLinkApi,
   genericWebhookIntegrationApi,
+  googleCalendarIntegrationApi,
   integrationSyncApi,
   githubIntegrationApi,
   giteaIntegrationApi,
@@ -1160,6 +1167,7 @@ export type AppType =
   | typeof giteaIntegrationApi
   | typeof gitlabIntegrationApi
   | typeof genericWebhookIntegrationApi
+  | typeof googleCalendarIntegrationApi
   | typeof discordIntegrationApi
   | typeof mattermostIntegrationApi
   | typeof slackIntegrationApi
