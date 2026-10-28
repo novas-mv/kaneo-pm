@@ -122,7 +122,13 @@ async function moveProject(
 
     const [movedProject] = await tx
       .update(projectTable)
-      .set({ workspaceId: targetWorkspaceId, position: appendedPosition })
+      .set({
+        workspaceId: targetWorkspaceId,
+        position: appendedPosition,
+        // Nesting is per workspace, so the moved project leaves its parent
+        // behind (children are detached below).
+        parentProjectId: null,
+      })
       .where(
         and(
           eq(projectTable.id, id),
@@ -136,6 +142,11 @@ async function moveProject(
         message: "Project was moved to another workspace, please try again",
       });
     }
+
+    await tx
+      .update(projectTable)
+      .set({ parentProjectId: null })
+      .where(eq(projectTable.parentProjectId, id));
 
     await grantProjectToRestrictedMember(tx, {
       workspaceId: targetWorkspaceId,

@@ -35,6 +35,7 @@ import getProjectCtrl from "./controllers/get-project";
 import getProjectsCtrl from "./controllers/get-projects";
 import moveProjectCtrl from "./controllers/move-project";
 import reorderProjectsCtrl from "./controllers/reorder-projects";
+import setProjectParentCtrl from "./controllers/set-project-parent";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
 import {
@@ -52,6 +53,7 @@ import {
   moveProjectBody,
   projectParam,
   reorderProjectsBody,
+  setProjectParentBody,
   updateProjectBody,
   uploadProjectBackgroundBody,
   workspaceIdQuery,
@@ -187,6 +189,37 @@ const reorderProjectsRoute = createRoute({
       "Missing project:update permission, or no access to a listed project",
     ),
     404: errorResponse("Workspace not found"),
+  },
+});
+
+const setProjectParentRoute = createRoute({
+  method: "put",
+  operationId: "setProjectParent",
+  path: "/{id}/parent",
+  tags: ["Projects"],
+  summary: "Set a project's parent",
+  description:
+    "Nest a project under another project in the same workspace, or pass null to make it top-level. Only one level is allowed: the parent cannot itself be a child, and a project with children cannot become a child.",
+  middleware: [
+    workspaceAccess.fromProject("id"),
+    requireWorkspacePermission({ project: ["update"] }),
+  ] as const,
+  request: {
+    params: projectParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: setProjectParentBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The updated project", projectSchema),
+    400: errorResponse(
+      "Invalid nesting: self, cross-workspace, a parent that is a child, or a project that has children",
+    ),
+    403: errorResponse(
+      "Missing project:update permission, or no access to either project",
+    ),
+    404: errorResponse("Project or parent project not found"),
   },
 });
 
@@ -534,6 +567,16 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       projects,
     );
     return c.json(reordered.map(toPublicProject), 200);
+  })
+  .openapi(setProjectParentRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { parentProjectId } = c.req.valid("json");
+    return c.json(
+      toPublicProject(
+        await setProjectParentCtrl(id, parentProjectId, c.get("userId")),
+      ),
+      200,
+    );
   })
   .openapi(updateProjectRoute, async (c) => {
     const { id } = c.req.valid("param");

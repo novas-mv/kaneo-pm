@@ -845,6 +845,13 @@
               "null"
             ]
           },
+          "parentProjectId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Id of the parent project when this project is nested under one; null for top-level projects."
+          },
           "slug": {
             "type": "string",
             "description": "Short prefix used in task identifiers, e.g. KAN-12."
@@ -896,6 +903,7 @@
           "id",
           "workspaceId",
           "backgroundVersion",
+          "parentProjectId",
           "slug",
           "icon",
           "name",
@@ -9685,6 +9693,103 @@
           },
           "404": {
             "description": "Workspace not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/project/{id}/parent": {
+      "put": {
+        "operationId": "setProjectParent",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Set a project's parent",
+        "description": "Nest a project under another project in the same workspace, or pass null to make it top-level. Only one level is allowed: the parent cannot itself be a child, and a project with children cannot become a child.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parentProjectId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The project to nest under, or null to make this a top-level project. Only one level of nesting is allowed."
+                  }
+                },
+                "required": [
+                  "parentProjectId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid nesting: self, cross-workspace, a parent that is a child, or a project that has children",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing project:update permission, or no access to either project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or parent project not found",
             "content": {
               "application/json": {
                 "schema": {
