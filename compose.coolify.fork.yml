@@ -34,6 +34,9 @@ services:
     environment:
       - KANEO_CLIENT_URL=${KANEO_CLIENT_URL:?}
       - AUTH_SECRET=${SERVICE_HEX_64_KANEO:?}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - DISABLE_REGISTRATION=${DISABLE_REGISTRATION:-false}
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=kaneo
       - POSTGRES_USER=kaneo
