@@ -1,7 +1,10 @@
 import type { ClientRect, DroppableContainer } from "@dnd-kit/core";
 import { describe, expect, it } from "vite-plus/test";
 import { nestDropId } from "@/lib/project-tree";
-import { projectDropCollision } from "./project-drop-collision";
+import {
+  findNestBandHit,
+  projectDropCollision,
+} from "./project-drop-collision";
 
 type Args = Parameters<typeof projectDropCollision>[0];
 
@@ -38,7 +41,9 @@ function argsAt(y: number): Args {
   } as unknown as Args;
 }
 
-const firstHit = (y: number) => projectDropCollision(argsAt(y))[0]?.id;
+// Armed: as if the pointer had already rested in whatever band it is in.
+const firstHit = (y: number) =>
+  projectDropCollision(argsAt(y), findNestBandHit(argsAt(y)))[0]?.id;
 
 describe("projectDropCollision", () => {
   it("nests in the middle third of a row", () => {
@@ -56,12 +61,23 @@ describe("projectDropCollision", () => {
   });
 
   it("never offers a nest zone as a reorder slot", () => {
-    const ids = projectDropCollision(argsAt(5)).map((hit) => hit.id);
+    const ids = projectDropCollision(argsAt(5), null).map((hit) => hit.id);
     expect(ids.some((id) => String(id).startsWith("nest:"))).toBe(false);
+  });
+
+  it("ignores nest zones until the band is armed", () => {
+    expect(projectDropCollision(argsAt(15), null)[0]?.id).toBe("a");
+    expect(projectDropCollision(argsAt(15), nestDropId("b"))[0]?.id).toBe("a");
+  });
+
+  it("reports which band the pointer is in", () => {
+    expect(findNestBandHit(argsAt(15))).toBe(nestDropId("a"));
+    expect(findNestBandHit(argsAt(45))).toBe(nestDropId("b"));
+    expect(findNestBandHit(argsAt(5))).toBeNull();
   });
 
   it("falls back to reorder without pointer coordinates", () => {
     const args = { ...argsAt(15), pointerCoordinates: null };
-    expect(projectDropCollision(args)[0]?.id).toBe("a");
+    expect(projectDropCollision(args, nestDropId("a"))[0]?.id).toBe("a");
   });
 });

@@ -49,9 +49,9 @@ import {
   ungroupOrder,
 } from "@/lib/project-tree";
 import { toast } from "@/lib/toast";
-import { projectDropCollision } from "./nav-projects/project-drop-collision";
 import { ProjectRow } from "./nav-projects/project-row";
 import { SortableProjectItem } from "./nav-projects/sortable-project-item";
+import { useProjectDropCollision } from "./nav-projects/use-project-drop-collision";
 import CreateProjectModal from "./shared/modals/create-project-modal";
 import {
   AlertDialog,
@@ -77,6 +77,7 @@ export function NavProjects() {
   const { mutateAsync: deleteProject } = useDeleteProject();
   const reorderProjects = useReorderProjects();
   const { setParent } = useSetProjectParent();
+  const { collisionDetection, resetNestDwell } = useProjectDropCollision();
   const { canCreateProjects, canDeleteProjects, canUpdateProjects } =
     useWorkspacePermission();
   const canCreate = canCreateProjects();
@@ -160,6 +161,7 @@ export function NavProjects() {
   };
 
   const endDrag = () => {
+    resetNestDwell();
     document.body.classList.remove("kaneo-dragging");
     setDraggingProjectId(null);
   };
@@ -257,7 +259,7 @@ export function NavProjects() {
             <SidebarGroupContent>
               <DndContext
                 sensors={sensors}
-                collisionDetection={projectDropCollision}
+                collisionDetection={collisionDetection}
                 modifiers={[
                   restrictToVerticalAxis,
                   restrictToFirstScrollableAncestor,
