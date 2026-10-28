@@ -13,7 +13,6 @@ import {
   restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
 import {
-  arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -44,8 +43,10 @@ import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import {
   buildProjectTree,
-  hasChildren,
+  moveProject,
+  nestDropId,
   resolveProjectDrop,
+  ungroupOrder,
 } from "@/lib/project-tree";
 import { toast } from "@/lib/toast";
 import { projectDropCollision } from "./nav-projects/project-drop-collision";
@@ -110,9 +111,12 @@ export function NavProjects() {
     () => tree.flatMap((node) => [node.project, ...node.children]),
     [tree],
   );
-  // A project with children cannot become a child (one level only).
-  const canNestDragged =
-    !!draggingProjectId && !hasChildren(projects ?? [], draggingProjectId);
+  // Same rules as the drop itself, so the highlight never promises a nest
+  // the drop would refuse.
+  const canNestInto = (projectId: string) =>
+    !!draggingProjectId &&
+    resolveProjectDrop(projects ?? [], draggingProjectId, nestDropId(projectId))
+      .type === "nest";
 
   const isCurrentProject = (projectId: string) => {
     return (
@@ -160,17 +164,9 @@ export function NavProjects() {
     setDraggingProjectId(null);
   };
 
-  const reorderTo = (
-    list: typeof orderedProjects,
-    projectId: string,
-    targetId: string,
-  ) => {
-    if (!workspace) return;
-    const oldIndex = list.findIndex((project) => project.id === projectId);
-    const newIndex = list.findIndex((project) => project.id === targetId);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    reorderProjects(workspace.id, arrayMove(list, oldIndex, newIndex), {
+  const saveOrder = (list: typeof orderedProjects | null) => {
+    if (!workspace || !list) return;
+    reorderProjects(workspace.id, list, {
       onError: () => {
         toast.error(t("workspace:projects.reorderError"));
       },
@@ -195,19 +191,18 @@ export function NavProjects() {
         onError: onGroupError,
       });
     } else if (drop.type === "ungroup") {
-      setParent(workspace.id, drop.projectId, null, { onError: onGroupError });
-      // Lands where it was dropped among the top-level rows.
-      reorderTo(
-        orderedProjects.map((project) =>
-          project.id === drop.projectId
-            ? { ...project, parentProjectId: null }
-            : project,
-        ),
+      // Built now, saved only once the server accepts the ungroup.
+      const order = ungroupOrder(
+        orderedProjects,
         drop.projectId,
         drop.targetId,
       );
+      setParent(workspace.id, drop.projectId, null, {
+        onError: onGroupError,
+        onSuccess: () => saveOrder(order),
+      });
     } else if (drop.type === "reorder") {
-      reorderTo(orderedProjects, drop.projectId, drop.targetId);
+      saveOrder(moveProject(orderedProjects, drop.projectId, drop.targetId));
     }
   };
 
@@ -277,18 +272,12 @@ export function NavProjects() {
                     strategy={verticalListSortingStrategy}
                   >
                     {tree.map(({ project, children }) => {
-                      const draggingParentId = draggingProject?.parentProjectId;
-
                       return (
                         <Fragment key={project.id}>
                           <SortableProjectItem
                             id={project.id}
                             canReorder={canReorder}
-                            canNestInto={
-                              canNestDragged &&
-                              draggingProjectId !== project.id &&
-                              draggingParentId !== project.id
-                            }
+                            canNestInto={canNestInto(project.id)}
                           >
                             {renderRow(project, false)}
                           </SortableProjectItem>

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
-import { buildProjectTree, resolveProjectDrop } from "./project-tree";
+import {
+  buildProjectTree,
+  moveProject,
+  resolveProjectDrop,
+  ungroupOrder,
+} from "./project-tree";
 
 const p = (id: string, parentProjectId: string | null = null) => ({
   id,
@@ -45,6 +50,47 @@ describe("buildProjectTree", () => {
       ["root", ["mid"]],
       ["leaf", []],
     ]);
+  });
+
+  it("renders a child of an orphan once, top-level", () => {
+    const tree = buildProjectTree([
+      p("orphan", "hidden"),
+      p("grand", "orphan"),
+    ]);
+
+    expect(shape(tree)).toEqual([
+      ["orphan", []],
+      ["grand", []],
+    ]);
+  });
+});
+
+describe("moveProject", () => {
+  it("moves a project to the target's slot", () => {
+    const moved = moveProject([p("a"), p("b"), p("c")], "c", "a");
+    expect(moved?.map((project) => project.id)).toEqual(["c", "a", "b"]);
+  });
+
+  it("returns null when either id is missing", () => {
+    expect(moveProject([p("a")], "a", "gone")).toBeNull();
+    expect(moveProject([p("a")], "gone", "a")).toBeNull();
+  });
+});
+
+describe("ungroupOrder", () => {
+  it("clears the parent and moves the project to the drop slot", () => {
+    const list = [p("dive"), p("sales", "dive"), p("prospects")];
+    expect(ungroupOrder(list, "sales", "prospects")).toEqual([
+      p("dive"),
+      p("prospects"),
+      p("sales", null),
+    ]);
+  });
+
+  it("leaves the input list untouched", () => {
+    const list = [p("dive"), p("sales", "dive")];
+    ungroupOrder(list, "sales", "dive");
+    expect(list[1]).toEqual(p("sales", "dive"));
   });
 });
 

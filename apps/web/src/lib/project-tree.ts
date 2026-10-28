@@ -1,3 +1,5 @@
+import { arrayMove } from "@dnd-kit/sortable";
+
 type TreeProject = { id: string; parentProjectId?: string | null };
 
 export type ProjectTreeNode<T> = { project: T; children: T[] };
@@ -30,8 +32,9 @@ export function buildProjectTree<T extends TreeProject>(
   }
 
   for (const project of projects) {
-    if (!project.parentProjectId) continue;
-    nodes.get(project.parentProjectId)?.children.push(project);
+    if (project.parentProjectId && topLevelIds.has(project.parentProjectId)) {
+      nodes.get(project.parentProjectId)?.children.push(project);
+    }
   }
 
   return tree;
@@ -113,4 +116,33 @@ export function resolveProjectDrop<T extends TreeProject>(
     projectId: active.id,
     targetId: targetParent ?? target.id,
   };
+}
+
+/** `list` with `projectId` moved into `targetId`'s slot, or null if either is missing. */
+export function moveProject<T extends { id: string }>(
+  list: T[],
+  projectId: string,
+  targetId: string,
+): T[] | null {
+  const oldIndex = list.findIndex((project) => project.id === projectId);
+  const newIndex = list.findIndex((project) => project.id === targetId);
+  if (oldIndex === -1 || newIndex === -1) return null;
+  return arrayMove(list, oldIndex, newIndex);
+}
+
+/** The order after ungrouping `projectId` by dropping it on `targetId`. */
+export function ungroupOrder<T extends TreeProject>(
+  list: T[],
+  projectId: string,
+  targetId: string,
+): T[] | null {
+  return moveProject(
+    list.map((project) =>
+      project.id === projectId
+        ? { ...project, parentProjectId: null }
+        : project,
+    ),
+    projectId,
+    targetId,
+  );
 }
