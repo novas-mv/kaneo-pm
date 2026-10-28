@@ -2373,7 +2373,8 @@
 			"deleteConfirmDescription": "这将永久删除项目及其所有数据，此操作不可撤销。",
 			"deletedToast": "项目已删除",
 			"deleteProject": "删除项目",
-			"switcherLabel": "切换项目或视图"
+			"switcherLabel": "切换项目或视图",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "搜索任务、项目、评论…",
@@ -3355,7 +3356,8 @@
 				"noAccessTitle": "你没有访问此项目的权限",
 				"notFoundDescription": "此项目不存在或已被删除。",
 				"notFoundTitle": "没有找到项目"
-			}
+			},
+			"groupError": "Failed to update project group"
 		},
 		"search": {
 			"pageTitle": "搜索",

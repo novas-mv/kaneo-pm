@@ -2457,7 +2457,8 @@
 			"deleteConfirmDescription": "Cela supprimera définitivement le projet et toutes ses données. Vous ne pouvez pas annuler cette action.",
 			"deletedToast": "Projet supprimé",
 			"deleteProject": "Supprimer le projet",
-			"switcherLabel": "Changer de projet ou de vue"
+			"switcherLabel": "Changer de projet ou de vue",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Rechercher des tâches, projets, commentaires...",
@@ -3485,7 +3486,8 @@
 				"noAccessTitle": "Vous n'avez pas accès à ce projet",
 				"notFoundDescription": "Ce projet n'existe pas ou a été supprimé.",
 				"notFoundTitle": "Projet introuvable"
-			}
+			},
+			"groupError": "Failed to update project group"
 		},
 		"search": {
 			"pageTitle": "Rechercher",

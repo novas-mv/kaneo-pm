@@ -617,7 +617,8 @@
 			"deleteConfirmDescription": "Spowoduje to trwałe usunięcie projektu i wszystkich jego danych. Nie można tego cofnąć.",
 			"deletedToast": "Projekt usunięty",
 			"deleteProject": "Usuń projekt",
-			"switcherLabel": "Przełącz projekt lub widok"
+			"switcherLabel": "Przełącz projekt lub widok",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Szukaj zadań, projektów i komentarzy...",
@@ -889,7 +890,8 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group"
 		},
 		"search": {
 			"pageTitle": "Szukaj",

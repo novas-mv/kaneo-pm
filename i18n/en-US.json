@@ -2415,7 +2415,8 @@
 			"deleteConfirmDescription": "This will permanently remove the project and all its data. You can't undo this action.",
 			"deletedToast": "Project deleted",
 			"deleteProject": "Delete Project",
-			"switcherLabel": "Switch project or view"
+			"switcherLabel": "Switch project or view",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Search tasks, projects, comments...",
@@ -3414,6 +3415,7 @@
 			"noDueDate": "No due date",
 			"reorderHandle": "Reorder project",
 			"reorderError": "Failed to reorder projects",
+			"groupError": "Failed to update project group",
 			"unavailable": {
 				"noAccessTitle": "You don't have access to this project",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

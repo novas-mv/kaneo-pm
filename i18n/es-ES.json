@@ -2457,7 +2457,8 @@
 			"deletedToast": "Proyecto eliminado",
 			"deleteProject": "Eliminar proyecto",
 			"projectSettings": "Ajustes del proyecto",
-			"switcherLabel": "Cambiar de proyecto o vista"
+			"switcherLabel": "Cambiar de proyecto o vista",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Busca tareas, proyectos, comentarios...",
@@ -3485,7 +3486,8 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group"
 		},
 		"search": {
 			"pageTitle": "Buscar",

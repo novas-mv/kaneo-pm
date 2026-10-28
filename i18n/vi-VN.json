@@ -2373,7 +2373,8 @@
 			"deleteConfirmDescription": "Thao tác này sẽ xóa vĩnh viễn dự án và toàn bộ dữ liệu của nó. Bạn không thể hoàn tác hành động này.",
 			"deletedToast": "Đã xóa dự án",
 			"deleteProject": "Xóa dự án",
-			"switcherLabel": "Chuyển dự án hoặc chế độ xem"
+			"switcherLabel": "Chuyển dự án hoặc chế độ xem",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Tìm công việc, dự án, bình luận...",
@@ -3349,6 +3350,7 @@
 			"noDueDate": "Không có ngày đến hạn",
 			"reorderHandle": "Sắp xếp lại dự án",
 			"reorderError": "Không thể sắp xếp lại dự án",
+			"groupError": "Failed to update project group",
 			"unavailable": {
 				"backToWorkspace": "Back to workspace",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

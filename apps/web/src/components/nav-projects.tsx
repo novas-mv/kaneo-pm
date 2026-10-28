@@ -1,5 +1,4 @@
 import {
-  closestCenter,
   DndContext,
   type DragEndEvent,
   DragOverlay,
@@ -16,58 +15,42 @@ import {
 import {
   arrayMove,
   SortableContext,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import {
-  ChevronRight,
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Plus,
-  Settings,
-  Trash2,
-  Trash2Icon,
-  LinkIcon,
-} from "lucide-react";
-import { type CSSProperties, type ReactNode, useState } from "react";
+import { ChevronRight, Plus, Trash2Icon } from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { ProjectProgress } from "@/components/project-progress";
 import {
   Collapsible,
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/menu";
-import {
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import icons from "@/constants/project-icons";
 import useDeleteProject from "@/hooks/mutations/project/use-delete-project";
 import useReorderProjects from "@/hooks/mutations/project/use-reorder-projects";
+import useSetProjectParent from "@/hooks/mutations/project/use-set-project-parent";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
-import { EASE_OUT_CSS } from "@/lib/motion";
+import {
+  buildProjectTree,
+  hasChildren,
+  resolveProjectDrop,
+} from "@/lib/project-tree";
 import { toast } from "@/lib/toast";
-import type { ProjectWithTasks } from "@/types/project";
+import { projectDropCollision } from "./nav-projects/project-drop-collision";
+import { ProjectRow } from "./nav-projects/project-row";
+import { SortableProjectItem } from "./nav-projects/sortable-project-item";
 import CreateProjectModal from "./shared/modals/create-project-modal";
 import {
   AlertDialog,
@@ -80,49 +63,8 @@ import {
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 
-function SortableProjectItem({
-  id,
-  canReorder,
-  children,
-}: {
-  id: string;
-  canReorder: boolean;
-  children: ReactNode;
-}) {
-  const { listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id,
-      disabled: !canReorder,
-      // The reorder already moves the row; animating the index change too
-      // replays the same move from a stale offset.
-      animateLayoutChanges: () => false,
-      // dnd-kit defaults to `ease`; this is the app's curve.
-      transition: { duration: 200, easing: EASE_OUT_CSS },
-    });
-
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    // `listeners` without `attributes`: the latter puts role="button" and a tab
-    // stop on the row, wrapping the link and the dropdown inside it.
-    <SidebarMenuItem
-      ref={setNodeRef}
-      style={style}
-      data-kaneo-sortable=""
-      className={isDragging ? "opacity-0" : undefined}
-      {...(canReorder ? listeners : {})}
-    >
-      {children}
-    </SidebarMenuItem>
-  );
-}
-
 export function NavProjects() {
   const { t } = useTranslation();
-  const { isMobile } = useSidebar();
   const { data: workspace } = useActiveWorkspace();
   const { data: projects } = useGetProjects(
     {
@@ -133,6 +75,7 @@ export function NavProjects() {
   const queryClient = useQueryClient();
   const { mutateAsync: deleteProject } = useDeleteProject();
   const reorderProjects = useReorderProjects();
+  const { setParent } = useSetProjectParent();
   const { canCreateProjects, canDeleteProjects, canUpdateProjects } =
     useWorkspacePermission();
   const canCreate = canCreateProjects();
@@ -161,20 +104,39 @@ export function NavProjects() {
     (project) => project.id === draggingProjectId,
   );
 
+  const tree = useMemo(() => buildProjectTree(projects ?? []), [projects]);
+  // Visual order: what the sortable list and a reorder both work from.
+  const orderedProjects = useMemo(
+    () => tree.flatMap((node) => [node.project, ...node.children]),
+    [tree],
+  );
+  // A project with children cannot become a child (one level only).
+  const canNestDragged =
+    !!draggingProjectId && !hasChildren(projects ?? [], draggingProjectId);
+
   const isCurrentProject = (projectId: string) => {
     return (
       currentProjectId === projectId && currentWorkspaceId === workspace?.id
     );
   };
 
-  const handleProjectClick = (project: ProjectWithTasks) => {
+  const handleProjectClick = (projectId: string) => {
     navigate({
       to: "/dashboard/workspace/$workspaceId/project/$projectId/board",
       params: {
         workspaceId: workspace?.id || "",
-        projectId: project.id,
+        projectId,
       },
     });
+  };
+
+  const onGroupError = () => {
+    toast.error(t("workspace:projects.groupError"));
+  };
+
+  const removeFromGroup = (projectId: string) => {
+    if (!workspace) return;
+    setParent(workspace.id, projectId, null, { onError: onGroupError });
   };
 
   // Below these thresholds the row is still a link and the sidebar still
@@ -198,26 +160,76 @@ export function NavProjects() {
     setDraggingProjectId(null);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    endDrag();
-
-    if (!over || active.id === over.id || !projects || !workspace) return;
-
-    const oldIndex = projects.findIndex((project) => project.id === active.id);
-    const newIndex = projects.findIndex((project) => project.id === over.id);
-
+  const reorderTo = (
+    list: typeof orderedProjects,
+    projectId: string,
+    targetId: string,
+  ) => {
+    if (!workspace) return;
+    const oldIndex = list.findIndex((project) => project.id === projectId);
+    const newIndex = list.findIndex((project) => project.id === targetId);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(projects, oldIndex, newIndex);
-
-    reorderProjects(workspace.id, reordered, {
+    reorderProjects(workspace.id, arrayMove(list, oldIndex, newIndex), {
       onError: () => {
         toast.error(t("workspace:projects.reorderError"));
       },
     });
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    endDrag();
+
+    if (!over || !projects || !workspace) return;
+
+    const drop = resolveProjectDrop(
+      projects,
+      String(active.id),
+      String(over.id),
+    );
+
+    if (drop.type === "nest") {
+      setParent(workspace.id, drop.projectId, drop.parentProjectId, {
+        onError: onGroupError,
+      });
+    } else if (drop.type === "ungroup") {
+      setParent(workspace.id, drop.projectId, null, { onError: onGroupError });
+      // Lands where it was dropped among the top-level rows.
+      reorderTo(
+        orderedProjects.map((project) =>
+          project.id === drop.projectId
+            ? { ...project, parentProjectId: null }
+            : project,
+        ),
+        drop.projectId,
+        drop.targetId,
+      );
+    } else if (drop.type === "reorder") {
+      reorderTo(orderedProjects, drop.projectId, drop.targetId);
+    }
+  };
+
+  const renderRow = (
+    project: (typeof orderedProjects)[number],
+    isChild: boolean,
+  ) => (
+    <ProjectRow
+      project={project}
+      workspaceId={workspace?.id || ""}
+      isActive={isCurrentProject(project.id)}
+      canDelete={canDeleteProject}
+      onOpen={() => handleProjectClick(project.id)}
+      onDelete={() => {
+        setProjectToDeleteID(project.id);
+        setIsDeleteProjectModalOpen(true);
+      }}
+      onRemoveFromGroup={
+        isChild && canReorder ? () => removeFromGroup(project.id) : undefined
+      }
+    />
+  );
 
   if (!workspace) return null;
 
@@ -250,7 +262,7 @@ export function NavProjects() {
             <SidebarGroupContent>
               <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={projectDropCollision}
                 modifiers={[
                   restrictToVerticalAxis,
                   restrictToFirstScrollableAncestor,
@@ -261,125 +273,41 @@ export function NavProjects() {
               >
                 <SidebarMenu className="gap-0.5">
                   <SortableContext
-                    items={projects?.map((project) => project.id) ?? []}
+                    items={orderedProjects.map((project) => project.id)}
                     strategy={verticalListSortingStrategy}
                   >
-                    {projects?.map((project) => {
-                      const ProjectIcon =
-                        icons[project.icon as keyof typeof icons] ||
-                        icons.Layout;
+                    {tree.map(({ project, children }) => {
+                      const draggingParentId = draggingProject?.parentProjectId;
 
                       return (
-                        <SortableProjectItem
-                          key={project.id}
-                          id={project.id}
-                          canReorder={canReorder}
-                        >
-                          <SidebarMenuButton
-                            isActive={isCurrentProject(project.id)}
-                            size="default"
-                            className="h-8 text-sm"
-                            onClick={() => handleProjectClick(project)}
+                        <Fragment key={project.id}>
+                          <SortableProjectItem
+                            id={project.id}
+                            canReorder={canReorder}
+                            canNestInto={
+                              canNestDragged &&
+                              draggingProjectId !== project.id &&
+                              draggingParentId !== project.id
+                            }
                           >
-                            <ProjectIcon aria-hidden="true" />
-                            <span className="min-w-0 flex-1 truncate">
-                              {project.name}
-                            </span>
-                            {/* Gives way to the row menu, which sits here on hover. */}
-                            <ProjectProgress
-                              percentage={
-                                project.statistics.completionPercentage
-                              }
-                              className="text-muted-foreground max-md:hidden group-focus-within/menu-item:opacity-0 group-hover/menu-item:opacity-0 group-has-data-popup-open/menu-item:opacity-0"
-                            />
-                          </SidebarMenuButton>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <button
-                                  type="button"
-                                  // The row is the drag source; this press
-                                  // must not reach it.
-                                  onPointerDown={(event) =>
-                                    event.stopPropagation()
-                                  }
-                                  className="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground after:-inset-2 after:absolute md:after:hidden peer-data-[size=sm]/menu-button:top-1 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 group-data-[collapsible=icon]:hidden group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-popup-open:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0"
-                                />
-                              }
-                            >
-                              <MoreHorizontal />
-                              <span className="sr-only">
-                                {t("navigation:sidebar.more")}
-                              </span>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              className="min-w-44 rounded-lg"
-                              side={isMobile ? "bottom" : "right"}
-                              align={isMobile ? "end" : "start"}
-                            >
-                              <DropdownMenuItem
-                                className="h-7 items-start cursor-pointer text-sm"
-                                onClick={() => handleProjectClick(project)}
-                              >
-                                <Folder className="text-muted-foreground" />
-                                <span>
-                                  {t("navigation:projectList.viewProject")}
-                                </span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="h-7 items-start cursor-pointer text-sm"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(
-                                    `${window.location.origin}/dashboard/workspace/${workspace?.id}/project/${project.id}`,
-                                  );
-                                  toast.success(
-                                    t("navigation:projectList.linkCopied"),
-                                    { icon: LinkIcon },
-                                  );
-                                }}
-                              >
-                                <Forward className="text-muted-foreground" />
-                                <span>
-                                  {t("navigation:projectList.shareProject")}
-                                </span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="h-7 items-start cursor-pointer text-sm"
-                                onClick={() => {
-                                  navigate({
-                                    to: "/dashboard/settings/projects/$projectId/general",
-                                    params: { projectId: project.id },
-                                  });
-                                }}
-                              >
-                                <Settings className="text-muted-foreground" />
-                                <span>
-                                  {t("navigation:projectList.projectSettings")}
-                                </span>
-                              </DropdownMenuItem>
-                              {canDeleteProject && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="h-7 items-start text-destructive cursor-pointer text-sm"
-                                    onClick={() => {
-                                      setProjectToDeleteID(project.id);
-                                      setIsDeleteProjectModalOpen(true);
-                                    }}
+                            {renderRow(project, false)}
+                          </SortableProjectItem>
+                          {children.length > 0 && (
+                            <li>
+                              <SidebarMenuSub className="me-0 gap-0.5 pe-0 ps-1.5">
+                                {children.map((child) => (
+                                  <SortableProjectItem
+                                    key={child.id}
+                                    id={child.id}
+                                    canReorder={canReorder}
                                   >
-                                    <Trash2 className="text-destructive" />
-                                    <span>
-                                      {t(
-                                        "navigation:projectList.deleteProject",
-                                      )}
-                                    </span>
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </SortableProjectItem>
+                                    {renderRow(child, true)}
+                                  </SortableProjectItem>
+                                ))}
+                              </SidebarMenuSub>
+                            </li>
+                          )}
+                        </Fragment>
                       );
                     })}
                   </SortableContext>

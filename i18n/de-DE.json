@@ -2415,7 +2415,8 @@
 			"deleteConfirmDescription": "Dadurch wird das Projekt und alle zugehörigen Daten dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
 			"deletedToast": "Projekt gelöscht",
 			"deleteProject": "Projekt löschen",
-			"switcherLabel": "Projekt oder Ansicht wechseln"
+			"switcherLabel": "Projekt oder Ansicht wechseln",
+			"removeFromGroup": "Remove from group"
 		},
 		"search": {
 			"inputPlaceholder": "Aufgaben, Projekte, Kommentare suchen...",
@@ -3420,7 +3421,8 @@
 				"noAccessTitle": "Du hast keinen Zugriff auf dieses Projekt",
 				"notFoundDescription": "Dieses Projekt existiert nicht oder wurde gelöscht.",
 				"notFoundTitle": "Projekt nicht gefunden"
-			}
+			},
+			"groupError": "Failed to update project group"
 		},
 		"search": {
 			"pageTitle": "Suche",

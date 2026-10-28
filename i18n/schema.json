@@ -10247,6 +10247,9 @@
 						},
 						"switcherLabel": {
 							"type": "string"
+						},
+						"removeFromGroup": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -10259,7 +10262,8 @@
 						"deleteConfirmDescription",
 						"deletedToast",
 						"deleteProject",
-						"switcherLabel"
+						"switcherLabel",
+						"removeFromGroup"
 					]
 				},
 				"search": {
@@ -13905,6 +13909,9 @@
 						"reorderError": {
 							"type": "string"
 						},
+						"groupError": {
+							"type": "string"
+						},
 						"unavailable": {
 							"type": "object",
 							"additionalProperties": false,
@@ -13949,6 +13956,7 @@
 						"noDueDate",
 						"reorderHandle",
 						"reorderError",
+						"groupError",
 						"unavailable"
 					]
 				},
