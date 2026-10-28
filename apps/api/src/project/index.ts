@@ -39,6 +39,10 @@ import setProjectParentCtrl from "./controllers/set-project-parent";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
 import {
+  redactHiddenParent,
+  redactHiddenParents,
+} from "./redact-hidden-parents";
+import {
   movedProjectSchema,
   projectBackgroundFinalizeSchema,
   projectBackgroundUploadSchema,
@@ -491,7 +495,10 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const projectData = await getProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(projectData), 200);
+    return c.json(
+      await redactHiddenParent(toPublicProject(projectData), c.get("userId")),
+      200,
+    );
   })
   .openapi(getProjectBackgroundRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -566,14 +573,23 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       c.get("userId"),
       projects,
     );
-    return c.json(reordered.map(toPublicProject), 200);
+    return c.json(
+      await redactHiddenParents(
+        reordered.map(toPublicProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(setProjectParentRoute, async (c) => {
     const { id } = c.req.valid("param");
     const { parentProjectId } = c.req.valid("json");
     return c.json(
-      toPublicProject(
-        await setProjectParentCtrl(id, parentProjectId, c.get("userId")),
+      await redactHiddenParent(
+        toPublicProject(
+          await setProjectParentCtrl(id, parentProjectId, c.get("userId")),
+        ),
+        c.get("userId"),
       ),
       200,
     );
@@ -592,7 +608,13 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       workspaceId,
       await hasWorkspacePermission(c, { project: ["share"] }),
     );
-    return c.json(toPublicProject(updatedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(updatedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(deleteProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -604,13 +626,25 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const archivedProject = await archiveProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(archivedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(archivedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(unarchiveProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const unarchivedProject = await unarchiveProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(unarchivedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(unarchivedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(uploadProjectBackgroundRoute, async (c) => {
     const { id } = c.req.valid("param");
