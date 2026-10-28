@@ -2,6 +2,7 @@ import { CalendarIcon, LockIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CalendarFeed } from "@/components/project/calendar-feeds/calendar-feed";
+import { GoogleCalendarIntegrationSettings } from "@/components/project/integrations/google-calendar/google-calendar-integration-settings";
 import { CalendarFeedRow } from "@/components/project/calendar-feeds/calendar-feed-row";
 import { NewCalendarFeedDialog } from "@/components/project/calendar-feeds/new-calendar-feed-dialog";
 import { RevokeCalendarFeedDialog } from "@/components/project/calendar-feeds/revoke-calendar-feed-dialog";
@@ -109,6 +110,14 @@ export function CalendarFeedSettings({ projectId }: { projectId: string }) {
         description={description}
         actions={newFeedButton}
       >
+        <SettingsSection
+          title={t("settings:projectIntegrations.googleCalendarSectionTitle")}
+          description={t(
+            "settings:projectIntegrations.googleCalendarSectionSubtitle",
+          )}
+        >
+          <GoogleCalendarIntegrationSettings projectId={projectId} />
+        </SettingsSection>
         <SettingsSection
           title={t("settings:calendarFeeds.activeFeeds")}
           description={t("settings:calendarFeeds.subscribeHint")}

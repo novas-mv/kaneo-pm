@@ -13,7 +13,7 @@ import {
 import useGetGoogleCalendarIntegration from "@/hooks/queries/google-calendar-integration/use-get-google-calendar-integration";
 import { toast } from "@/lib/toast";
 
-const DEFAULT_TIME_ZONE = "Indian/Maldives";
+const BROWSER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export function GoogleCalendarIntegrationSettings({
   projectId,
@@ -30,11 +30,11 @@ export function GoogleCalendarIntegrationSettings({
 
   const connected = data?.integration ?? null;
   const [calendarId, setCalendarId] = React.useState("");
-  const [timeZone, setTimeZone] = React.useState(DEFAULT_TIME_ZONE);
+  const [timeZone, setTimeZone] = React.useState(BROWSER_TIME_ZONE);
 
   React.useEffect(() => {
     setCalendarId(connected?.calendarId ?? "");
-    setTimeZone(connected?.timeZone ?? DEFAULT_TIME_ZONE);
+    setTimeZone(connected?.timeZone ?? BROWSER_TIME_ZONE);
   }, [connected?.calendarId, connected?.timeZone]);
 
   if (isError && !data) {
