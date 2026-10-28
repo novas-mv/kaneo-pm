@@ -8,6 +8,8 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { addWorkspaceMember } from "./helpers/project-access/add-workspace-member";
+import { restrictToProjects } from "./helpers/project-access/restrict-to-projects";
 import { createRestrictedWorkspace } from "./helpers/project-access/create-restricted-workspace";
 
 beforeEach(async () => {
@@ -52,5 +54,29 @@ describe("project detail payload", () => {
     mockAuthenticatedSession(ctx.owner);
     const visible = await app.request(`/api/project/${ctx.alpha.id}`);
     expect((await visible.json()).parentProjectId).toBe(ctx.beta.id);
+  });
+
+  it("DELETE and archive responses return parentProjectId null for a hidden parent", async () => {
+    const ctx = await createRestrictedWorkspace();
+    const admin = await addWorkspaceMember(ctx.workspace.id, "admin");
+    await restrictToProjects(ctx.workspace.id, admin.id, [ctx.alpha.id]);
+    await db
+      .update(schema.projectTable)
+      .set({ parentProjectId: ctx.beta.id })
+      .where(eq(schema.projectTable.id, ctx.alpha.id));
+    mockAuthenticatedSession(admin);
+    const { app } = createApp();
+
+    const archived = await app.request(`/api/project/${ctx.alpha.id}/archive`, {
+      method: "PUT",
+    });
+    expect(archived.status).toBe(200);
+    expect((await archived.json()).parentProjectId).toBeNull();
+
+    const deleted = await app.request(`/api/project/${ctx.alpha.id}`, {
+      method: "DELETE",
+    });
+    expect(deleted.status).toBe(200);
+    expect((await deleted.json()).parentProjectId).toBeNull();
   });
 });

@@ -620,7 +620,13 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const deletedProject = await deleteProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(deletedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(deletedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(archiveProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
