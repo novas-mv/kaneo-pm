@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   customType,
   foreignKey,
@@ -371,8 +372,13 @@ export const projectTable = pgTable(
     backgroundObjectKey: text("background_object_key"),
     backgroundMimeType: text("background_mime_type"),
     backgroundVersion: text("background_version"),
+    parentProjectId: text("parent_project_id").references(
+      (): AnyPgColumn => projectTable.id,
+      { onDelete: "set null" },
+    ),
   },
   (table) => [
+    index("project_parentProjectId_idx").on(table.parentProjectId),
     index("project_background_object_key_idx")
       .on(table.backgroundObjectKey)
       .where(sql`${table.backgroundObjectKey} is not null`),
