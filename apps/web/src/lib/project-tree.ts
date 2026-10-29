@@ -46,22 +46,39 @@ function shownParentId<T extends TreeProject>(projects: T[], project: T) {
   return parent && !parent.parentProjectId ? parent.id : null;
 }
 
-export function hasChildren<T extends TreeProject>(
-  projects: T[],
-  projectId: string,
-) {
-  return projects.some(
-    (project) =>
-      project.parentProjectId === projectId &&
-      shownParentId(projects, project) === projectId,
-  );
-}
-
 export type ProjectDrop =
   | { type: "none" }
   | { type: "nest"; projectId: string; parentProjectId: string }
   | { type: "ungroup"; projectId: string; targetId: string }
   | { type: "reorder"; projectId: string; targetId: string };
+
+/**
+ * Every project `activeId` may be nested into: the other top-level rows,
+ * except its own parent; none when it has children. One tree pass, so a drag
+ * can ask once instead of once per row.
+ */
+export function nestTargetIds<T extends TreeProject>(
+  projects: T[],
+  activeId: string,
+): Set<string> {
+  const tree = buildProjectTree(projects);
+  let activeParent: string | undefined;
+  for (const node of tree) {
+    if (node.project.id === activeId && node.children.length > 0) {
+      return new Set();
+    }
+    if (node.children.some((child) => child.id === activeId)) {
+      activeParent = node.project.id;
+    }
+  }
+  if (!projects.some((project) => project.id === activeId)) return new Set();
+
+  return new Set(
+    tree
+      .map((node) => node.project.id)
+      .filter((id) => id !== activeId && id !== activeParent),
+  );
+}
 
 /**
  * What a sidebar drop means. `overId` is either a project id (a reorder slot)
@@ -78,19 +95,9 @@ export function resolveProjectDrop<T extends TreeProject>(
   const activeParent = shownParentId(projects, active);
 
   if (overId.startsWith(NEST_PREFIX)) {
-    const target = projects.find(
-      (p) => p.id === overId.slice(NEST_PREFIX.length),
-    );
-    if (
-      !target ||
-      target.id === active.id ||
-      target.id === activeParent ||
-      shownParentId(projects, target) ||
-      hasChildren(projects, active.id)
-    ) {
-      return none;
-    }
-    return { type: "nest", projectId: active.id, parentProjectId: target.id };
+    const targetId = overId.slice(NEST_PREFIX.length);
+    if (!nestTargetIds(projects, active.id).has(targetId)) return none;
+    return { type: "nest", projectId: active.id, parentProjectId: targetId };
   }
 
   const target = projects.find((p) => p.id === overId);

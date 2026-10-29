@@ -46,7 +46,7 @@ import { HttpError } from "@/lib/http-error";
 import {
   buildProjectTree,
   moveProject,
-  nestDropId,
+  nestTargetIds,
   resolveProjectDrop,
   ungroupOrder,
 } from "@/lib/project-tree";
@@ -116,10 +116,14 @@ export function NavProjects() {
   );
   // Same rules as the drop itself, so the highlight never promises a nest
   // the drop would refuse.
-  const canNestInto = (projectId: string) =>
-    !!draggingProjectId &&
-    resolveProjectDrop(projects ?? [], draggingProjectId, nestDropId(projectId))
-      .type === "nest";
+  const nestTargets = useMemo(
+    () =>
+      draggingProjectId
+        ? nestTargetIds(projects ?? [], draggingProjectId)
+        : new Set<string>(),
+    [projects, draggingProjectId],
+  );
+  const canNestInto = (projectId: string) => nestTargets.has(projectId);
 
   const isCurrentProject = (projectId: string) => {
     return (
