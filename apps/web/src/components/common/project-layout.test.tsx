@@ -55,6 +55,9 @@ vi.mock("@/components/shared/modals/create-project-modal", () => ({
   default: () => null,
 }));
 vi.mock("@/components/page-title", () => ({ default: () => null }));
+vi.mock("@/components/project/group-scope-switch", () => ({
+  GroupScopeSwitch: () => null,
+}));
 
 afterEach(cleanup);
 

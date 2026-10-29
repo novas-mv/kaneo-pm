@@ -3356,6 +3356,11 @@
 			"startsOn": "Beginnt {{date}}",
 			"beforeStart": "{{date}} liegt vor dem Startdatum",
 			"afterDue": "{{date}} liegt nach dem Fälligkeitsdatum"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {

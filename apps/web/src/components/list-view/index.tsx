@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
+import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useCollapsedSections } from "@/hooks/use-collapsed-sections";
 import { cn } from "@/lib/cn";
@@ -52,6 +53,8 @@ function ListView({
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { setProject } = useProjectStore();
+  // A rolled-up list is read-only for selection and column actions.
+  const isRollup = useRollup() !== null;
   const setAvailableTasks = useBulkSelectionStore(
     (state) => state.setAvailableTasks,
   );
@@ -163,9 +166,9 @@ function ListView({
       const visibleTaskIds = project.columns
         .filter((column) => isExpanded(column.id))
         .flatMap(shownTaskIds);
-      setAvailableTasks([...new Set(visibleTaskIds)]);
+      setAvailableTasks(isRollup ? [] : [...new Set(visibleTaskIds)]);
     }
-  }, [project, isExpanded, setAvailableTasks, shownTaskIds]);
+  }, [project, isExpanded, setAvailableTasks, shownTaskIds, isRollup]);
 
   useEffect(() => {
     clearFocus();
@@ -213,7 +216,7 @@ function ListView({
   };
 
   const moveTask = (activeTaskId: string, overId: string) => {
-    if (disableDragDrop || !project?.columns) return;
+    if (disableDragDrop || isRollup || !project?.columns) return;
 
     const updatedProject = produce(project, (draft) => {
       const sourceColumn = draft?.columns?.find((col) =>
@@ -319,6 +322,7 @@ function ListView({
     project,
     enabled: activeId === null,
     canMove: !disableDragDrop,
+    canSelect: !isRollup,
     onMove: moveTask,
     onToggleGroup: toggleSection,
     onToggleAllGroups: () =>
@@ -486,7 +490,7 @@ function ListView({
         taskCount={archiveColumn?.tasks.length ?? 0}
       />
 
-      <BulkToolbar />
+      {!isRollup && <BulkToolbar />}
     </DndContext>
   );
 }

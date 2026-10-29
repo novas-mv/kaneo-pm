@@ -7,6 +7,7 @@ import ListView from "@/components/list-view";
 import PageTitle from "@/components/page-title";
 import { DisplaySection } from "@/components/project/display/display-section";
 import { TaskDisplayOptions } from "@/components/project/display/task-display-options";
+import { RollupScope } from "@/components/project/rollup-scope";
 import { ActiveFiltersBar } from "@/components/project/task-filters/active-filters-bar";
 import { ProjectToolbar } from "@/components/project/toolbar/project-toolbar";
 import { TaskCount } from "@/components/project/toolbar/task-count";
@@ -14,7 +15,8 @@ import { useProjectTaskView } from "@/components/project/toolbar/use-project-tas
 import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
-import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
+import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
+import { findTaskProjectId } from "@/lib/group-board";
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { cn } from "@/lib/cn";
 import { sortTasks } from "@/lib/sort-tasks";
@@ -83,12 +85,18 @@ function RouteComponent() {
   const navigate = useNavigate();
   const {
     data,
+    ownData,
+    isRollup,
+    childIds,
     isError: boardError,
     isFetching: boardFetching,
     isSuccess: boardLoaded,
     refetch: retryBoard,
-  } = useGetTasks(projectId);
-  const { project, setProject } = useProjectStore();
+  } = useGetGroupTasks(projectId);
+  const { project: storedProject, setProject } = useProjectStore();
+  // The store keeps this project's own board; a rolled-up view renders the
+  // merged board read-only.
+  const project = isRollup ? data : storedProject;
   const viewMode = useUserPreferencesStore((state) => state.viewMode);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const { sort, setSort } = useBoardSort(projectId);
@@ -110,10 +118,10 @@ function RouteComponent() {
   }, [navigate]);
 
   useEffect(() => {
-    if (data) {
-      setProject(data);
+    if (ownData) {
+      setProject(ownData);
     }
-  }, [data, setProject]);
+  }, [ownData, setProject]);
 
   const sortedProject = useMemo(() => {
     const filteredProject = filters.filteredProject;
@@ -179,84 +187,101 @@ function RouteComponent() {
             : undefined
         }
       />
-      <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
-        {descriptionSearch.isLoading && (
-          <p role="status" className="px-4 py-2 text-sm text-muted-foreground">
-            {t("tasks:descriptionSearchLoading")}
-          </p>
-        )}
-        {descriptionSearch.isError && (
-          <p role="alert" className="px-4 py-2 text-sm text-destructive">
-            {t("tasks:descriptionSearchError")}{" "}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => void descriptionSearch.retry()}
+      <RollupScope
+        projectId={projectId}
+        workspaceId={workspaceId}
+        childIds={childIds}
+      >
+        <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
+          {descriptionSearch.isLoading && (
+            <p
+              role="status"
+              className="px-4 py-2 text-sm text-muted-foreground"
             >
-              {t("tasks:descriptionRetry")}
-            </button>
-          </p>
-        )}
-
-        {boardError && (
-          <p role="alert" className="p-4 text-destructive">
-            {t("tasks:calendar.loadError")}{" "}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => void retryBoard()}
-            >
-              {t("tasks:descriptionRetry")}
-            </button>
-          </p>
-        )}
-        <div
-          className={cn("flex h-full flex-1 overflow-hidden", {
-            "bg-background": !background,
-          })}
-        >
-          {sortedProject ? (
-            viewMode === "board" ? (
-              <KanbanBoard
-                project={sortedProject}
-                disableCollectionActions={boardFetching || boardError}
-                disableDragDrop={
-                  (boardFetching && !boardLoaded) ||
-                  boardError ||
-                  (sort.field !== "position" &&
-                    sort.field !== "number" &&
-                    sort.field !== "priority")
-                }
-                sortedByNumber={sort.field === "number"}
-                sortedByPriority={sort.field === "priority"}
-              />
-            ) : (
-              <ListView
-                project={sortedProject}
-                disableCollectionActions={boardFetching || boardError}
-                disableDragDrop={
-                  boardFetching || boardError || sort.field !== "position"
-                }
-              />
-            )
-          ) : boardError ? null : (
-            <BoardSkeleton />
+              {t("tasks:descriptionSearchLoading")}
+            </p>
           )}
+          {descriptionSearch.isError && (
+            <p role="alert" className="px-4 py-2 text-sm text-destructive">
+              {t("tasks:descriptionSearchError")}{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => void descriptionSearch.retry()}
+              >
+                {t("tasks:descriptionRetry")}
+              </button>
+            </p>
+          )}
+
+          {boardError && (
+            <p role="alert" className="p-4 text-destructive">
+              {t("tasks:calendar.loadError")}{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => void retryBoard()}
+              >
+                {t("tasks:descriptionRetry")}
+              </button>
+            </p>
+          )}
+          <div
+            className={cn("flex h-full flex-1 overflow-hidden", {
+              "bg-background": !background,
+            })}
+          >
+            {sortedProject ? (
+              viewMode === "board" ? (
+                <KanbanBoard
+                  project={sortedProject}
+                  disableCollectionActions={
+                    boardFetching || boardError || isRollup
+                  }
+                  disableDragDrop={
+                    isRollup ||
+                    (boardFetching && !boardLoaded) ||
+                    boardError ||
+                    (sort.field !== "position" &&
+                      sort.field !== "number" &&
+                      sort.field !== "priority")
+                  }
+                  sortedByNumber={sort.field === "number"}
+                  sortedByPriority={sort.field === "priority"}
+                />
+              ) : (
+                <ListView
+                  project={sortedProject}
+                  disableCollectionActions={
+                    boardFetching || boardError || isRollup
+                  }
+                  disableDragDrop={
+                    isRollup ||
+                    boardFetching ||
+                    boardError ||
+                    sort.field !== "position"
+                  }
+                />
+              )
+            ) : boardError ? null : (
+              <BoardSkeleton />
+            )}
+          </div>
+
+          <CreateTaskModal
+            open={isTaskModalOpen}
+            projectId={projectId}
+            onClose={() => setIsTaskModalOpen(false)}
+          />
+
+          <TaskDetailsSheet
+            taskId={taskId}
+            projectId={findTaskProjectId(project, taskId) ?? projectId}
+            workspaceId={workspaceId}
+            onClose={handleCloseTaskSheet}
+          />
         </div>
-
-        <CreateTaskModal
-          open={isTaskModalOpen}
-          projectId={projectId}
-          onClose={() => setIsTaskModalOpen(false)}
-        />
-
-        <TaskDetailsSheet
-          taskId={taskId}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          onClose={handleCloseTaskSheet}
-        />
-      </div>
+      </RollupScope>
     </ProjectLayout>
   );
 }

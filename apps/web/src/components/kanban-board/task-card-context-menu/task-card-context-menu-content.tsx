@@ -64,8 +64,12 @@ export default function TaskCardContextMenuContent({
   const { project } = useProjectStore();
   const queryClient = useQueryClient();
   const { data: columnsData = [] } = useGetColumns(taskCardContext.projectId);
+  // The store holds the open project's board; a rolled-up child's task needs
+  // its own project's columns.
   const columns =
-    project?.columns && project.columns.length > 0
+    project?.id === taskCardContext.projectId &&
+    project.columns &&
+    project.columns.length > 0
       ? project.columns.map((col) => ({
           slug: col.id,
           name: col.name,

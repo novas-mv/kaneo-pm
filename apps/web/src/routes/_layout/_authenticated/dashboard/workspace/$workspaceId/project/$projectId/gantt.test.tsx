@@ -44,8 +44,14 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 const useGetTasks = vi.fn();
-vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
-  useGetTasks: (projectId: string) => useGetTasks(projectId),
+vi.mock("@/hooks/queries/task/use-get-group-tasks", () => ({
+  useGetGroupTasks: (projectId: string) => ({
+    childIds: [],
+    ...useGetTasks(projectId),
+  }),
+}));
+vi.mock("@/components/project/rollup-scope", () => ({
+  RollupScope: ({ children }: { children: ReactNode }) => children,
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({

@@ -27,6 +27,7 @@ import { moveBoardTask } from "./move-task";
 import { useDragPreview } from "./drag-preview/use-drag-preview";
 import { useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
+import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useProjectBackground } from "@/hooks/use-project-background";
 import { cn } from "@/lib/cn";
@@ -57,6 +58,8 @@ function KanbanBoard({
   sortedByPriority = false,
 }: KanbanBoardProps) {
   const isAutomaticallySorted = sortedByNumber || sortedByPriority;
+  // A rolled-up board is not a board of any one project: no bulk selection.
+  const isRollup = useRollup() !== null;
   const queryClient = useQueryClient();
   const isFetching =
     useIsFetching({ queryKey: ["tasks", project.id], exact: true }) > 0;
@@ -127,9 +130,9 @@ function KanbanBoard({
       const allTaskIds = project.columns.flatMap((column) =>
         column.tasks.map((task) => task.id),
       );
-      setAvailableTasks(allTaskIds);
+      setAvailableTasks(isRollup ? [] : allTaskIds);
     }
-  }, [project, setAvailableTasks]);
+  }, [project, setAvailableTasks, isRollup]);
 
   useEffect(() => {
     clearFocus();
@@ -193,7 +196,17 @@ function KanbanBoard({
     onSettled: (failed?: boolean) => void,
     insertAfterTarget?: boolean,
   ) => {
-    if (!project?.columns || disableDragDrop) {
+    // Only this project's own tasks reorder on its board; a rolled-up
+    // child's task must never reach reorderTasks under this projectId.
+    const dragged = findTaskColumn(project, activeId)?.tasks.find(
+      (task) => task.id === activeId,
+    );
+    if (
+      !project?.columns ||
+      disableDragDrop ||
+      isRollup ||
+      (dragged?.projectId && dragged.projectId !== project.id)
+    ) {
       onSettled();
       return;
     }
@@ -271,6 +284,7 @@ function KanbanBoard({
     project,
     enabled: activeId === null,
     canMove: !disableDragDrop,
+    canSelect: !isRollup,
     onMove: (activeId, overId) => queueMove({ activeId, overId }),
   });
 
@@ -393,7 +407,7 @@ function KanbanBoard({
         ) : null}
       </DragOverlay>
 
-      <BulkToolbar />
+      {!isRollup && <BulkToolbar />}
     </DndContext>
   );
 }

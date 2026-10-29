@@ -3356,6 +3356,11 @@
 			"startsOn": "Почнува: {{date}}",
 			"beforeStart": "{{date}} е пред датумот на почеток",
 			"afterDue": "{{date}} е по рокот"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {

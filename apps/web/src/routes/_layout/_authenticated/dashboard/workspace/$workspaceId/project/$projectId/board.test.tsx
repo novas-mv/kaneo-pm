@@ -11,6 +11,7 @@ const m = vi.hoisted(() => ({
     archivedTasks: [],
   } as unknown,
   retry: vi.fn(),
+  board: {} as Record<string, unknown>,
 }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => ({
@@ -23,13 +24,20 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
-vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
-  useGetTasks: () => ({
+vi.mock("@/hooks/queries/task/use-get-group-tasks", () => ({
+  useGetGroupTasks: () => ({
     data: m.project,
+    ownData: m.project,
+    isRollup: false,
+    childIds: [],
     isError: true,
     isFetching: false,
     refetch: m.retry,
+    ...m.board,
   }),
+}));
+vi.mock("@/components/project/rollup-scope", () => ({
+  RollupScope: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@/store/project", () => ({
   default: () => ({ project: m.project, setProject: vi.fn() }),
@@ -58,8 +66,18 @@ vi.mock("@/components/common/project-layout", () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock("@/components/kanban-board", () => ({
-  default: ({ disableDragDrop }: { disableDragDrop: boolean }) => (
-    <div aria-label="Cached board" data-drag-disabled={disableDragDrop}>
+  default: ({
+    disableDragDrop,
+    disableCollectionActions,
+  }: {
+    disableDragDrop: boolean;
+    disableCollectionActions: boolean;
+  }) => (
+    <div
+      aria-label="Cached board"
+      data-drag-disabled={disableDragDrop}
+      data-actions-disabled={disableCollectionActions}
+    >
       Cached task
     </div>
   ),
@@ -72,7 +90,10 @@ vi.mock("@/components/shared/modals/create-task-modal", () => ({
 vi.mock("@/components/task/task-details-sheet", () => ({
   default: () => null,
 }));
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  m.board = {};
+});
 it("keeps cached tasks readable and disables reordering when a refresh fails", () => {
   const Component = (Route as unknown as { component: ComponentType })
     .component;
@@ -85,4 +106,24 @@ it("keeps cached tasks readable and disables reordering when a refresh fails", (
     screen.getByRole("button", { name: "tasks:descriptionRetry" }),
   );
   expect(m.retry).toHaveBeenCalledOnce();
+});
+
+it("drag is disabled on a rolled-up board", () => {
+  m.board = { isError: false, isSuccess: true, isRollup: true };
+  const Component = (Route as unknown as { component: ComponentType })
+    .component;
+  render(<Component />);
+  const board = screen.getByLabelText("Cached board");
+  expect(board.getAttribute("data-drag-disabled")).toBe("true");
+  expect(board.getAttribute("data-actions-disabled")).toBe("true");
+});
+
+it("keeps drag on the parent's own board", () => {
+  m.board = { isError: false, isSuccess: true, isRollup: false };
+  const Component = (Route as unknown as { component: ComponentType })
+    .component;
+  render(<Component />);
+  expect(
+    screen.getByLabelText("Cached board").getAttribute("data-drag-disabled"),
+  ).toBe("false");
 });

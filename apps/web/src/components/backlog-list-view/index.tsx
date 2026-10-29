@@ -19,6 +19,7 @@ import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
+import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useCollapsedSections } from "@/hooks/use-collapsed-sections";
 import { cn } from "@/lib/cn";
@@ -42,6 +43,8 @@ function BacklogListView({
   const reduceMotion = useReducedMotion();
   const { mutate: updateTask } = useUpdateTask();
   const setProject = useProjectStore((state) => state.setProject);
+  // A rolled-up backlog is read-only for drag and selection.
+  const isRollup = useRollup() !== null;
   const setAvailableTasks = useBacklogBulkSelectionStore(
     (state) => state.setAvailableTasks,
   );
@@ -68,9 +71,9 @@ function BacklogListView({
           ...(project.archivedTasks || []).map((task) => task.id),
         );
       }
-      setAvailableTasks(visibleTaskIds);
+      setAvailableTasks(isRollup ? [] : visibleTaskIds);
     }
-  }, [project, isExpanded, setAvailableTasks]);
+  }, [project, isExpanded, setAvailableTasks, isRollup]);
 
   useEffect(() => {
     clearFocus();
@@ -118,7 +121,7 @@ function BacklogListView({
   };
 
   const moveTask = (activeTaskId: string, overId: string) => {
-    if (!project) return;
+    if (!project || disableDragDrop || isRollup) return;
 
     const plannedTasks = project.plannedTasks || [];
     const archivedTasks = project.archivedTasks || [];
@@ -254,6 +257,7 @@ function BacklogListView({
     project,
     enabled: activeId === null,
     canMove: !disableDragDrop,
+    canSelect: !isRollup,
     onMove: moveTask,
     onToggleGroup: toggleSection,
     onToggleAllGroups: () => toggleAllSections(["planned", "archived"]),
@@ -351,7 +355,7 @@ function BacklogListView({
         status={activeColumn ?? "planned"}
       />
 
-      <BacklogBulkToolbar />
+      {!isRollup && <BacklogBulkToolbar />}
     </DndContext>
   );
 }

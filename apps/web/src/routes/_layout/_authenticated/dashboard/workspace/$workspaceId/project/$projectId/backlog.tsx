@@ -8,6 +8,7 @@ import { BacklogToolbarActions } from "@/components/backlog-list-view/backlog-to
 import ProjectLayout from "@/components/common/project-layout";
 import PageTitle from "@/components/page-title";
 import { TaskDisplayOptions } from "@/components/project/display/task-display-options";
+import { RollupScope } from "@/components/project/rollup-scope";
 import { ActiveFiltersBar } from "@/components/project/task-filters/active-filters-bar";
 import { ProjectToolbar } from "@/components/project/toolbar/project-toolbar";
 import { TaskCount } from "@/components/project/toolbar/task-count";
@@ -16,7 +17,8 @@ import { ConfirmDialog } from "@/components/settings/confirm-dialog";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
-import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
+import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
+import { findTaskProjectId } from "@/lib/group-board";
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { sortTasks } from "@/lib/sort-tasks";
 import { countBacklogTasks } from "@/lib/task-filters/count-tasks";
@@ -41,15 +43,18 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data } = useGetTasks(projectId);
+  const { data, ownData, isRollup, childIds } = useGetGroupTasks(projectId);
   const { project, setProject } = useProjectStore();
+  // The store keeps this project's own board; a rolled-up view renders the
+  // merged board read-only.
+  const shownProject = isRollup ? data : project;
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isMoveAllOpen, setIsMoveAllOpen] = useState(false);
   const [moveAllCount, setMoveAllCount] = useState(0);
   const { mutate: updateTask } = useUpdateTask();
   const { sort, setSort } = useBoardSort(projectId, "backlog");
   const view = useProjectTaskView({
-    project,
+    project: shownProject,
     projectId,
     workspaceId,
     scope: "backlog",
@@ -65,10 +70,10 @@ function RouteComponent() {
   }, [navigate]);
 
   useEffect(() => {
-    if (data) {
-      setProject(data);
+    if (ownData) {
+      setProject(ownData);
     }
-  }, [data, setProject]);
+  }, [ownData, setProject]);
 
   const sortedProject = useMemo(() => {
     const filteredProject = filters.filteredProject;
@@ -140,7 +145,7 @@ function RouteComponent() {
           actions={
             <BacklogToolbarActions
               onPlan={() => setIsTaskModalOpen(true)}
-              onMoveAll={handleMoveAllPlannedToTodo}
+              onMoveAll={isRollup ? undefined : handleMoveAllPlannedToTodo}
             />
           }
           display={
@@ -156,7 +161,7 @@ function RouteComponent() {
       summary={
         <TaskCount
           shown={countBacklogTasks(filters.filteredProject)}
-          total={countBacklogTasks(project)}
+          total={countBacklogTasks(shownProject)}
         />
       }
       filterBar={
@@ -174,49 +179,55 @@ function RouteComponent() {
             : undefined
         }
       />
-      <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
-        <div className="flex-1 overflow-hidden bg-card h-full">
-          {sortedProject ? (
-            <BacklogListView
-              project={sortedProject}
-              disableDragDrop={sort.field !== "position"}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-lg animate-pulse mx-auto" />
-                <div className="space-y-2">
-                  <div className="w-48 h-4 bg-muted rounded animate-pulse mx-auto" />
-                  <div className="w-64 h-3 bg-muted rounded animate-pulse mx-auto" />
+      <RollupScope
+        projectId={projectId}
+        workspaceId={workspaceId}
+        childIds={childIds}
+      >
+        <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-card h-full">
+            {sortedProject ? (
+              <BacklogListView
+                project={sortedProject}
+                disableDragDrop={isRollup || sort.field !== "position"}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-muted rounded-lg animate-pulse mx-auto" />
+                  <div className="space-y-2">
+                    <div className="w-48 h-4 bg-muted rounded animate-pulse mx-auto" />
+                    <div className="w-64 h-3 bg-muted rounded animate-pulse mx-auto" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          <CreateTaskModal
+            open={isTaskModalOpen}
+            projectId={projectId}
+            onClose={() => setIsTaskModalOpen(false)}
+            status="planned"
+          />
+
+          <ConfirmDialog
+            open={isMoveAllOpen}
+            onOpenChange={setIsMoveAllOpen}
+            title={t("tasks:backlog.moveAllConfirm", { count: moveAllCount })}
+            confirmLabel={t("tasks:backlog.moveAll")}
+            destructive={false}
+            onConfirm={confirmMoveAllPlannedToTodo}
+          />
+
+          <TaskDetailsSheet
+            taskId={taskId}
+            projectId={findTaskProjectId(shownProject, taskId) ?? projectId}
+            workspaceId={workspaceId}
+            onClose={handleCloseTaskSheet}
+          />
         </div>
-
-        <CreateTaskModal
-          open={isTaskModalOpen}
-          projectId={projectId}
-          onClose={() => setIsTaskModalOpen(false)}
-          status="planned"
-        />
-
-        <ConfirmDialog
-          open={isMoveAllOpen}
-          onOpenChange={setIsMoveAllOpen}
-          title={t("tasks:backlog.moveAllConfirm", { count: moveAllCount })}
-          confirmLabel={t("tasks:backlog.moveAll")}
-          destructive={false}
-          onConfirm={confirmMoveAllPlannedToTodo}
-        />
-
-        <TaskDetailsSheet
-          taskId={taskId}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          onClose={handleCloseTaskSheet}
-        />
-      </div>
+      </RollupScope>
     </ProjectLayout>
   );
 }

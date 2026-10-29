@@ -65,8 +65,9 @@ function seedProjects() {
   );
 }
 
-const taskIds = (data: ReturnType<typeof board> | undefined) =>
-  data?.columns.flatMap((column) => column.tasks.map((task) => task.id));
+const taskIds = (
+  data: { columns: Array<{ tasks: Array<{ id: string }> }> } | undefined,
+) => data?.columns.flatMap((column) => column.tasks.map((task) => task.id));
 const fetchedIds = () => getTasks.mock.calls.map(([id]) => id);
 
 beforeEach(() => {

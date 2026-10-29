@@ -1,20 +1,25 @@
 import { buildProjectTree } from "@/lib/project-tree";
 import type { ProjectWithTasks } from "@/types/project";
 
-type Column = ProjectWithTasks["columns"][number];
+type MergeableBoard = {
+  id: string;
+  columns: Array<{ id: string; name: string; tasks: unknown[] }>;
+  plannedTasks: unknown[];
+  archivedTasks: unknown[];
+};
 
 /**
  * A parent's rolled-up board: the parent's columns first, child columns with
  * the same name merged into them, and unmatched child columns appended. Every
  * task keeps its own projectId. The result is for display only.
  */
-export function mergeGroupBoards(
-  parent: ProjectWithTasks,
-  children: ProjectWithTasks[],
-): ProjectWithTasks {
+export function mergeGroupBoards<T extends MergeableBoard = ProjectWithTasks>(
+  parent: T,
+  children: T[],
+): T {
   if (children.length === 0) return parent;
 
-  const columns: Column[] = parent.columns.map((column) => ({
+  const columns: T["columns"] = parent.columns.map((column) => ({
     ...column,
     tasks: [...column.tasks],
   }));

@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 import { useTranslation } from "react-i18next";
+import { ProjectTag } from "@/components/project/project-tag";
+import { useTaskSlug } from "@/components/project/rollup-context";
 import { cn } from "@/lib/cn";
 import { formatDateShort } from "@/lib/format";
 import type { PackableTask, WeekSegment } from "./month-grid-model";
@@ -8,6 +10,7 @@ export type CalendarTask = PackableTask & {
   title: string;
   number: number | null;
   status: string;
+  projectId?: string;
 };
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -48,10 +51,9 @@ export default function CalendarTaskBar({
     continuesAfter,
   } = segment;
 
+  const slug = useTaskSlug(task.projectId ?? "", projectSlug);
   const taskKey =
-    projectSlug && task.number != null
-      ? `${projectSlug}-${task.number}`
-      : undefined;
+    slug && task.number != null ? `${slug}-${task.number}` : undefined;
 
   const range = `${formatDateShort(task.scheduleStart)} – ${formatDateShort(
     task.scheduleEnd,
@@ -85,6 +87,9 @@ export default function CalendarTaskBar({
         continuesAfter ? "rounded-r-none border-r-0" : "mr-1 rounded-r-md",
       )}
     >
+      {task.projectId && (
+        <ProjectTag projectId={task.projectId} className="mr-1 max-w-20" />
+      )}
       <span className="truncate">{task.title}</span>
     </button>
   );

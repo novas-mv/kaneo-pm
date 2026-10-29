@@ -13658,6 +13658,22 @@
 						}
 					},
 					"required": ["reorderFailed"]
+				},
+				"groupScope": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"label": {
+							"type": "string"
+						},
+						"own": {
+							"type": "string"
+						},
+						"everything": {
+							"type": "string"
+						}
+					},
+					"required": ["label", "own", "everything"]
 				}
 			},
 			"required": [
@@ -13701,7 +13717,8 @@
 				"descriptionRetry",
 				"descriptionLoading",
 				"descriptionLoadError",
-				"board"
+				"board",
+				"groupScope"
 			]
 		},
 		"invitations": {

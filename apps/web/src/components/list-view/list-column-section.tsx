@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Archive, ChevronRight, Plus } from "lucide-react";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useRollup } from "@/components/project/rollup-context";
 import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
 import { EASE_OUT } from "@/lib/motion";
@@ -51,6 +52,8 @@ const ListColumnSection = memo(function ListColumnSection({
   draggingTaskId,
 }: ListColumnSectionProps) {
   const { t } = useTranslation();
+  // Column actions belong to one project's board, not a rolled-up one.
+  const showActions = useRollup() === null;
   const [animateExpand, setAnimateExpand] = useState(false);
   const { setNodeRef } = useDroppable({
     id: column.id,
@@ -98,30 +101,32 @@ const ListColumnSection = memo(function ListColumnSection({
           </div>
         </button>
 
-        <div className="flex items-center gap-1 pointer-coarse:gap-6">
-          <button
-            type="button"
-            onClick={() => onAddTask(column.id)}
-            className="touch-hitbox relative p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
-            title={t("tasks:listView.addTask")}
-            aria-label={t("tasks:listView.addTask")}
-          >
-            <Plus className="w-3 h-3" />
-          </button>
-
-          {column.isFinal && column.tasks.length > 0 && (
+        {showActions && (
+          <div className="flex items-center gap-1 pointer-coarse:gap-6">
             <button
               type="button"
-              disabled={disableCollectionActions}
-              onClick={() => onArchive(column)}
+              onClick={() => onAddTask(column.id)}
               className="touch-hitbox relative p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
-              title={t("tasks:listView.archiveAllTooltip")}
-              aria-label={t("tasks:listView.archiveAllTooltip")}
+              title={t("tasks:listView.addTask")}
+              aria-label={t("tasks:listView.addTask")}
             >
-              <Archive className="w-3 h-3" />
+              <Plus className="w-3 h-3" />
             </button>
-          )}
-        </div>
+
+            {column.isFinal && column.tasks.length > 0 && (
+              <button
+                type="button"
+                disabled={disableCollectionActions}
+                onClick={() => onArchive(column)}
+                className="touch-hitbox relative p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
+                title={t("tasks:listView.archiveAllTooltip")}
+                aria-label={t("tasks:listView.archiveAllTooltip")}
+              >
+                <Archive className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {isExpanded && (
