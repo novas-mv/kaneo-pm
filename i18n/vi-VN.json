@@ -3201,6 +3201,7 @@
 			"pageTitle": "{{name}} / Lịch",
 			"previousMonth": "Tháng trước",
 			"taskAriaLabel": "{{title}}, {{range}}: mở công việc",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Lịch",
 			"today": "Hôm nay",
 			"loadError": "Không thể tải công việc.",

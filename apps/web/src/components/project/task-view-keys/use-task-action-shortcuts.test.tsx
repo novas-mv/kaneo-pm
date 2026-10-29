@@ -13,6 +13,7 @@ import { ShortcutTestWrapper } from "@/lib/shortcuts/shortcut-test-wrapper";
 import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
 import type { ProjectWithTasks } from "@/types/project";
+import { RollupContext } from "@/components/project/rollup-context";
 import { useTaskActionShortcuts } from "./use-task-action-shortcuts";
 
 const mocks = vi.hoisted(() => ({
@@ -191,5 +192,67 @@ describe("useTaskActionShortcuts", () => {
     await act(async () => {});
 
     expect(mocks.writeText.mock.calls).toEqual([["KAN-2"], ["Task 2"]]);
+  });
+});
+
+describe("useTaskActionShortcuts on a rolled-up view", () => {
+  const merged = {
+    id: "project-1",
+    slug: "KAN",
+    workspaceId: "workspace-1",
+    columns: [
+      {
+        id: "todo",
+        tasks: [task("a", 1), { ...task("m", 7), projectId: "child" }],
+      },
+    ],
+    plannedTasks: [],
+    archivedTasks: [],
+  } as unknown as ProjectWithTasks;
+
+  function RollupHarness() {
+    useTaskActionShortcuts(useBulkSelectionStore, {
+      board: merged,
+      pickers: false,
+    });
+    return null;
+  }
+
+  beforeEach(() => {
+    cleanup();
+    shortcutRegistry.reset();
+    render(
+      <RollupContext.Provider
+        value={{
+          projectId: "project-1",
+          projects: new Map([
+            ["project-1", { name: "Kanban", slug: "KAN" }],
+            ["child", { name: "Migration", slug: "MIG" }],
+          ]),
+        }}
+      >
+        <ShortcutTestWrapper>
+          <RollupHarness />
+        </ShortcutTestWrapper>
+      </RollupContext.Provider>,
+    );
+  });
+
+  it("copies a child task's key and link from its own project", async () => {
+    act(() => selection().setFocusedTask("m"));
+
+    press({ key: ".", code: "Period", ctrlKey: true });
+    await act(async () => {});
+
+    expect(mocks.writeText.mock.calls).toEqual([["MIG-7"]]);
+  });
+
+  it("does not open the parent's bulk pickers for a focused task", () => {
+    act(() => selection().setFocusedTask("m"));
+
+    press({ key: "s", code: "KeyS" });
+
+    expect(useBulkRequestStore.getState().request).toBeNull();
+    expect(selection().selectedTaskIds.size).toBe(0);
   });
 });

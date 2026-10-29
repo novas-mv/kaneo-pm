@@ -18,7 +18,7 @@ import { useProjectTaskView } from "@/components/project/toolbar/use-project-tas
 import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
-import { findTaskProjectId } from "@/lib/group-board";
+import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toScheduledTasks } from "@/lib/task-schedule";
 import { useUserPreferencesStore } from "@/store/user-preferences";
@@ -54,6 +54,7 @@ function RouteComponent() {
   } = useGetGroupTasks(projectId);
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
   const isMobile = useIsMobile();
+  const sheetProjectId = useTaskSheetProjectId(project, taskId, projectId);
   const view = useProjectTaskView({
     project,
     projectId,
@@ -208,7 +209,7 @@ function RouteComponent() {
 
           <TaskDetailsSheet
             taskId={taskId}
-            projectId={findTaskProjectId(project, taskId) ?? projectId}
+            projectId={sheetProjectId}
             workspaceId={workspaceId}
             onClose={handleCloseTaskSheet}
           />

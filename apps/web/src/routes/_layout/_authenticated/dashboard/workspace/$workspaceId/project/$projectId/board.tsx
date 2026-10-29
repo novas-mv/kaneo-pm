@@ -16,7 +16,7 @@ import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
-import { findTaskProjectId } from "@/lib/group-board";
+import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { cn } from "@/lib/cn";
 import { sortTasks } from "@/lib/sort-tasks";
@@ -101,6 +101,7 @@ function RouteComponent() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const { sort, setSort } = useBoardSort(projectId);
   const { background } = useBackgroundStore();
+  const sheetProjectId = useTaskSheetProjectId(project, taskId, projectId);
   const view = useProjectTaskView({
     project,
     projectId,
@@ -276,7 +277,7 @@ function RouteComponent() {
 
           <TaskDetailsSheet
             taskId={taskId}
-            projectId={findTaskProjectId(project, taskId) ?? projectId}
+            projectId={sheetProjectId}
             workspaceId={workspaceId}
             onClose={handleCloseTaskSheet}
           />

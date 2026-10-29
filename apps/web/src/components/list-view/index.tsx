@@ -21,10 +21,12 @@ import { Button } from "@/components/ui/button";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import useGetProjectTaskRelations from "@/hooks/queries/task-relation/use-get-project-task-relations";
+import { RollupTaskShortcuts } from "@/components/bulk-selection/rollup-task-shortcuts";
 import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useCollapsedSections } from "@/hooks/use-collapsed-sections";
 import { cn } from "@/lib/cn";
+import { findTaskProjectId } from "@/lib/group-board";
 import {
   readExpandedRows,
   writeExpandedRows,
@@ -323,6 +325,7 @@ function ListView({
     enabled: activeId === null,
     canMove: !disableDragDrop,
     canSelect: !isRollup,
+    getTaskProjectId: (taskId) => findTaskProjectId(project, taskId),
     onMove: moveTask,
     onToggleGroup: toggleSection,
     onToggleAllGroups: () =>
@@ -490,7 +493,14 @@ function ListView({
         taskCount={archiveColumn?.tasks.length ?? 0}
       />
 
-      {!isRollup && <BulkToolbar />}
+      {isRollup ? (
+        <RollupTaskShortcuts
+          selection={useBulkSelectionStore}
+          board={project}
+        />
+      ) : (
+        <BulkToolbar />
+      )}
     </DndContext>
   );
 }

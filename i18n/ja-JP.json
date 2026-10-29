@@ -3069,6 +3069,7 @@
 			"loadError": "タスクの読み込みに失敗しました。",
 			"dayTasksAriaLabel": "{{date}}のすべてのタスクを表示",
 			"taskAriaLabel": "{{title}}、{{range}}: タスクを開く",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "今月の予定はありません"
 		},
 		"gantt": {

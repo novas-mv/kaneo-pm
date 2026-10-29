@@ -43,6 +43,9 @@ vi.mock("@/hooks/queries/task/use-get-group-tasks", () => ({
     },
   }),
 }));
+vi.mock("@/hooks/use-task-sheet-project-id", () => ({
+  useTaskSheetProjectId: (_shown: unknown, _taskId: unknown, id: string) => id,
+}));
 vi.mock("@/components/project/rollup-scope", () => ({
   RollupScope: ({ children }: { children: ReactNode }) => children,
 }));

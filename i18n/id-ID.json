@@ -3201,6 +3201,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Bulan sebelumnya",
 			"taskAriaLabel": "{{title}}, {{range}}: buka tugas",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Hari ini",
 			"loadError": "Gagal memuat tugas.",

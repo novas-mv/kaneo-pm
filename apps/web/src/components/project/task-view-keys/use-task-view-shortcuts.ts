@@ -26,6 +26,8 @@ type TaskViewShortcutsOptions = {
   getGroups: () => TaskGroup[];
   getMoveGroups?: () => TaskGroup[];
   project: { id: string; workspaceId: string } | null | undefined;
+  /** A rolled-up view's tasks belong to other projects; route each to its own. */
+  getTaskProjectId?: (taskId: string) => string | undefined;
   enabled?: boolean;
   canMove?: boolean;
   canSelect?: boolean;
@@ -43,6 +45,7 @@ export function useTaskViewShortcuts({
   getGroups,
   getMoveGroups = getGroups,
   project,
+  getTaskProjectId,
   enabled = true,
   canMove = false,
   canSelect = true,
@@ -62,7 +65,7 @@ export function useTaskViewShortcuts({
           to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
           params: {
             workspaceId: project.workspaceId,
-            projectId: project.id,
+            projectId: getTaskProjectId?.(taskId) ?? project.id,
             taskId,
           },
         } as const)

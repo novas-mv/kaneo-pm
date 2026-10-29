@@ -1,6 +1,7 @@
 import enUS from "@i18n/en-US.json";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { RollupContext } from "@/components/project/rollup-context";
 import CalendarTaskBar from "./calendar-task-bar";
 
 afterEach(() => {
@@ -111,5 +112,44 @@ describe("CalendarTaskBar", () => {
     const taskBar = screen.getByRole("button");
     expect(taskBar).toHaveAttribute("data-task-status", status);
     expect(taskBar).toHaveClass(expectedClass);
+  });
+
+  it("announces another project's name on a rolled-up calendar", () => {
+    render(
+      <RollupContext.Provider
+        value={{
+          projectId: "parent",
+          projects: new Map([
+            ["parent", { name: "DiveOS", slug: "DIVE" }],
+            ["child", { name: "Migration", slug: "MIG" }],
+          ]),
+        }}
+      >
+        <CalendarTaskBar
+          segment={{
+            ...segment,
+            task: { ...segment.task, projectId: "child" },
+          }}
+          projectSlug="DIVE"
+          onOpenTask={vi.fn()}
+        />
+        <CalendarTaskBar
+          segment={{
+            ...segment,
+            task: { ...segment.task, id: "t2", projectId: "parent" },
+          }}
+          projectSlug="DIVE"
+          onOpenTask={vi.fn()}
+        />
+      </RollupContext.Provider>,
+    );
+
+    const [child, own] = screen.getAllByRole("button");
+    expect(child).toHaveAccessibleName(
+      "Design review, Migration, 2026-08-10 – 2026-08-12: open task",
+    );
+    expect(own).toHaveAccessibleName(
+      "Design review, 2026-08-10 – 2026-08-12: open task",
+    );
   });
 });

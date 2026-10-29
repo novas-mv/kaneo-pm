@@ -3069,6 +3069,7 @@
 			"loadError": "載入任務失敗。",
 			"dayTasksAriaLabel": "查看 {{date}} 的所有任務",
 			"taskAriaLabel": "{{title}}，{{range}}：開啟任務",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "本月沒有排程"
 		},
 		"gantt": {

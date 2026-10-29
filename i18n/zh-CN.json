@@ -3069,6 +3069,7 @@
 			"loadError": "任务加载失败。",
 			"dayTasksAriaLabel": "查看 {{date}} 的全部任务",
 			"taskAriaLabel": "{{title}}，{{range}}：打开任务",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "本月没有安排"
 		},
 		"gantt": {

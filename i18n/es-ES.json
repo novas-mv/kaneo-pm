@@ -3324,6 +3324,7 @@
 			"pageTitle": "{{name}} / Calendario",
 			"previousMonth": "Mes anterior",
 			"taskAriaLabel": "{{title}}, {{range}}: abrir tarea",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Calendario",
 			"today": "Hoy",
 			"loadError": "No se pudieron cargar las tareas.",

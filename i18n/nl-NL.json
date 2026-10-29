@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Vorige maand",
 			"taskAriaLabel": "{{title}}, {{range}}: taak openen",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Vandaag",
 			"loadError": "Taken konden niet worden geladen.",

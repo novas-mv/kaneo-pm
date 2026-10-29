@@ -27,10 +27,12 @@ import { moveBoardTask } from "./move-task";
 import { useDragPreview } from "./drag-preview/use-drag-preview";
 import { useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
+import { RollupTaskShortcuts } from "@/components/bulk-selection/rollup-task-shortcuts";
 import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useProjectBackground } from "@/hooks/use-project-background";
 import { cn } from "@/lib/cn";
+import { findTaskProjectId } from "@/lib/group-board";
 import { EASE_OUT_CSS } from "@/lib/motion";
 import { useBackgroundStore } from "@/store/background";
 import useBulkSelectionStore from "@/store/bulk-selection";
@@ -285,6 +287,7 @@ function KanbanBoard({
     enabled: activeId === null,
     canMove: !disableDragDrop,
     canSelect: !isRollup,
+    getTaskProjectId: (taskId) => findTaskProjectId(project, taskId),
     onMove: (activeId, overId) => queueMove({ activeId, overId }),
   });
 
@@ -407,7 +410,14 @@ function KanbanBoard({
         ) : null}
       </DragOverlay>
 
-      {!isRollup && <BulkToolbar />}
+      {isRollup ? (
+        <RollupTaskShortcuts
+          selection={useBulkSelectionStore}
+          board={project}
+        />
+      ) : (
+        <BulkToolbar />
+      )}
     </DndContext>
   );
 }

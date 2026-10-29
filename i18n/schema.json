@@ -12861,6 +12861,9 @@
 						"taskAriaLabel": {
 							"type": "string"
 						},
+						"taskInProjectAriaLabel": {
+							"type": "string"
+						},
 						"noTasksThisMonth": {
 							"type": "string"
 						}
@@ -12876,6 +12879,7 @@
 						"loadError",
 						"dayTasksAriaLabel",
 						"taskAriaLabel",
+						"taskInProjectAriaLabel",
 						"noTasksThisMonth"
 					]
 				},

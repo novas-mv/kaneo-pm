@@ -19,10 +19,12 @@ import { useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
+import { RollupTaskShortcuts } from "@/components/bulk-selection/rollup-task-shortcuts";
 import { useRollup } from "@/components/project/rollup-context";
 import { useTaskViewShortcuts } from "@/components/project/task-view-keys/use-task-view-shortcuts";
 import { useCollapsedSections } from "@/hooks/use-collapsed-sections";
 import { cn } from "@/lib/cn";
+import { findTaskProjectId } from "@/lib/group-board";
 import useBacklogBulkSelectionStore from "@/store/backlog-bulk-selection";
 import useProjectStore from "@/store/project";
 import type { ProjectWithTasks } from "@/types/project";
@@ -258,6 +260,7 @@ function BacklogListView({
     enabled: activeId === null,
     canMove: !disableDragDrop,
     canSelect: !isRollup,
+    getTaskProjectId: (taskId) => findTaskProjectId(project, taskId),
     onMove: moveTask,
     onToggleGroup: toggleSection,
     onToggleAllGroups: () => toggleAllSections(["planned", "archived"]),
@@ -355,7 +358,14 @@ function BacklogListView({
         status={activeColumn ?? "planned"}
       />
 
-      {!isRollup && <BacklogBulkToolbar />}
+      {isRollup ? (
+        <RollupTaskShortcuts
+          selection={useBacklogBulkSelectionStore}
+          board={project}
+        />
+      ) : (
+        <BacklogBulkToolbar />
+      )}
     </DndContext>
   );
 }

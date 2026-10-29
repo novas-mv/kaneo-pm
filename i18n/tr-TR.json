@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / Takvim",
 			"previousMonth": "Önceki ay",
 			"taskAriaLabel": "{{title}}, {{range}}: talebi aç",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Takvim",
 			"today": "Bugün",
 			"loadError": "Talepler yüklenemedi.",

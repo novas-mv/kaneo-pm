@@ -2,7 +2,11 @@ import { isBefore, isToday, startOfToday } from "date-fns";
 import { type JSX, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ProjectTag } from "@/components/project/project-tag";
-import { slugFor, useRollup } from "@/components/project/rollup-context";
+import {
+  otherProjectName,
+  slugFor,
+  useRollup,
+} from "@/components/project/rollup-context";
 import { cn } from "@/lib/cn";
 import { formatDate, formatDateShort } from "@/lib/format";
 import {
@@ -93,10 +97,18 @@ export default function MonthAgenda({
                     <button
                       type="button"
                       onClick={() => onOpenTask(task.id)}
-                      aria-label={t("tasks:calendar.taskAriaLabel", {
-                        title: task.title,
-                        range,
-                      })}
+                      aria-label={
+                        otherProjectName(rollup, task.projectId)
+                          ? t("tasks:calendar.taskInProjectAriaLabel", {
+                              title: task.title,
+                              project: otherProjectName(rollup, task.projectId),
+                              range,
+                            })
+                          : t("tasks:calendar.taskAriaLabel", {
+                              title: task.title,
+                              range,
+                            })
+                      }
                       data-task-status={task.status}
                       className={cn(
                         "flex min-h-11 w-full flex-col justify-center gap-0.5 rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",

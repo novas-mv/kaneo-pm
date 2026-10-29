@@ -3121,6 +3121,7 @@
 			"loadError": "Failed to load tasks.",
 			"dayTasksAriaLabel": "Show all tasks for {{date}}",
 			"taskAriaLabel": "{{title}}, {{range}}: open task",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "Nothing scheduled this month"
 		},
 		"gantt": {

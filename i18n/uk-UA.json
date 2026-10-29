@@ -3363,6 +3363,7 @@
 			"pageTitle": "{{name}} / Календар",
 			"previousMonth": "Попередній місяць",
 			"taskAriaLabel": "{{title}}, {{range}}: відкрити завдання",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Календар",
 			"today": "Сьогодні",
 			"loadError": "Не вдалося завантажити завдання.",

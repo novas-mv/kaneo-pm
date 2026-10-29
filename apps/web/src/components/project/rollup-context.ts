@@ -18,6 +18,15 @@ export function useRollup() {
   return useContext(RollupContext);
 }
 
+/** A task's project name when it is not the open project, for tags. */
+export function otherProjectName(
+  rollup: Rollup | null,
+  projectId: string | undefined,
+) {
+  if (!rollup || !projectId || projectId === rollup.projectId) return undefined;
+  return rollup.projects.get(projectId)?.name;
+}
+
 /** The slug that prefixes a task's number, from its own project. */
 export function slugFor(
   rollup: Rollup | null,

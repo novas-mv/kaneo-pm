@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / कैलेंडर",
 			"previousMonth": "पिछला महीना",
 			"taskAriaLabel": "{{title}}, {{range}}: कार्य खोलें",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "कैलेंडर",
 			"today": "आज",
 			"loadError": "कार्य लोड नहीं हो सके।",

@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / Ημερολόγιο",
 			"previousMonth": "Προηγούμενος μήνας",
 			"taskAriaLabel": "{{title}}, {{range}}: άνοιγμα εργασίας",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Ημερολόγιο",
 			"today": "Σήμερα",
 			"loadError": "Αποτυχία φόρτωσης εργασιών.",

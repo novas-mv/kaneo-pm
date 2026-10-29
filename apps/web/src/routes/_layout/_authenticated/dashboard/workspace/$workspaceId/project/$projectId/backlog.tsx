@@ -18,7 +18,7 @@ import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
-import { findTaskProjectId } from "@/lib/group-board";
+import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { sortTasks } from "@/lib/sort-tasks";
 import { countBacklogTasks } from "@/lib/task-filters/count-tasks";
@@ -53,6 +53,7 @@ function RouteComponent() {
   const [moveAllCount, setMoveAllCount] = useState(0);
   const { mutate: updateTask } = useUpdateTask();
   const { sort, setSort } = useBoardSort(projectId, "backlog");
+  const sheetProjectId = useTaskSheetProjectId(shownProject, taskId, projectId);
   const view = useProjectTaskView({
     project: shownProject,
     projectId,
@@ -222,7 +223,7 @@ function RouteComponent() {
 
           <TaskDetailsSheet
             taskId={taskId}
-            projectId={findTaskProjectId(shownProject, taskId) ?? projectId}
+            projectId={sheetProjectId}
             workspaceId={workspaceId}
             onClose={handleCloseTaskSheet}
           />

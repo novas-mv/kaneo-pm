@@ -31,7 +31,7 @@ import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Button } from "@/components/ui/button";
 import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
-import { findTaskProjectId } from "@/lib/group-board";
+import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 import { getStatusLabel } from "@/lib/i18n/domain";
@@ -57,6 +57,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { data: project, childIds } = useGetGroupTasks(projectId);
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
+  const sheetProjectId = useTaskSheetProjectId(project, taskId, projectId);
   const view = useProjectTaskView({
     project,
     projectId,
@@ -572,7 +573,7 @@ function RouteComponent() {
 
           <TaskDetailsSheet
             taskId={taskId}
-            projectId={findTaskProjectId(project, taskId) ?? projectId}
+            projectId={sheetProjectId}
             workspaceId={workspaceId}
             onClose={() =>
               navigate({

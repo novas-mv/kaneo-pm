@@ -3415,6 +3415,7 @@
 			"pageTitle": "{{name}} / Календарь",
 			"previousMonth": "Предыдущий месяц",
 			"taskAriaLabel": "{{title}}, {{range}}: открыть задачу",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Календарь",
 			"today": "Сегодня",
 			"loadError": "Не удалось загрузить задачи.",

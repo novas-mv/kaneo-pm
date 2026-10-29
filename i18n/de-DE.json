@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Vorheriger Monat",
 			"taskAriaLabel": "{{title}}, {{range}}: Aufgabe öffnen",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Heute",
 			"loadError": "Aufgaben konnten nicht geladen werden.",

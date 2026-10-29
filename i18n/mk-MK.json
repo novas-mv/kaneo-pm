@@ -3255,6 +3255,7 @@
 			"pageTitle": "{{name}} / Календар",
 			"previousMonth": "Претходен месец",
 			"taskAriaLabel": "{{title}}, {{range}}: отвори задача",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Календар",
 			"today": "Денес",
 			"loadError": "Неуспешно вчитување на задачите.",
