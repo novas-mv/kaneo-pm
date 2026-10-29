@@ -139,11 +139,11 @@ export function NavProjects() {
 
   // Built once per list, not per row render.
   const groupTargetsById = useMemo(() => {
-    const list = projects ?? [];
+    const list = canReorder ? (projects ?? []) : [];
     return new Map(
       list.map((project) => [project.id, groupTargets(list, project.id)]),
     );
-  }, [projects]);
+  }, [projects, canReorder]);
 
   const onGroupError = (error: Error) => {
     // The API answers every nesting-rule failure with one 400.

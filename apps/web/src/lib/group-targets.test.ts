@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { groupTargets } from "./group-targets";
+import { nestDropId, resolveProjectDrop } from "./project-tree";
 
 const project = (id: string, parentProjectId: string | null = null) => ({
   id,
@@ -36,5 +37,25 @@ describe("groupTargets", () => {
 
     expect(groupTargets(projects, "a").map((p) => p.id)).toEqual(["orphan"]);
     expect(groupTargets(projects, "orphan").map((p) => p.id)).toEqual(["a"]);
+  });
+
+  it("matches the projects a sidebar drop would nest into", () => {
+    const projects = [
+      project("a"),
+      project("b"),
+      project("child", "a"),
+      project("grandchild", "child"),
+      project("orphan", "gone"),
+    ];
+
+    for (const { id } of projects) {
+      const dropTargets = projects.filter(
+        (target) =>
+          resolveProjectDrop(projects, id, nestDropId(target.id)).type ===
+          "nest",
+      );
+      const isTopLevel = !["child"].includes(id);
+      expect(groupTargets(projects, id)).toEqual(isTopLevel ? dropTargets : []);
+    }
   });
 });
