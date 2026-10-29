@@ -2374,7 +2374,8 @@
 			"deletedToast": "Proyek dihapus",
 			"deleteProject": "Hapus Proyek",
 			"switcherLabel": "Ganti proyek atau tampilan",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Cari tugas, proyek, komentar...",
@@ -3363,7 +3364,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Cari",

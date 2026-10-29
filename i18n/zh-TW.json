@@ -2374,7 +2374,8 @@
 			"deletedToast": "專案已刪除",
 			"deleteProject": "刪除專案",
 			"switcherLabel": "切換專案或檢視",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "搜尋任務、專案、留言...",
@@ -3363,7 +3364,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "搜尋",

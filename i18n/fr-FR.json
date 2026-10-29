@@ -2458,7 +2458,8 @@
 			"deletedToast": "Projet supprimé",
 			"deleteProject": "Supprimer le projet",
 			"switcherLabel": "Changer de projet ou de vue",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Rechercher des tâches, projets, commentaires...",
@@ -3493,7 +3494,8 @@
 				"notFoundDescription": "Ce projet n'existe pas ou a été supprimé.",
 				"notFoundTitle": "Projet introuvable"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Rechercher",

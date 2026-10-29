@@ -41,6 +41,8 @@ import useSetProjectParent from "@/hooks/mutations/project/use-set-project-paren
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { groupTargets } from "@/lib/group-targets";
+import { HttpError } from "@/lib/http-error";
 import {
   buildProjectTree,
   moveProject,
@@ -135,8 +137,28 @@ export function NavProjects() {
     });
   };
 
-  const onGroupError = () => {
-    toast.error(t("workspace:projects.groupError"));
+  // Built once per list, not per row render.
+  const groupTargetsById = useMemo(() => {
+    const list = projects ?? [];
+    return new Map(
+      list.map((project) => [project.id, groupTargets(list, project.id)]),
+    );
+  }, [projects]);
+
+  const onGroupError = (error: Error) => {
+    // The API answers every nesting-rule failure with one 400.
+    toast.error(
+      error instanceof HttpError && error.status === 400
+        ? t("workspace:projects.groupNotAllowed")
+        : t("workspace:projects.groupError"),
+    );
+  };
+
+  const moveIntoGroup = (projectId: string, parentProjectId: string) => {
+    if (!workspace) return;
+    setParent(workspace.id, projectId, parentProjectId, {
+      onError: onGroupError,
+    });
   };
 
   const removeFromGroup = (projectId: string) => {
@@ -224,6 +246,12 @@ export function NavProjects() {
       }}
       onRemoveFromGroup={
         isChild && canReorder ? () => removeFromGroup(project.id) : undefined
+      }
+      groupTargets={groupTargetsById.get(project.id)}
+      onMoveIntoGroup={
+        !isChild && canReorder
+          ? (parentProjectId) => moveIntoGroup(project.id, parentProjectId)
+          : undefined
       }
     />
   );

@@ -2458,7 +2458,8 @@
 			"deletedToast": "Progetto eliminato",
 			"deleteProject": "Elimina Progetto",
 			"switcherLabel": "Cambia progetto o vista",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Cerca attività, progetti, commenti...",
@@ -3493,7 +3494,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Cerca",

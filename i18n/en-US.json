@@ -2416,7 +2416,8 @@
 			"deletedToast": "Project deleted",
 			"deleteProject": "Delete Project",
 			"switcherLabel": "Switch project or view",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Search tasks, projects, comments...",
@@ -3422,6 +3423,7 @@
 			"reorderHandle": "Reorder project",
 			"reorderError": "Failed to reorder projects",
 			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"noAccessTitle": "You don't have access to this project",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

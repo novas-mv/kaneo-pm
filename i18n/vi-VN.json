@@ -2374,7 +2374,8 @@
 			"deletedToast": "Đã xóa dự án",
 			"deleteProject": "Xóa dự án",
 			"switcherLabel": "Chuyển dự án hoặc chế độ xem",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Tìm công việc, dự án, bình luận...",
@@ -3357,6 +3358,7 @@
 			"reorderHandle": "Sắp xếp lại dự án",
 			"reorderError": "Không thể sắp xếp lại dự án",
 			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"backToWorkspace": "Back to workspace",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

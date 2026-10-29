@@ -2508,7 +2508,8 @@
 			"deletedToast": "Проект удалён",
 			"deleteProject": "Удалить проект",
 			"switcherLabel": "Сменить проект или вид",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Поиск задач, проектов, комментариев...",
@@ -3610,7 +3611,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Поиск",

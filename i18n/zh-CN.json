@@ -2374,7 +2374,8 @@
 			"deletedToast": "项目已删除",
 			"deleteProject": "删除项目",
 			"switcherLabel": "切换项目或视图",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "搜索任务、项目、评论…",
@@ -3363,7 +3364,8 @@
 				"notFoundDescription": "此项目不存在或已被删除。",
 				"notFoundTitle": "没有找到项目"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "搜索",

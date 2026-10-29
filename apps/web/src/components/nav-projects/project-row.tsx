@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
   Folder,
+  FolderInput,
   FolderOutput,
   Forward,
   LinkIcon,
@@ -15,6 +16,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
@@ -28,6 +32,8 @@ type RowProject = {
   statistics: { completionPercentage: number };
 };
 
+type GroupTarget = { id: string; name: string; icon: string | null };
+
 export function ProjectRow({
   project,
   workspaceId,
@@ -36,6 +42,8 @@ export function ProjectRow({
   onOpen,
   onDelete,
   onRemoveFromGroup,
+  groupTargets,
+  onMoveIntoGroup,
 }: {
   project: RowProject;
   workspaceId: string;
@@ -45,6 +53,9 @@ export function ProjectRow({
   onDelete: () => void;
   /** Set only for child rows the viewer may regroup. */
   onRemoveFromGroup?: () => void;
+  /** Projects this row can be nested into; empty or unset hides the item. */
+  groupTargets?: GroupTarget[];
+  onMoveIntoGroup?: (parentProjectId: string) => void;
 }) {
   const { t } = useTranslation();
   const { isMobile } = useSidebar();
@@ -120,6 +131,30 @@ export function ProjectRow({
             <Settings className="text-muted-foreground" />
             <span>{t("navigation:projectList.projectSettings")}</span>
           </DropdownMenuItem>
+          {onMoveIntoGroup && groupTargets && groupTargets.length > 0 && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="h-7 cursor-pointer text-sm">
+                <FolderInput className="text-muted-foreground" />
+                <span>{t("navigation:projectList.moveIntoGroup")}</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="max-h-72 min-w-40 rounded-lg">
+                {groupTargets.map((target) => {
+                  const TargetIcon =
+                    icons[target.icon as keyof typeof icons] || icons.Layout;
+                  return (
+                    <DropdownMenuItem
+                      key={target.id}
+                      className="h-7 cursor-pointer text-sm"
+                      onClick={() => onMoveIntoGroup(target.id)}
+                    >
+                      <TargetIcon className="text-muted-foreground" />
+                      <span className="truncate">{target.name}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
           {onRemoveFromGroup && (
             <DropdownMenuItem
               className="h-7 items-start cursor-pointer text-sm"

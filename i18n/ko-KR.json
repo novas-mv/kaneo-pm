@@ -2374,7 +2374,8 @@
 			"deletedToast": "프로젝트가 삭제되었습니다",
 			"deleteProject": "프로젝트 삭제",
 			"switcherLabel": "프로젝트 또는 보기 전환",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "작업, 프로젝트, 댓글 검색...",
@@ -3363,7 +3364,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "검색",

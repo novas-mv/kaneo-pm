@@ -2500,7 +2500,8 @@
 			"deletedToast": "Проєкт видалено",
 			"deleteProject": "Видалити проєкт",
 			"switcherLabel": "Змінити проєкт або вигляд",
-			"removeFromGroup": "Remove from group"
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Пошук завдань, проєктів, коментарів...",
@@ -3558,7 +3559,8 @@
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
 			},
-			"groupError": "Failed to update project group"
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Пошук",

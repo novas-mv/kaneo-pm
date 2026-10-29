@@ -10250,6 +10250,9 @@
 						},
 						"removeFromGroup": {
 							"type": "string"
+						},
+						"moveIntoGroup": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -10263,7 +10266,8 @@
 						"deletedToast",
 						"deleteProject",
 						"switcherLabel",
-						"removeFromGroup"
+						"removeFromGroup",
+						"moveIntoGroup"
 					]
 				},
 				"search": {
@@ -13933,6 +13937,9 @@
 						"groupError": {
 							"type": "string"
 						},
+						"groupNotAllowed": {
+							"type": "string"
+						},
 						"unavailable": {
 							"type": "object",
 							"additionalProperties": false,
@@ -13978,6 +13985,7 @@
 						"reorderHandle",
 						"reorderError",
 						"groupError",
+						"groupNotAllowed",
 						"unavailable"
 					]
 				},
