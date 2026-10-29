@@ -26,8 +26,11 @@ type TaskViewShortcutsOptions = {
   getGroups: () => TaskGroup[];
   getMoveGroups?: () => TaskGroup[];
   project: { id: string; workspaceId: string } | null | undefined;
+  /** A rolled-up view's tasks belong to other projects; route each to its own. */
+  getTaskProjectId?: (taskId: string) => string | undefined;
   enabled?: boolean;
   canMove?: boolean;
+  canSelect?: boolean;
   onMove?: (taskId: string, overId: string) => void;
   onToggleGroup?: (groupId: string) => void;
   onToggleAllGroups?: () => void;
@@ -42,8 +45,10 @@ export function useTaskViewShortcuts({
   getGroups,
   getMoveGroups = getGroups,
   project,
+  getTaskProjectId,
   enabled = true,
   canMove = false,
+  canSelect = true,
   onMove,
   onToggleGroup,
   onToggleAllGroups,
@@ -60,7 +65,7 @@ export function useTaskViewShortcuts({
           to: "/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId",
           params: {
             workspaceId: project.workspaceId,
-            projectId: project.id,
+            projectId: getTaskProjectId?.(taskId) ?? project.id,
             taskId,
           },
         } as const)
@@ -143,6 +148,7 @@ export function useTaskViewShortcuts({
   const movable = { enabled: enabled && canMove && Boolean(onMove) };
   const boardMovable = { enabled: movable.enabled && layout === "board" };
   const grouped = { enabled: enabled && Boolean(onToggleGroup) };
+  const selectable = { enabled: enabled && canSelect };
 
   useShortcut("nextTask", () => step("down"), active);
   useShortcut("previousTask", () => step("up"), active);
@@ -180,7 +186,7 @@ export function useTaskViewShortcuts({
       const taskId = focused();
       if (taskId) selection.getState().toggleSelection(taskId);
     },
-    active,
+    selectable,
   );
   useShortcut(
     "selectGroup",
@@ -188,7 +194,7 @@ export function useTaskViewShortcuts({
       withFocusedGroup((group) =>
         selection.getState().selectTasks(group.taskIds),
       ),
-    active,
+    selectable,
   );
 
   useShortcut(

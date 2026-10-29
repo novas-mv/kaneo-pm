@@ -9,7 +9,8 @@ import {
 
 type BacklogToolbarActionsProps = {
   onPlan: () => void;
-  onMoveAll: () => void;
+  /** Absent on a rolled-up backlog, where it would not cover every task. */
+  onMoveAll?: () => void;
 };
 
 export function BacklogToolbarActions({
@@ -37,21 +38,23 @@ export function BacklogToolbarActions({
         </TooltipTrigger>
         <TooltipContent>{planLabel}</TooltipContent>
       </Tooltip>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={moveAllLabel}
-              onClick={onMoveAll}
-            />
-          }
-        >
-          <ArrowRight />
-        </TooltipTrigger>
-        <TooltipContent>{moveAllLabel}</TooltipContent>
-      </Tooltip>
+      {onMoveAll && (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={moveAllLabel}
+                onClick={onMoveAll}
+              />
+            }
+          >
+            <ArrowRight />
+          </TooltipTrigger>
+          <TooltipContent>{moveAllLabel}</TooltipContent>
+        </Tooltip>
+      )}
     </>
   );
 }

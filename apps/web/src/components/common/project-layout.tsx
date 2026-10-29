@@ -6,6 +6,7 @@ import MobileProjectNav from "@/components/common/header/mobile-project-nav";
 import ProjectCrumbSelect from "@/components/common/header/project-crumb-select";
 import WorkspaceCrumbSelect from "@/components/common/header/workspace-crumb-select";
 import Layout from "@/components/common/layout";
+import { GroupScopeSwitch } from "@/components/project/group-scope-switch";
 import { ProjectScopeToggle } from "@/components/project/views/project-scope-toggle";
 import {
   PROJECT_ROUTE_PATHS,
@@ -159,6 +160,7 @@ export default function ProjectLayout({
                 onSelect={goToView}
               />
             )}
+            <GroupScopeSwitch projectId={projectId} workspaceId={workspaceId} />
             {summary}
             <div className="ml-auto flex shrink-0 items-center gap-1">
               {toolbar}

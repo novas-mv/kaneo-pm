@@ -2437,7 +2437,9 @@
 			"deleteConfirmDescription": "Dadurch wird das Projekt und alle zugehörigen Daten dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
 			"deletedToast": "Projekt gelöscht",
 			"deleteProject": "Projekt löschen",
-			"switcherLabel": "Projekt oder Ansicht wechseln"
+			"switcherLabel": "Projekt oder Ansicht wechseln",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Aufgaben, Projekte, Kommentare suchen...",
@@ -3276,6 +3278,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Vorheriger Monat",
 			"taskAriaLabel": "{{title}}, {{range}}: Aufgabe öffnen",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Heute",
 			"loadError": "Aufgaben konnten nicht geladen werden.",
@@ -3377,6 +3380,11 @@
 			"startsOn": "Beginnt {{date}}",
 			"beforeStart": "{{date}} liegt vor dem Startdatum",
 			"afterDue": "{{date}} liegt nach dem Fälligkeitsdatum"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3442,7 +3450,9 @@
 				"noAccessTitle": "Du hast keinen Zugriff auf dieses Projekt",
 				"notFoundDescription": "Dieses Projekt existiert nicht oder wurde gelöscht.",
 				"notFoundTitle": "Projekt nicht gefunden"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Suche",

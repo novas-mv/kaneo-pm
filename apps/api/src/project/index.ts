@@ -35,8 +35,13 @@ import getProjectCtrl from "./controllers/get-project";
 import getProjectsCtrl from "./controllers/get-projects";
 import moveProjectCtrl from "./controllers/move-project";
 import reorderProjectsCtrl from "./controllers/reorder-projects";
+import setProjectParentCtrl from "./controllers/set-project-parent";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
+import {
+  redactHiddenParent,
+  redactHiddenParents,
+} from "./redact-hidden-parents";
 import {
   movedProjectSchema,
   projectBackgroundFinalizeSchema,
@@ -52,6 +57,7 @@ import {
   moveProjectBody,
   projectParam,
   reorderProjectsBody,
+  setProjectParentBody,
   updateProjectBody,
   uploadProjectBackgroundBody,
   workspaceIdQuery,
@@ -187,6 +193,39 @@ const reorderProjectsRoute = createRoute({
       "Missing project:update permission, or no access to a listed project",
     ),
     404: errorResponse("Workspace not found"),
+  },
+});
+
+const setProjectParentRoute = createRoute({
+  method: "put",
+  operationId: "setProjectParent",
+  path: "/{id}/parent",
+  tags: ["Projects"],
+  summary: "Set a project's parent",
+  description:
+    "Nest a project under another project in the same workspace, or pass null to make it top-level. Only one level is allowed: the parent cannot itself be a child or archived, and a project with children cannot become a child. Setting the current parent again changes nothing.",
+  middleware: [
+    workspaceAccess.fromProject("id"),
+    requireWorkspacePermission({ project: ["update"] }),
+  ] as const,
+  request: {
+    params: projectParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: setProjectParentBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The updated project", projectSchema),
+    400: errorResponse(
+      "The nesting is not allowed (itself, a parent that is archived or is a child of an unarchived project, or a project that has unarchived children). Every nesting-rule failure returns the same message.",
+    ),
+    403: errorResponse(
+      "Missing project:update permission, or no access to the project",
+    ),
+    404: errorResponse(
+      "Project not found, or a parent project that does not exist, is not accessible, or is in another workspace",
+    ),
   },
 });
 
@@ -458,7 +497,10 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const projectData = await getProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(projectData), 200);
+    return c.json(
+      await redactHiddenParent(toPublicProject(projectData), c.get("userId")),
+      200,
+    );
   })
   .openapi(getProjectBackgroundRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -533,7 +575,26 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       c.get("userId"),
       projects,
     );
-    return c.json(reordered.map(toPublicProject), 200);
+    return c.json(
+      await redactHiddenParents(
+        reordered.map(toPublicProject),
+        c.get("userId"),
+      ),
+      200,
+    );
+  })
+  .openapi(setProjectParentRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { parentProjectId } = c.req.valid("json");
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(
+          await setProjectParentCtrl(id, parentProjectId, c.get("userId")),
+        ),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(updateProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -549,25 +610,49 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       workspaceId,
       await hasWorkspacePermission(c, { project: ["share"] }),
     );
-    return c.json(toPublicProject(updatedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(updatedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(deleteProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const deletedProject = await deleteProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(deletedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(deletedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(archiveProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const archivedProject = await archiveProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(archivedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(archivedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(unarchiveProjectRoute, async (c) => {
     const { id } = c.req.valid("param");
     const workspaceId = c.get("workspaceId");
     const unarchivedProject = await unarchiveProjectCtrl(id, workspaceId);
-    return c.json(toPublicProject(unarchivedProject), 200);
+    return c.json(
+      await redactHiddenParent(
+        toPublicProject(unarchivedProject),
+        c.get("userId"),
+      ),
+      200,
+    );
   })
   .openapi(uploadProjectBackgroundRoute, async (c) => {
     const { id } = c.req.valid("param");

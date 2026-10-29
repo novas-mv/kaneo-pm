@@ -2437,7 +2437,9 @@
 			"deleteConfirmDescription": "Bu, projeyi ve tüm verilerini kalıcı olarak kaldıracak. Bu işlemi geri alamazsınız.",
 			"deletedToast": "Proje silindi",
 			"deleteProject": "Projeyi Sil",
-			"switcherLabel": "Proje veya görünüm değiştir"
+			"switcherLabel": "Proje veya görünüm değiştir",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Talep, proje, yorum ara...",
@@ -3276,6 +3278,7 @@
 			"pageTitle": "{{name}} / Takvim",
 			"previousMonth": "Önceki ay",
 			"taskAriaLabel": "{{title}}, {{range}}: talebi aç",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Takvim",
 			"today": "Bugün",
 			"loadError": "Talepler yüklenemedi.",
@@ -3377,6 +3380,11 @@
 			"startsOn": "Başlangıç: {{date}}",
 			"beforeStart": "{{date}} başlangıç tarihinden önce",
 			"afterDue": "{{date}} bitiş tarihinden sonra"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3442,7 +3450,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Ara",

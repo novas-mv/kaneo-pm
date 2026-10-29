@@ -5,6 +5,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ProjectTag } from "@/components/project/project-tag";
+import { slugFor, useRollup } from "@/components/project/rollup-context";
 import { formatDate, formatDateShort } from "@/lib/format";
 import type { CalendarTask } from "./calendar-task-bar";
 
@@ -26,6 +28,7 @@ export default function DayOverflowPopover({
 }: DayOverflowPopoverProps): JSX.Element {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const rollup = useRollup();
 
   const dayLabel = formatDate(day, {
     weekday: "long",
@@ -59,9 +62,10 @@ export default function DayOverflowPopover({
                 onClick={() => handleSelectTask(task.id)}
                 className="flex w-full min-w-0 flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
+                {task.projectId && <ProjectTag projectId={task.projectId} />}
                 {projectSlug && task.number != null ? (
                   <span className="truncate text-[10px] text-muted-foreground">
-                    {projectSlug}-{task.number}
+                    {slugFor(rollup, task.projectId, projectSlug)}-{task.number}
                   </span>
                 ) : null}
                 <span className="w-full truncate text-xs font-medium text-foreground">

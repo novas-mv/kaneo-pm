@@ -618,7 +618,9 @@
 			"deleteConfirmDescription": "Spowoduje to trwałe usunięcie projektu i wszystkich jego danych. Nie można tego cofnąć.",
 			"deletedToast": "Projekt usunięty",
 			"deleteProject": "Usuń projekt",
-			"switcherLabel": "Przełącz projekt lub widok"
+			"switcherLabel": "Przełącz projekt lub widok",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Szukaj zadań, projektów i komentarzy...",
@@ -890,7 +892,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Szukaj",
@@ -3481,6 +3485,7 @@
 			"loadError": "Nie udało się załadować zadań.",
 			"dayTasksAriaLabel": "Pokaż wszystkie zadania z dnia {{date}}",
 			"taskAriaLabel": "{{title}}, {{range}}: otwórz zadanie",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "Nic nie zaplanowano w tym miesiącu"
 		},
 		"gantt": {
@@ -3833,6 +3838,11 @@
 			"startsOn": "Początek: {{date}}",
 			"beforeStart": "{{date}} jest przed datą rozpoczęcia",
 			"afterDue": "{{date}} jest po terminie"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"press": {

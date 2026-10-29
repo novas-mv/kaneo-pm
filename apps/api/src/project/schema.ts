@@ -46,3 +46,10 @@ export const finalizeProjectBackgroundBody = z.object({
   size: z.number(),
 });
 export const moveProjectBody = z.object({ workspaceId: z.string().min(1) });
+
+export const setProjectParentBody = z.object({
+  parentProjectId: z.string().nullable().openapi({
+    description:
+      "The project to nest under, or null to make this a top-level project. Only one level of nesting is allowed.",
+  }),
+});

@@ -8,6 +8,7 @@ import MonthGrid from "@/components/calendar/month-grid";
 import { buildMonthWeeks } from "@/components/calendar/month-grid-model";
 import ProjectLayout from "@/components/common/project-layout";
 import PageTitle from "@/components/page-title";
+import { RollupScope } from "@/components/project/rollup-scope";
 import { DisplaySection } from "@/components/project/display/display-section";
 import { WeekStartControl } from "@/components/project/display/week-start-control";
 import { ActiveFiltersBar } from "@/components/project/task-filters/active-filters-bar";
@@ -16,7 +17,8 @@ import { TaskCount } from "@/components/project/toolbar/task-count";
 import { useProjectTaskView } from "@/components/project/toolbar/use-project-task-view";
 import { LayoutSwitch } from "@/components/project/views/layout-switch";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
-import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
+import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
+import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toScheduledTasks } from "@/lib/task-schedule";
 import { useUserPreferencesStore } from "@/store/user-preferences";
@@ -44,9 +46,15 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data: project, isLoading, isError } = useGetTasks(projectId);
+  const {
+    data: project,
+    isLoading,
+    isError,
+    childIds,
+  } = useGetGroupTasks(projectId);
   const weekStartsOn = useUserPreferencesStore((state) => state.weekStartsOn);
   const isMobile = useIsMobile();
+  const sheetProjectId = useTaskSheetProjectId(project, taskId, projectId);
   const view = useProjectTaskView({
     project,
     projectId,
@@ -137,70 +145,76 @@ function RouteComponent() {
             : undefined
         }
       />
-      <div className="flex h-full min-h-0 flex-col bg-background">
-        <CalendarToolbar
-          visibleMonth={visibleMonth}
-          onPreviousMonth={handlePreviousMonth}
-          onNextMonth={handleNextMonth}
-          onToday={handleToday}
-        />
+      <RollupScope
+        projectId={projectId}
+        workspaceId={workspaceId}
+        childIds={childIds}
+      >
+        <div className="flex h-full min-h-0 flex-col bg-background">
+          <CalendarToolbar
+            visibleMonth={visibleMonth}
+            onPreviousMonth={handlePreviousMonth}
+            onNextMonth={handleNextMonth}
+            onToday={handleToday}
+          />
 
-        {isLoading ? (
-          <div className="border-b border-border/80 px-4 py-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              {t("common:empty.loading")}
-            </p>
-          </div>
-        ) : isError ? (
-          <div className="border-b border-border/80 px-4 py-3 text-center">
-            <p className="text-sm font-semibold text-destructive">
-              {t("tasks:calendar.loadError")}
-            </p>
-          </div>
-        ) : allScheduledTasks.length === 0 ? (
-          <div className="border-b border-border/80 px-4 py-3 text-center">
-            <p className="text-sm font-semibold text-foreground">
-              {t("tasks:calendar.noTasks")}
-            </p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {t("tasks:calendar.noTasksSubtitle")}
-            </p>
-          </div>
-        ) : scheduledTasks.length === 0 ? (
-          <div className="border-b border-border/80 px-4 py-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              {t("tasks:filterBar.noMatches")}
-            </p>
-          </div>
-        ) : null}
+          {isLoading ? (
+            <div className="border-b border-border/80 px-4 py-3 text-center">
+              <p className="text-sm text-muted-foreground">
+                {t("common:empty.loading")}
+              </p>
+            </div>
+          ) : isError ? (
+            <div className="border-b border-border/80 px-4 py-3 text-center">
+              <p className="text-sm font-semibold text-destructive">
+                {t("tasks:calendar.loadError")}
+              </p>
+            </div>
+          ) : allScheduledTasks.length === 0 ? (
+            <div className="border-b border-border/80 px-4 py-3 text-center">
+              <p className="text-sm font-semibold text-foreground">
+                {t("tasks:calendar.noTasks")}
+              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {t("tasks:calendar.noTasksSubtitle")}
+              </p>
+            </div>
+          ) : scheduledTasks.length === 0 ? (
+            <div className="border-b border-border/80 px-4 py-3 text-center">
+              <p className="text-sm text-muted-foreground">
+                {t("tasks:filterBar.noMatches")}
+              </p>
+            </div>
+          ) : null}
 
-        {isMobile ? (
-          scheduledTasks.length > 0 && (
-            <MonthAgenda
+          {isMobile ? (
+            scheduledTasks.length > 0 && (
+              <MonthAgenda
+                tasks={scheduledTasks}
+                visibleMonth={visibleMonth}
+                projectSlug={project?.slug}
+                onOpenTask={handleOpenTask}
+              />
+            )
+          ) : (
+            <MonthGrid
+              weeks={weeks}
               tasks={scheduledTasks}
               visibleMonth={visibleMonth}
+              maxLanes={MAX_LANES_DESKTOP}
               projectSlug={project?.slug}
               onOpenTask={handleOpenTask}
             />
-          )
-        ) : (
-          <MonthGrid
-            weeks={weeks}
-            tasks={scheduledTasks}
-            visibleMonth={visibleMonth}
-            maxLanes={MAX_LANES_DESKTOP}
-            projectSlug={project?.slug}
-            onOpenTask={handleOpenTask}
-          />
-        )}
+          )}
 
-        <TaskDetailsSheet
-          taskId={taskId}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          onClose={handleCloseTaskSheet}
-        />
-      </div>
+          <TaskDetailsSheet
+            taskId={taskId}
+            projectId={sheetProjectId}
+            workspaceId={workspaceId}
+            onClose={handleCloseTaskSheet}
+          />
+        </div>
+      </RollupScope>
     </ProjectLayout>
   );
 }

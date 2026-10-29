@@ -2521,7 +2521,9 @@
 			"deleteConfirmDescription": "Це назавжди видалить проєкт та всі його дані. Цю дію неможливо скасувати.",
 			"deletedToast": "Проєкт видалено",
 			"deleteProject": "Видалити проєкт",
-			"switcherLabel": "Змінити проєкт або вигляд"
+			"switcherLabel": "Змінити проєкт або вигляд",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Пошук завдань, проєктів, коментарів...",
@@ -3384,6 +3386,7 @@
 			"pageTitle": "{{name}} / Календар",
 			"previousMonth": "Попередній місяць",
 			"taskAriaLabel": "{{title}}, {{range}}: відкрити завдання",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Календар",
 			"today": "Сьогодні",
 			"loadError": "Не вдалося завантажити завдання.",
@@ -3507,6 +3510,11 @@
 			"startsOn": "Початок: {{date}}",
 			"beforeStart": "{{date}} раніше за дату початку",
 			"afterDue": "{{date}} пізніше за термін"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3572,7 +3580,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Пошук",

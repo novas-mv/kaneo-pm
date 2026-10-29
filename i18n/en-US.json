@@ -2437,7 +2437,9 @@
 			"deleteConfirmDescription": "This will permanently remove the project and all its data. You can't undo this action.",
 			"deletedToast": "Project deleted",
 			"deleteProject": "Delete Project",
-			"switcherLabel": "Switch project or view"
+			"switcherLabel": "Switch project or view",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Search tasks, projects, comments...",
@@ -3142,6 +3144,7 @@
 			"loadError": "Failed to load tasks.",
 			"dayTasksAriaLabel": "Show all tasks for {{date}}",
 			"taskAriaLabel": "{{title}}, {{range}}: open task",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "Nothing scheduled this month"
 		},
 		"gantt": {
@@ -3377,6 +3380,11 @@
 			"startsOn": "Starts {{date}}",
 			"beforeStart": "{{date}} is before the start date",
 			"afterDue": "{{date}} is after the due date"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3436,6 +3444,8 @@
 			"noDueDate": "No due date",
 			"reorderHandle": "Reorder project",
 			"reorderError": "Failed to reorder projects",
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"noAccessTitle": "You don't have access to this project",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

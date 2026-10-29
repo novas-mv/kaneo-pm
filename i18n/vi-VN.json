@@ -2395,7 +2395,9 @@
 			"deleteConfirmDescription": "Thao tác này sẽ xóa vĩnh viễn dự án và toàn bộ dữ liệu của nó. Bạn không thể hoàn tác hành động này.",
 			"deletedToast": "Đã xóa dự án",
 			"deleteProject": "Xóa dự án",
-			"switcherLabel": "Chuyển dự án hoặc chế độ xem"
+			"switcherLabel": "Chuyển dự án hoặc chế độ xem",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Tìm công việc, dự án, bình luận...",
@@ -3222,6 +3224,7 @@
 			"pageTitle": "{{name}} / Lịch",
 			"previousMonth": "Tháng trước",
 			"taskAriaLabel": "{{title}}, {{range}}: mở công việc",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Lịch",
 			"today": "Hôm nay",
 			"loadError": "Không thể tải công việc.",
@@ -3312,6 +3315,11 @@
 			"startsOn": "Bắt đầu {{date}}",
 			"beforeStart": "{{date}} trước ngày bắt đầu",
 			"afterDue": "{{date}} sau hạn chót"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3371,6 +3379,8 @@
 			"noDueDate": "Không có ngày đến hạn",
 			"reorderHandle": "Sắp xếp lại dự án",
 			"reorderError": "Không thể sắp xếp lại dự án",
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"backToWorkspace": "Back to workspace",
 				"noAccessDescription": "Ask a workspace admin to give you access.",

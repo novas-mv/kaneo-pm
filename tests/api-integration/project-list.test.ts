@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
@@ -7,6 +8,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { createRestrictedWorkspace } from "./helpers/project-access/create-restricted-workspace";
 
 type ProjectListEntry = typeof schema.projectTable.$inferSelect & {
   statistics: {
@@ -152,6 +154,82 @@ describe("API integration: project list payload", () => {
     expect(byName.get("Beta")?.statistics).toMatchObject({
       totalTasks: 1,
       completionPercentage: 100,
+    });
+  });
+  describe("parentProjectId visibility", () => {
+    async function nest(childId: string, parentId: string) {
+      await db
+        .update(schema.projectTable)
+        .set({ parentProjectId: parentId })
+        .where(eq(schema.projectTable.id, childId));
+    }
+
+    it("child of an inaccessible parent comes back with parentProjectId null", async () => {
+      const ctx = await createRestrictedWorkspace();
+      await nest(ctx.alpha.id, ctx.beta.id);
+      mockAuthenticatedSession(ctx.restricted);
+
+      const response = await createApp().app.request(
+        `/api/project?workspaceId=${ctx.workspace.id}`,
+      );
+
+      const payload = (await response.json()) as ProjectListEntry[];
+      expect(payload.map((p) => p.id)).toEqual([ctx.alpha.id]);
+      expect(payload[0].parentProjectId).toBeNull();
+    });
+
+    it("child of an archived parent comes back with parentProjectId null when archived are excluded", async () => {
+      const member = await createWorkspaceMember();
+      const parent = await createProjectFixture({
+        workspaceId: member.workspace.id,
+      });
+      const child = await createProjectFixture({
+        workspaceId: member.workspace.id,
+      });
+      await nest(child.project.id, parent.project.id);
+      await db
+        .update(schema.projectTable)
+        .set({ archivedAt: new Date() })
+        .where(eq(schema.projectTable.id, parent.project.id));
+      mockAuthenticatedSession(member.user);
+      const { app } = createApp();
+
+      const excluded = (await (
+        await app.request(`/api/project?workspaceId=${member.workspace.id}`)
+      ).json()) as ProjectListEntry[];
+      expect(excluded).toHaveLength(1);
+      expect(excluded[0].parentProjectId).toBeNull();
+
+      const included = (await (
+        await app.request(
+          `/api/project?workspaceId=${member.workspace.id}&includeArchived=true`,
+        )
+      ).json()) as ProjectListEntry[];
+      expect(
+        included.find((p) => p.id === child.project.id)?.parentProjectId,
+      ).toBe(parent.project.id);
+    });
+
+    it("child keeps parentProjectId when parent is listed", async () => {
+      const member = await createWorkspaceMember();
+      const parent = await createProjectFixture({
+        workspaceId: member.workspace.id,
+      });
+      const child = await createProjectFixture({
+        workspaceId: member.workspace.id,
+      });
+      await nest(child.project.id, parent.project.id);
+      mockAuthenticatedSession(member.user);
+
+      const payload = (await (
+        await createApp().app.request(
+          `/api/project?workspaceId=${member.workspace.id}`,
+        )
+      ).json()) as ProjectListEntry[];
+
+      expect(
+        payload.find((p) => p.id === child.project.id)?.parentProjectId,
+      ).toBe(parent.project.id);
     });
   });
 });

@@ -2,6 +2,7 @@ import { and, count, eq, isNull, min, sql } from "drizzle-orm";
 import db from "../../database";
 import { projectTable, taskTable } from "../../database/schema";
 import { projectAccessCondition } from "../../project-access/project-access-condition";
+import { redactParentProjectId } from "../redact-parent-project-id";
 
 type ProjectStatistics = {
   completionPercentage: number;
@@ -91,13 +92,20 @@ async function getProjects(
     includeArchived,
   );
 
-  return projects.map((project) => ({
-    ...project,
-    statistics: statisticsByProject.get(project.id) ?? EMPTY_STATISTICS,
-    archivedTasks: [],
-    plannedTasks: [],
-    columns: [],
-  }));
+  // Archived parents are already absent from `projects` when they are
+  // excluded, so the returned set is exactly what the viewer can see.
+  const listedIds = new Set(projects.map((project) => project.id));
+
+  return projects.map((listed) => {
+    const project = redactParentProjectId(listed, listedIds);
+    return {
+      ...project,
+      statistics: statisticsByProject.get(project.id) ?? EMPTY_STATISTICS,
+      archivedTasks: [],
+      plannedTasks: [],
+      columns: [],
+    };
+  });
 }
 
 export default getProjects;

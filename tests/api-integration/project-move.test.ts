@@ -727,3 +727,57 @@ describe("project move concurrency and realtime access", () => {
     expect(await db.select().from(schema.taskRelationTable)).toHaveLength(0);
   });
 });
+
+describe("API integration: moving a nested project", () => {
+  beforeEach(async () => {
+    await resetTestDatabase();
+  });
+
+  it("move clears parent link and detaches children", async () => {
+    const owner = await createWorkspaceMember({ role: "owner" });
+    const target = await createTargetWorkspace();
+    await addMember(target.id, owner.user.id, "owner");
+    const { project: top } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    const { project: mid } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    const { project: other } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    // mid is a child of top; move top (detaches mid), then move a child.
+    await db
+      .update(schema.projectTable)
+      .set({ parentProjectId: top.id })
+      .where(eq(schema.projectTable.id, mid.id));
+    await db
+      .update(schema.projectTable)
+      .set({ parentProjectId: top.id })
+      .where(eq(schema.projectTable.id, other.id));
+
+    mockAuthenticatedSession(owner.user);
+    const { app } = createApp();
+
+    const movedChild = await app.request(
+      `/api/project/${other.id}/move`,
+      moveRequest(target.id),
+    );
+    expect(movedChild.status).toBe(200);
+    expect((await movedChild.json()).parentProjectId).toBeNull();
+
+    const movedParent = await app.request(
+      `/api/project/${top.id}/move`,
+      moveRequest(target.id),
+    );
+    expect(movedParent.status).toBe(200);
+
+    const rows = await db
+      .select({
+        id: schema.projectTable.id,
+        parentProjectId: schema.projectTable.parentProjectId,
+      })
+      .from(schema.projectTable);
+    expect(rows.every((row) => row.parentProjectId === null)).toBe(true);
+  });
+});

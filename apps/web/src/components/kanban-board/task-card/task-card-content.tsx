@@ -1,6 +1,8 @@
 import { Trash2Icon } from "lucide-react";
 import { memo, type TouchEvent, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ProjectTag } from "@/components/project/project-tag";
+import { useTaskSlug } from "@/components/project/rollup-context";
 import { TaskPullRequests } from "@/components/task/task-pull-requests";
 import { TaskRecurrenceBadge } from "@/components/task/task-recurrence-badge";
 import {
@@ -56,6 +58,7 @@ function TaskCardContent({
 }: TaskCardContentProps) {
   const { t } = useTranslation();
   const { project } = useProjectStore();
+  const slug = useTaskSlug(task.projectId, project?.slug);
   const taskIsCompleted =
     isFinalColumn ?? isTaskCompleted(task.status, project?.columns);
   const hasPriority = Boolean(task.priority) && task.priority !== "no-priority";
@@ -159,7 +162,7 @@ function TaskCardContent({
                           : "text-board-id",
                       )}
                     >
-                      {project?.slug}-{task.number}
+                      {slug}-{task.number}
                     </span>
                   )}
                 </div>
@@ -190,6 +193,7 @@ function TaskCardContent({
             >
               {task.title}
             </div>
+            <ProjectTag projectId={task.projectId} className="mt-1.5 w-fit" />
 
             {!taskIsCompleted && (
               <div className="mt-2.5 flex flex-wrap items-center gap-1 empty:hidden">
@@ -219,7 +223,7 @@ function TaskCardContent({
           <TaskCardContextMenuContent
             task={task}
             taskCardContext={{
-              projectId: project.id,
+              projectId: task.projectId,
               worskpaceId: workspace.id,
               workspaceSlug: workspace.slug,
             }}

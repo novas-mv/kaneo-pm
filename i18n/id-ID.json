@@ -2395,7 +2395,9 @@
 			"deleteConfirmDescription": "Ini akan menghapus proyek dan semua datanya secara permanen. Anda tidak dapat membatalkan tindakan ini.",
 			"deletedToast": "Proyek dihapus",
 			"deleteProject": "Hapus Proyek",
-			"switcherLabel": "Ganti proyek atau tampilan"
+			"switcherLabel": "Ganti proyek atau tampilan",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Cari tugas, proyek, komentar...",
@@ -3222,6 +3224,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Bulan sebelumnya",
 			"taskAriaLabel": "{{title}}, {{range}}: buka tugas",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Hari ini",
 			"loadError": "Gagal memuat tugas.",
@@ -3312,6 +3315,11 @@
 			"startsOn": "Mulai {{date}}",
 			"beforeStart": "{{date}} sebelum tanggal mulai",
 			"afterDue": "{{date}} setelah tenggat"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3377,7 +3385,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Cari",

@@ -2395,7 +2395,9 @@
 			"deleteConfirmDescription": "这将永久删除项目及其所有数据，此操作不可撤销。",
 			"deletedToast": "项目已删除",
 			"deleteProject": "删除项目",
-			"switcherLabel": "切换项目或视图"
+			"switcherLabel": "切换项目或视图",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "搜索任务、项目、评论…",
@@ -3090,6 +3092,7 @@
 			"loadError": "任务加载失败。",
 			"dayTasksAriaLabel": "查看 {{date}} 的全部任务",
 			"taskAriaLabel": "{{title}}，{{range}}：打开任务",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "本月没有安排"
 		},
 		"gantt": {
@@ -3312,6 +3315,11 @@
 			"startsOn": "开始于 {{date}}",
 			"beforeStart": "{{date}} 早于开始日期",
 			"afterDue": "{{date}} 晚于截止日期"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3377,7 +3385,9 @@
 				"noAccessTitle": "你没有访问此项目的权限",
 				"notFoundDescription": "此项目不存在或已被删除。",
 				"notFoundTitle": "没有找到项目"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "搜索",

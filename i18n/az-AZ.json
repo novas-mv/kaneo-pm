@@ -2437,7 +2437,9 @@
 			"deleteConfirmDescription": "Bu, layihəni və bütün məlumatlarını həmişəlik siləcək. Bu əməliyyatı geri qaytara bilməzsiniz.",
 			"deletedToast": "Layihə silindi",
 			"deleteProject": "Layihəni sil",
-			"switcherLabel": "Layihəni və ya görünüşü dəyiş"
+			"switcherLabel": "Layihəni və ya görünüşü dəyiş",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Tapşırıqları, layihələri və şərhləri axtar...",
@@ -3141,6 +3143,7 @@
 			"loadError": "Tapşırıqları yükləmək alınmadı.",
 			"dayTasksAriaLabel": "{{date}} tarixi üçün bütün tapşırıqları göstər",
 			"taskAriaLabel": "{{title}}, {{range}}: tapşırığı aç",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"noTasksThisMonth": "Bu ay heç nə planlaşdırılmayıb"
 		},
 		"gantt": {
@@ -3377,6 +3380,11 @@
 			"startsOn": "Başlayır: {{date}}",
 			"beforeStart": "{{date}} başlama tarixindən əvvəldir",
 			"afterDue": "{{date}} son tarixdən sonradır"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3442,7 +3450,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Axtarış",

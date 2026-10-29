@@ -2437,7 +2437,9 @@
 			"deleteConfirmDescription": "यह प्रोजेक्ट और इसका सभी डेटा स्थायी रूप से हटा दिया जाएगा। यह कार्रवाई पूर्ववत नहीं की जा सकती।",
 			"deletedToast": "प्रोजेक्ट हटाया गया",
 			"deleteProject": "प्रोजेक्ट हटाएँ",
-			"switcherLabel": "प्रोजेक्ट या व्यू बदलें"
+			"switcherLabel": "प्रोजेक्ट या व्यू बदलें",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "कार्य, प्रोजेक्ट, टिप्पणियाँ खोजें...",
@@ -3276,6 +3278,7 @@
 			"pageTitle": "{{name}} / कैलेंडर",
 			"previousMonth": "पिछला महीना",
 			"taskAriaLabel": "{{title}}, {{range}}: कार्य खोलें",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "कैलेंडर",
 			"today": "आज",
 			"loadError": "कार्य लोड नहीं हो सके।",
@@ -3377,6 +3380,11 @@
 			"startsOn": "शुरुआत: {{date}}",
 			"beforeStart": "{{date}} प्रारंभ तारीख से पहले है",
 			"afterDue": "{{date}} नियत तारीख के बाद है"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3442,7 +3450,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "खोजें",

@@ -1,6 +1,12 @@
 import { isBefore, isToday, startOfToday } from "date-fns";
 import { type JSX, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { ProjectTag } from "@/components/project/project-tag";
+import {
+  otherProjectName,
+  slugFor,
+  useRollup,
+} from "@/components/project/rollup-context";
 import { cn } from "@/lib/cn";
 import { formatDate, formatDateShort } from "@/lib/format";
 import {
@@ -25,6 +31,7 @@ export default function MonthAgenda({
   onOpenTask,
 }: MonthAgendaProps): JSX.Element {
   const { t } = useTranslation();
+  const rollup = useRollup();
   const agenda = useMemo(
     () => buildMonthAgenda(visibleMonth, tasks),
     [visibleMonth, tasks],
@@ -79,9 +86,10 @@ export default function MonthAgenda({
             </h3>
             <ul className="flex flex-col gap-1.5 px-3 pb-3">
               {dayTasks.map((task) => {
+                const slug = slugFor(rollup, task.projectId, projectSlug);
                 const taskKey =
-                  projectSlug && task.number != null
-                    ? `${projectSlug}-${task.number}`
+                  slug && task.number != null
+                    ? `${slug}-${task.number}`
                     : undefined;
                 const range = `${formatDateShort(task.scheduleStart)} – ${formatDateShort(task.scheduleEnd)}`;
                 return (
@@ -89,10 +97,18 @@ export default function MonthAgenda({
                     <button
                       type="button"
                       onClick={() => onOpenTask(task.id)}
-                      aria-label={t("tasks:calendar.taskAriaLabel", {
-                        title: task.title,
-                        range,
-                      })}
+                      aria-label={
+                        otherProjectName(rollup, task.projectId)
+                          ? t("tasks:calendar.taskInProjectAriaLabel", {
+                              title: task.title,
+                              project: otherProjectName(rollup, task.projectId),
+                              range,
+                            })
+                          : t("tasks:calendar.taskAriaLabel", {
+                              title: task.title,
+                              range,
+                            })
+                      }
                       data-task-status={task.status}
                       className={cn(
                         "flex min-h-11 w-full flex-col justify-center gap-0.5 rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -102,7 +118,10 @@ export default function MonthAgenda({
                       <span className="text-sm font-medium text-foreground">
                         {task.title}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                        {task.projectId && (
+                          <ProjectTag projectId={task.projectId} />
+                        )}
                         {taskKey ? `${taskKey} · ${range}` : range}
                       </span>
                     </button>

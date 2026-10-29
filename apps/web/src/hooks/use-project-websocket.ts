@@ -35,7 +35,10 @@ const BASE_DELAY = 1000; // 1 second
 // We send a lightweight ping every 30 seconds to keep the connection alive.
 const WS_PING_INTERVAL_MS = 30_000;
 
-export function useProjectWebSocket(projectId: string) {
+export function useProjectWebSocket(
+  projectId: string,
+  { rollupChild = false }: { rollupChild?: boolean } = {},
+) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
@@ -594,6 +597,32 @@ export function useProjectWebSocket(projectId: string) {
             .getQueryCache()
             .findAll({ queryKey: ["projects"] })
             .find((query) => query.queryKey[2] === projectId)?.queryKey[1];
+          // A child rolled up into its parent's view drops out of the group;
+          // the person stays on the parent they are looking at.
+          if (rollupChild) {
+            // A rolled-up child usually has no single-project query, so its
+            // workspace comes from the list that names it.
+            const listWorkspaceId =
+              workspaceId ??
+              queryClient
+                .getQueryCache()
+                .findAll({ queryKey: ["projects"] })
+                .find((query) => {
+                  const list = query.state?.data;
+                  return (
+                    Array.isArray(list) &&
+                    list.some((project) => project?.id === projectId)
+                  );
+                })?.queryKey[1];
+            evictProjectCache(queryClient, projectId);
+            void queryClient.invalidateQueries({
+              queryKey:
+                typeof listWorkspaceId === "string"
+                  ? ["projects", listWorkspaceId]
+                  : ["projects"],
+            });
+            return;
+          }
           void Promise.resolve(
             typeof workspaceId === "string"
               ? navigate({
@@ -705,5 +734,6 @@ export function useProjectWebSocket(projectId: string) {
     session?.session?.id,
     queryClient,
     navigate,
+    rollupChild,
   ]);
 }

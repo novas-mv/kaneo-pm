@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useRollup } from "@/components/project/rollup-context";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { isOwnDomEvent } from "@/lib/is-own-dom-event";
 import useBulkSelectionStore from "@/store/bulk-selection";
@@ -7,6 +8,7 @@ import type Task from "@/types/task";
 
 export function useTaskCardClick(task: Task) {
   const { project } = useProjectStore();
+  const canSelect = useRollup() === null;
   const { data: workspace } = useActiveWorkspace();
   const navigate = useNavigate();
   const toggleSelection = useBulkSelectionStore(
@@ -20,13 +22,13 @@ export function useTaskCardClick(task: Task) {
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!project || !task || !workspace || !isOwnDomEvent(e)) return;
 
-    if (e.shiftKey) {
+    if (canSelect && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
       return;
     }
 
-    if (e.metaKey || e.ctrlKey) {
+    if (canSelect && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       toggleSelection(task.id);
       return;
@@ -51,7 +53,7 @@ export function useTaskCardClick(task: Task) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.target !== e.currentTarget) return;
-    if (e.key === "Enter" && e.shiftKey) {
+    if (canSelect && e.key === "Enter" && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
     }

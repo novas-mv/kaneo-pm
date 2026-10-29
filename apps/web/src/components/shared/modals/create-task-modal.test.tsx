@@ -44,7 +44,14 @@ const deleteTask = vi.fn(async () => {});
 const updateTask = vi.fn(async (input: Record<string, unknown>) => input);
 const setProject = vi.fn();
 let workspaceId = "workspace-1";
-let projects: { id: string; name: string; slug: string }[] | undefined;
+let projects:
+  | {
+      id: string;
+      name: string;
+      slug: string;
+      parentProjectId?: string | null;
+    }[]
+  | undefined;
 let columnsError = false;
 let columnsFetching = false;
 const refetchColumns = vi.fn();
@@ -588,6 +595,39 @@ describe("CreateTaskModal", () => {
     expect(
       screen.queryByText("common:modals.createTask.selectProject"),
     ).toBeNull();
+  });
+
+  it("on a parent project, preselects it and offers only its group", async () => {
+    projects = [
+      { id: "parent", name: "DiveOS", slug: "dive", parentProjectId: null },
+      {
+        id: "child",
+        name: "Migration",
+        slug: "mig",
+        parentProjectId: "parent",
+      },
+      { id: "other", name: "Prospects", slug: "pros", parentProjectId: null },
+    ];
+    useLocation.mockReturnValue({
+      pathname: "/dashboard/workspace/workspace-1/project/parent/board",
+    });
+
+    render(<CreateTaskModal open onClose={vi.fn()} />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "DiveOS" }));
+    expect(await screen.findByText("Migration")).toBeDefined();
+    expect(screen.queryByText("Prospects")).toBeNull();
+    fireEvent.click(screen.getByText("Migration"));
+    enterTitle("Child task");
+    submit();
+
+    await vi.waitFor(() => {
+      expect(createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Child task", projectId: "child" }),
+      );
+    });
   });
 });
 

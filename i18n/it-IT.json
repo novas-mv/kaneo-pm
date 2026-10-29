@@ -2479,7 +2479,9 @@
 			"deleteConfirmDescription": "Questo rimuoverà permanentemente il progetto e tutti i suoi dati. Non puoi annullare questa azione.",
 			"deletedToast": "Progetto eliminato",
 			"deleteProject": "Elimina Progetto",
-			"switcherLabel": "Cambia progetto o vista"
+			"switcherLabel": "Cambia progetto o vista",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Cerca attività, progetti, commenti...",
@@ -3330,6 +3332,7 @@
 			"pageTitle": "{{name}} / Calendario",
 			"previousMonth": "Mese precedente",
 			"taskAriaLabel": "{{title}}, {{range}}: apri attività",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Calendario",
 			"today": "Oggi",
 			"loadError": "Impossibile caricare le attività.",
@@ -3442,6 +3445,11 @@
 			"startsOn": "Inizia {{date}}",
 			"beforeStart": "{{date}} è prima della data di inizio",
 			"afterDue": "{{date}} è dopo la scadenza"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3507,7 +3515,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Cerca",
