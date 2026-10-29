@@ -5,5 +5,5 @@ export type ResourceLinkScope = {
 };
 
 export function resourceLinksQueryKey(scope: ResourceLinkScope) {
-  return ["resource-links", scope.workspaceId, scope.projectId ?? "workspace"];
+  return ["resource-links", scope.workspaceId, scope.projectId || "workspace"];
 }

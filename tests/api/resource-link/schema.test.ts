@@ -20,6 +20,8 @@ describe("resource link body validation", () => {
     "data:text/html,hi",
     "ftp://example.com",
     "mailto:team@example.com",
+    "https://user:secret@example.com/path",
+    "https://token@example.com",
     "example.com",
     "",
   ])("rejects %s", (url) => {

@@ -22265,7 +22265,7 @@
                   "url": {
                     "type": "string",
                     "maxLength": 2048,
-                    "description": "An HTTP or HTTPS URL"
+                    "description": "An HTTP or HTTPS URL. Embedded credentials (user:pass@host) are rejected."
                   },
                   "description": {
                     "type": [
@@ -22492,7 +22492,7 @@
                   "url": {
                     "type": "string",
                     "maxLength": 2048,
-                    "description": "An HTTP or HTTPS URL"
+                    "description": "An HTTP or HTTPS URL. Embedded credentials (user:pass@host) are rejected."
                   },
                   "description": {
                     "type": [
@@ -22751,7 +22751,7 @@
                   "url": {
                     "type": "string",
                     "maxLength": 2048,
-                    "description": "An HTTP or HTTPS URL"
+                    "description": "An HTTP or HTTPS URL. Embedded credentials (user:pass@host) are rejected."
                   },
                   "description": {
                     "type": [
@@ -22978,7 +22978,7 @@
                   "url": {
                     "type": "string",
                     "maxLength": 2048,
-                    "description": "An HTTP or HTTPS URL"
+                    "description": "An HTTP or HTTPS URL. Embedded credentials (user:pass@host) are rejected."
                   },
                   "description": {
                     "type": [

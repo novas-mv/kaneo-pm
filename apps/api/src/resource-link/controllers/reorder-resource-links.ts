@@ -16,7 +16,10 @@ async function reorderResourceLinks(scope: ResourceLinkScope, ids: string[]) {
     await lockScope(tx, scope);
 
     const existing = await tx
-      .select({ id: resourceLinkTable.id })
+      .select({
+        id: resourceLinkTable.id,
+        position: resourceLinkTable.position,
+      })
       .from(resourceLinkTable)
       .where(scopeCondition(scope))
       .orderBy(
@@ -35,7 +38,9 @@ async function reorderResourceLinks(scope: ResourceLinkScope, ids: string[]) {
       ...existing.map((link) => link.id).filter((id) => !listed.has(id)),
     ];
 
+    const current = new Map(existing.map((link) => [link.id, link.position]));
     for (const [position, id] of order.entries()) {
+      if (current.get(id) === position) continue;
       await tx
         .update(resourceLinkTable)
         .set({ position })

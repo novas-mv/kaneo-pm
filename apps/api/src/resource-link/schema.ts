@@ -8,13 +8,24 @@ export const projectParam = z.object({ projectId: z.string() });
 export const workspaceLinkParam = workspaceParam.extend({ id: z.string() });
 export const projectLinkParam = projectParam.extend({ id: z.string() });
 
+function isPlainHttpUrl(value: string) {
+  return (
+    isHttpUrl(value) && !new URL(value).username && !new URL(value).password
+  );
+}
+
 const title = z.string().trim().min(1).max(120).describe("Display title");
 const url = z
   .string()
   .trim()
   .max(2048)
-  .refine(isHttpUrl, "URL must be a valid http or https URL")
-  .describe("An HTTP or HTTPS URL");
+  .refine(
+    isPlainHttpUrl,
+    "URL must be a valid http or https URL without a username or password",
+  )
+  .describe(
+    "An HTTP or HTTPS URL. Embedded credentials (user:pass@host) are rejected.",
+  );
 const description = z
   .string()
   .trim()

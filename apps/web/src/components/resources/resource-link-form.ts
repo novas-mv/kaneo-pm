@@ -34,8 +34,10 @@ export function normalizeUrl(raw: string) {
 
 export function isHttpUrl(value: string) {
   try {
-    const { protocol } = new URL(value);
-    return protocol === "http:" || protocol === "https:";
+    const { protocol, username, password } = new URL(value);
+    return (
+      (protocol === "http:" || protocol === "https:") && !username && !password
+    );
   } catch {
     return false;
   }

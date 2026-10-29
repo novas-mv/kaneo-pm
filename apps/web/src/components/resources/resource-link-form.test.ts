@@ -41,6 +41,9 @@ describe("getFormIssue", () => {
     expect(getFormIssue({ ...valid, url: "" })).toBe("url");
     expect(getFormIssue({ ...valid, url: "javascript:alert(1)" })).toBe("url");
     expect(getFormIssue({ ...valid, url: "ftp://example.com" })).toBe("url");
+    expect(
+      getFormIssue({ ...valid, url: "https://user:pass@example.com" }),
+    ).toBe("url");
   });
 });
 

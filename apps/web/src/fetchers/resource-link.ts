@@ -6,6 +6,34 @@ import { HttpError } from "@/lib/http-error";
 const workspaceLinks = client["resource-link"].workspace[":workspaceId"];
 const projectLinks = client["resource-link"].project[":projectId"];
 
+// The one place that decides whether a scope is a project list or the workspace list.
+function endpoints(scope: ResourceLinkScope) {
+  if (scope.projectId) {
+    const param = { projectId: scope.projectId };
+    return {
+      list: () => projectLinks.$get({ param }),
+      create: (json: ResourceLinkFields) => projectLinks.$post({ param, json }),
+      update: (id: string, json: ResourceLinkFields) =>
+        projectLinks[":id"].$patch({ param: { ...param, id }, json }),
+      remove: (id: string) =>
+        projectLinks[":id"].$delete({ param: { ...param, id } }),
+      reorder: (ids: string[]) =>
+        projectLinks.order.$put({ param, json: { ids } }),
+    };
+  }
+  const param = { workspaceId: scope.workspaceId };
+  return {
+    list: () => workspaceLinks.$get({ param }),
+    create: (json: ResourceLinkFields) => workspaceLinks.$post({ param, json }),
+    update: (id: string, json: ResourceLinkFields) =>
+      workspaceLinks[":id"].$patch({ param: { ...param, id }, json }),
+    remove: (id: string) =>
+      workspaceLinks[":id"].$delete({ param: { ...param, id } }),
+    reorder: (ids: string[]) =>
+      workspaceLinks.order.$put({ param, json: { ids } }),
+  };
+}
+
 export type ResourceLink = InferResponseType<
   typeof workspaceLinks.$get,
   200
@@ -19,9 +47,7 @@ export type ResourceLinkFields = {
 };
 
 export async function listResourceLinks(scope: ResourceLinkScope) {
-  const response = scope.projectId
-    ? await projectLinks.$get({ param: { projectId: scope.projectId } })
-    : await workspaceLinks.$get({ param: { workspaceId: scope.workspaceId } });
+  const response = await endpoints(scope).list();
   if (!response.ok) throw await HttpError.fromResponse(response);
   return response.json();
 }
@@ -30,15 +56,7 @@ export async function createResourceLink(
   scope: ResourceLinkScope,
   json: ResourceLinkFields,
 ) {
-  const response = scope.projectId
-    ? await projectLinks.$post({
-        param: { projectId: scope.projectId },
-        json,
-      })
-    : await workspaceLinks.$post({
-        param: { workspaceId: scope.workspaceId },
-        json,
-      });
+  const response = await endpoints(scope).create(json);
   if (!response.ok) throw await HttpError.fromResponse(response);
   return response.json();
 }
@@ -48,27 +66,13 @@ export async function updateResourceLink(
   id: string,
   json: ResourceLinkFields,
 ) {
-  const response = scope.projectId
-    ? await projectLinks[":id"].$patch({
-        param: { projectId: scope.projectId, id },
-        json,
-      })
-    : await workspaceLinks[":id"].$patch({
-        param: { workspaceId: scope.workspaceId, id },
-        json,
-      });
+  const response = await endpoints(scope).update(id, json);
   if (!response.ok) throw await HttpError.fromResponse(response);
   return response.json();
 }
 
 export async function deleteResourceLink(scope: ResourceLinkScope, id: string) {
-  const response = scope.projectId
-    ? await projectLinks[":id"].$delete({
-        param: { projectId: scope.projectId, id },
-      })
-    : await workspaceLinks[":id"].$delete({
-        param: { workspaceId: scope.workspaceId, id },
-      });
+  const response = await endpoints(scope).remove(id);
   if (!response.ok) throw await HttpError.fromResponse(response);
   return response.json();
 }
@@ -77,15 +81,7 @@ export async function reorderResourceLinks(
   scope: ResourceLinkScope,
   ids: string[],
 ) {
-  const response = scope.projectId
-    ? await projectLinks.order.$put({
-        param: { projectId: scope.projectId },
-        json: { ids },
-      })
-    : await workspaceLinks.order.$put({
-        param: { workspaceId: scope.workspaceId },
-        json: { ids },
-      });
+  const response = await endpoints(scope).reorder(ids);
   if (!response.ok) throw await HttpError.fromResponse(response);
   return response.json();
 }
