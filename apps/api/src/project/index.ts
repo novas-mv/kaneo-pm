@@ -203,7 +203,7 @@ const setProjectParentRoute = createRoute({
   tags: ["Projects"],
   summary: "Set a project's parent",
   description:
-    "Nest a project under another project in the same workspace, or pass null to make it top-level. Only one level is allowed: the parent cannot itself be a child, and a project with children cannot become a child.",
+    "Nest a project under another project in the same workspace, or pass null to make it top-level. Only one level is allowed: the parent cannot itself be a child or archived, and a project with children cannot become a child. Setting the current parent again changes nothing.",
   middleware: [
     workspaceAccess.fromProject("id"),
     requireWorkspacePermission({ project: ["update"] }),
@@ -218,12 +218,14 @@ const setProjectParentRoute = createRoute({
   responses: {
     200: jsonResponse("The updated project", projectSchema),
     400: errorResponse(
-      "Invalid nesting: self, cross-workspace, a parent that is a child, or a project that has children",
+      "A parent in another workspace, or the nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
     ),
     403: errorResponse(
-      "Missing project:update permission, or no access to either project",
+      "Missing project:update permission, or no access to the project",
     ),
-    404: errorResponse("Project or parent project not found"),
+    404: errorResponse(
+      "Project not found, or a parent project that does not exist or is not accessible",
+    ),
   },
 });
 

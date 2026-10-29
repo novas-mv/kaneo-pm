@@ -4,6 +4,19 @@ import db from "../../database";
 import { projectTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { assertProjectAccess } from "../../project-access/assert-project-access";
+import { findInaccessibleProjectIds } from "../../project-access/find-inaccessible-project-ids";
+
+// One message for every nesting-rule failure. Distinct messages would tell a
+// viewer about a parent or children they cannot see.
+const NESTING_REJECTED = "This project can't be nested here";
+
+function nestingRejected() {
+  return new HTTPException(400, { message: NESTING_REJECTED });
+}
+
+function parentNotFound() {
+  return new HTTPException(404, { message: "Parent project not found" });
+}
 
 async function setProjectParent(
   projectId: string,
@@ -11,15 +24,19 @@ async function setProjectParent(
   userId: string,
 ) {
   if (parentProjectId === projectId) {
-    throw new HTTPException(400, {
-      message: "A project cannot be its own parent",
-    });
+    throw nestingRejected();
   }
 
-  await assertProjectAccess(
-    userId,
-    parentProjectId ? [projectId, parentProjectId] : projectId,
-  );
+  await assertProjectAccess(userId, projectId);
+
+  // An inaccessible parent answers exactly like a missing one, so the
+  // response is not an existence oracle.
+  if (
+    parentProjectId &&
+    (await findInaccessibleProjectIds(userId, [parentProjectId])).length > 0
+  ) {
+    throw parentNotFound();
+  }
 
   const [located] = await db
     .select({ workspaceId: projectTable.workspaceId })
@@ -30,7 +47,7 @@ async function setProjectParent(
     throw new HTTPException(404, { message: "Project not found" });
   }
 
-  const { project, previousParentId } = await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     // Same per-workspace lock as reorder and create, so the one-level checks
     // below cannot race another nesting change in the workspace.
     await tx.execute(
@@ -53,17 +70,18 @@ async function setProjectParent(
         .where(eq(projectTable.id, parentProjectId));
 
       if (!parent) {
-        throw new HTTPException(404, { message: "Parent project not found" });
+        throw parentNotFound();
       }
       if (parent.workspaceId !== current.workspaceId) {
         throw new HTTPException(400, {
           message: "A parent must be in the same workspace",
         });
       }
-      if (parent.parentProjectId) {
-        throw new HTTPException(400, {
-          message: "A parent cannot itself be a child project",
-        });
+      if (current.parentProjectId === parentProjectId) {
+        return { project: current, changed: false as const };
+      }
+      if (parent.parentProjectId || parent.archivedAt) {
+        throw nestingRejected();
       }
 
       const [child] = await tx
@@ -73,10 +91,10 @@ async function setProjectParent(
         .limit(1);
 
       if (child) {
-        throw new HTTPException(400, {
-          message: "A project with children cannot become a child",
-        });
+        throw nestingRejected();
       }
+    } else if (current.parentProjectId === null) {
+      return { project: current, changed: false as const };
     }
 
     const [updated] = await tx
@@ -85,19 +103,27 @@ async function setProjectParent(
       .where(eq(projectTable.id, projectId))
       .returning();
 
-    return { project: updated, previousParentId: current.parentProjectId };
+    return {
+      project: updated,
+      changed: true as const,
+      previousParentId: current.parentProjectId,
+    };
   });
 
+  if (!result.changed) {
+    return result.project;
+  }
+
   const affected = new Set(
-    [projectId, parentProjectId, previousParentId].filter((id): id is string =>
-      Boolean(id),
+    [projectId, parentProjectId, result.previousParentId].filter(
+      (id): id is string => Boolean(id),
     ),
   );
   for (const id of affected) {
     await publishEvent("project.updated", { projectId: id });
   }
 
-  return project;
+  return result.project;
 }
 
 export default setProjectParent;
