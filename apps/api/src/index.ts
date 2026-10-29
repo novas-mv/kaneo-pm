@@ -60,6 +60,7 @@ import { stopActiveImports } from "./import/runs/stop-active-imports";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import label from "./label";
+import resourceLink from "./resource-link";
 import mattermostIntegration from "./mattermost-integration";
 import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
 import { migrateColumns } from "./migrations/column-migration";
@@ -854,6 +855,7 @@ export function createApp() {
   );
   const taskRelationApi = api.route("/task-relation", taskRelation);
   const externalLinkApi = api.route("/external-link", externalLink);
+  const resourceLinkApi = api.route("/resource-link", resourceLink);
   const workflowRuleApi = api.route("/workflow-rule", workflowRule);
   const invitationApi = api.route("/invitation", invitation);
   const workspaceApi = api.route("/workspace", workspace);
@@ -974,6 +976,7 @@ export function createApp() {
     configApi,
     discordIntegrationApi,
     externalLinkApi,
+    resourceLinkApi,
     genericWebhookIntegrationApi,
     googleCalendarIntegrationApi,
     integrationSyncApi,
@@ -1108,6 +1111,7 @@ const {
   configApi,
   discordIntegrationApi,
   externalLinkApi,
+  resourceLinkApi,
   genericWebhookIntegrationApi,
   googleCalendarIntegrationApi,
   integrationSyncApi,
@@ -1174,6 +1178,7 @@ export type AppType =
   | typeof telegramIntegrationApi
   | typeof taskRelationApi
   | typeof externalLinkApi
+  | typeof resourceLinkApi
   | typeof workflowRuleApi
   | typeof invitationApi
   | typeof workspaceApi
