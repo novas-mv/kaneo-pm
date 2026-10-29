@@ -9759,7 +9759,7 @@
             }
           },
           "400": {
-            "description": "The nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
+            "description": "The nesting is not allowed (itself, a parent that is archived or is a child of an unarchived project, or a project that has unarchived children). Every nesting-rule failure returns the same message.",
             "content": {
               "application/json": {
                 "schema": {

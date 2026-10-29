@@ -5,6 +5,7 @@ import { projectTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { assertProjectAccess } from "../../project-access/assert-project-access";
 import { findInaccessibleProjectIds } from "../../project-access/find-inaccessible-project-ids";
+import { hasShownChildren, hasShownParent } from "../nesting";
 
 // One message for every nesting-rule failure. Distinct messages would tell a
 // viewer about a parent or children they cannot see.
@@ -74,20 +75,13 @@ async function setProjectParent(
       if (!parent || parent.workspaceId !== current.workspaceId) {
         throw parentNotFound();
       }
+      if (parent.archivedAt || (await hasShownParent(tx, parent))) {
+        throw nestingRejected();
+      }
       if (current.parentProjectId === parentProjectId) {
         return { project: current, changed: false as const };
       }
-      if (parent.parentProjectId || parent.archivedAt) {
-        throw nestingRejected();
-      }
-
-      const [child] = await tx
-        .select({ id: projectTable.id })
-        .from(projectTable)
-        .where(eq(projectTable.parentProjectId, projectId))
-        .limit(1);
-
-      if (child) {
+      if (await hasShownChildren(tx, projectId)) {
         throw nestingRejected();
       }
     } else if (current.parentProjectId === null) {

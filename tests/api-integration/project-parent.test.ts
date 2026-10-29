@@ -70,6 +70,13 @@ async function parentOf(projectId: string) {
   return row.parentProjectId;
 }
 
+async function archiveDirect(projectId: string) {
+  await db
+    .update(schema.projectTable)
+    .set({ archivedAt: new Date() })
+    .where(eq(schema.projectTable.id, projectId));
+}
+
 async function setup() {
   const owner = await createWorkspaceMember({ role: "owner" });
   const a = await createProjectFixture({ workspaceId: owner.workspace.id });
@@ -291,6 +298,107 @@ describe("API integration: setting a project's parent", () => {
     expect(await parentOf(a.id)).toBeNull();
   });
 
+  it("rejects re-sending a current parent that is now archived (400)", async () => {
+    const { a, b, app } = await setup();
+    await setParentDirect(a.id, b.id);
+    await archiveDirect(b.id);
+
+    const response = await app.request(
+      `/api/project/${a.id}/parent`,
+      setParentRequest(b.id),
+    );
+
+    await expectNestingRejected(response);
+  });
+
+  it("ignores archived children: a project whose children are all archived can be nested", async () => {
+    const { owner, a, b, app } = await setup();
+    const { project: child } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    await setParentDirect(child.id, a.id);
+    await archiveDirect(child.id);
+
+    const response = await app.request(
+      `/api/project/${a.id}/parent`,
+      setParentRequest(b.id),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await parentOf(a.id)).toBe(b.id);
+  });
+
+  it("accepts a parent whose own parent is archived (shown top-level)", async () => {
+    const { owner, a, b, app } = await setup();
+    const { project: grandparent } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    await setParentDirect(b.id, grandparent.id);
+    await archiveDirect(grandparent.id);
+
+    const response = await app.request(
+      `/api/project/${a.id}/parent`,
+      setParentRequest(b.id),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await parentOf(a.id)).toBe(b.id);
+  });
+
+  it("unarchiving a parent detaches a child that gained children meanwhile", async () => {
+    const { owner, a, b, app } = await setup();
+    const { project: grandparent } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    await setParentDirect(b.id, grandparent.id);
+    await archiveDirect(grandparent.id);
+    await setParentDirect(a.id, b.id);
+
+    const response = await app.request(
+      `/api/project/${grandparent.id}/unarchive`,
+      { method: "PUT" },
+    );
+
+    expect(response.status).toBe(200);
+    expect(await parentOf(b.id)).toBeNull();
+    expect(await parentOf(a.id)).toBe(b.id);
+  });
+
+  it("unarchiving a child whose parent was nested meanwhile makes it top-level", async () => {
+    const { owner, a, b, app } = await setup();
+    const { project: child } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    await setParentDirect(child.id, a.id);
+    await archiveDirect(child.id);
+    await setParentDirect(a.id, b.id);
+
+    const response = await app.request(`/api/project/${child.id}/unarchive`, {
+      method: "PUT",
+    });
+
+    expect(response.status).toBe(200);
+    expect((await response.json()).parentProjectId).toBeNull();
+    expect(await parentOf(child.id)).toBeNull();
+    expect(await parentOf(a.id)).toBe(b.id);
+  });
+
+  it("unarchiving a child restores its group when nothing changed", async () => {
+    const { owner, a, app } = await setup();
+    const { project: child } = await createProjectFixture({
+      workspaceId: owner.workspace.id,
+    });
+    await setParentDirect(child.id, a.id);
+    await archiveDirect(child.id);
+
+    const response = await app.request(`/api/project/${child.id}/unarchive`, {
+      method: "PUT",
+    });
+
+    expect(response.status).toBe(200);
+    expect((await response.json()).parentProjectId).toBe(a.id);
+  });
+
   it("reorder returns null parentProjectId for a hidden parent", async () => {
     const { owner, a, b } = await setup();
     const { project: hiddenParent } = await createProjectFixture({
@@ -352,7 +460,18 @@ describe("API integration: setting a project's parent", () => {
     expect(updated.status).toBe(200);
     expect((await updated.json()).parentProjectId).toBeNull();
 
-    await app.request(`/api/project/${a.id}/archive`, { method: "PUT" });
+    const archived = await app.request(`/api/project/${a.id}/archive`, {
+      method: "PUT",
+    });
+    expect(archived.status).toBe(200);
+    expect(
+      (
+        await db
+          .select({ archivedAt: schema.projectTable.archivedAt })
+          .from(schema.projectTable)
+          .where(eq(schema.projectTable.id, a.id))
+      )[0].archivedAt,
+    ).not.toBeNull();
     const unarchived = await app.request(`/api/project/${a.id}/unarchive`, {
       method: "PUT",
     });

@@ -2,10 +2,12 @@ import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { projectTable } from "../../database/schema";
+import { publishEvent } from "../../events";
+import { settleNestingAfterUnarchive } from "../nesting";
 import { findProjectKeyConflict } from "../project-key";
 
 async function unarchiveProject(id: string, workspaceId: string) {
-  return db.transaction(async (tx) => {
+  const { project, regrouped } = await db.transaction(async (tx) => {
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(1524, hashtext(${workspaceId}))`,
     );
@@ -49,8 +51,20 @@ async function unarchiveProject(id: string, workspaceId: string) {
       });
     }
 
-    return unarchivedProject;
+    const regrouped = await settleNestingAfterUnarchive(tx, unarchivedProject);
+    return {
+      project: regrouped.includes(id)
+        ? { ...unarchivedProject, parentProjectId: null }
+        : unarchivedProject,
+      regrouped,
+    };
   });
+
+  for (const projectId of new Set(regrouped)) {
+    await publishEvent("project.updated", { projectId });
+  }
+
+  return project;
 }
 
 export default unarchiveProject;

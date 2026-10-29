@@ -218,7 +218,7 @@ const setProjectParentRoute = createRoute({
   responses: {
     200: jsonResponse("The updated project", projectSchema),
     400: errorResponse(
-      "The nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
+      "The nesting is not allowed (itself, a parent that is archived or is a child of an unarchived project, or a project that has unarchived children). Every nesting-rule failure returns the same message.",
     ),
     403: errorResponse(
       "Missing project:update permission, or no access to the project",
