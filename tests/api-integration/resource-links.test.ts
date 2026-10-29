@@ -214,3 +214,46 @@ describe("project resource links", () => {
     ).toBe(403);
   });
 });
+
+describe("resource link list integrity", () => {
+  it("keeps positions unique when a reorder lists only some links", async () => {
+    const { user: owner, workspace } = await createWorkspaceMember({
+      role: "owner",
+    });
+    const base = `/workspace/${workspace.id}`;
+    const ids: string[] = [];
+    for (const title of ["A", "B", "C"]) {
+      ids.push((await call(owner, "POST", base, link(title))).body.id);
+    }
+
+    const reordered = await call(owner, "PUT", `${base}/order`, {
+      ids: [ids[2]],
+    });
+    expect(reordered.status).toBe(200);
+    expect(reordered.body.map((item: { title: string }) => item.title)).toEqual(
+      ["C", "A", "B"],
+    );
+    expect(
+      reordered.body.map((item: { position: number }) => item.position),
+    ).toEqual([0, 1, 2]);
+  });
+
+  it("never exceeds the list cap or reuses a position under concurrent creates", async () => {
+    const { user: owner, workspace } = await createWorkspaceMember({
+      role: "owner",
+    });
+    const base = `/workspace/${workspace.id}`;
+
+    const results = await Promise.all(
+      Array.from({ length: 5 }, (_, index) =>
+        call(owner, "POST", base, link(`Link ${index}`)),
+      ),
+    );
+    expect(results.every((result) => result.status === 201)).toBe(true);
+
+    const list = await call(owner, "GET", base);
+    expect(
+      list.body.map((item: { position: number }) => item.position).sort(),
+    ).toEqual([0, 1, 2, 3, 4]);
+  });
+});

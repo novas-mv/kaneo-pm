@@ -74,9 +74,7 @@ export default function ProjectLayout({
         ? "calendar"
         : location.pathname.includes("/gantt")
           ? "gantt"
-          : location.pathname.includes("/resources")
-            ? "resources"
-            : "board");
+          : "board");
   const currentView = resolveProjectView(resolvedRoute, viewMode);
   const showViews = showViewSwitcher && !unavailableReason;
 

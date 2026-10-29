@@ -22356,7 +22356,7 @@
           "Resource links"
         ],
         "summary": "Reorder workspace resource links",
-        "description": "Set the display order of the listed links. Links not listed keep their current position.",
+        "description": "Set the display order of the listed links. Links not listed follow the listed ones in their current order.",
         "parameters": [
           {
             "schema": {
@@ -22842,7 +22842,7 @@
           "Resource links"
         ],
         "summary": "Reorder project resource links",
-        "description": "Set the display order of the listed links. Links not listed keep their current position.",
+        "description": "Set the display order of the listed links. Links not listed follow the listed ones in their current order.",
         "parameters": [
           {
             "schema": {

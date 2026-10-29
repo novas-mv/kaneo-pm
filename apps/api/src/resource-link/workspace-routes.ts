@@ -104,7 +104,7 @@ export const workspaceResourceLinkRoutes = apiRouter<
       tags: ["Resource links"],
       summary: "Reorder workspace resource links",
       description:
-        "Set the display order of the listed links. Links not listed keep their current position.",
+        "Set the display order of the listed links. Links not listed follow the listed ones in their current order.",
       middleware: manageMiddleware,
       request: {
         params: workspaceParam,
