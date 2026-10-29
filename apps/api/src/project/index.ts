@@ -218,13 +218,13 @@ const setProjectParentRoute = createRoute({
   responses: {
     200: jsonResponse("The updated project", projectSchema),
     400: errorResponse(
-      "A parent in another workspace, or the nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
+      "The nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
     ),
     403: errorResponse(
       "Missing project:update permission, or no access to the project",
     ),
     404: errorResponse(
-      "Project not found, or a parent project that does not exist or is not accessible",
+      "Project not found, or a parent project that does not exist, is not accessible, or is in another workspace",
     ),
   },
 });

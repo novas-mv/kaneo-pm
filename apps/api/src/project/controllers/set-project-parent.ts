@@ -69,13 +69,10 @@ async function setProjectParent(
         .from(projectTable)
         .where(eq(projectTable.id, parentProjectId));
 
-      if (!parent) {
+      // A parent in another workspace answers like a missing one too: the
+      // access check above passes for workspaces the caller is not in.
+      if (!parent || parent.workspaceId !== current.workspaceId) {
         throw parentNotFound();
-      }
-      if (parent.workspaceId !== current.workspaceId) {
-        throw new HTTPException(400, {
-          message: "A parent must be in the same workspace",
-        });
       }
       if (current.parentProjectId === parentProjectId) {
         return { project: current, changed: false as const };

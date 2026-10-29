@@ -9759,7 +9759,7 @@
             }
           },
           "400": {
-            "description": "A parent in another workspace, or the nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
+            "description": "The nesting is not allowed (itself, a parent that is a child or archived, or a project that has children). Every nesting-rule failure returns the same message.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9789,7 +9789,7 @@
             }
           },
           "404": {
-            "description": "Project not found, or a parent project that does not exist or is not accessible",
+            "description": "Project not found, or a parent project that does not exist, is not accessible, or is in another workspace",
             "content": {
               "application/json": {
                 "schema": {

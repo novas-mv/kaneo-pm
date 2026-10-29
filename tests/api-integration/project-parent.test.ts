@@ -154,27 +154,26 @@ describe("API integration: setting a project's parent", () => {
     expect(await parentOf(a.id)).toBeNull();
   });
 
-  it("rejects a parent in another workspace (400)", async () => {
-    const { owner, a, app } = await setup();
+  it("treats a parent in another workspace like a nonexistent one (404)", async () => {
+    const { a, app } = await setup();
     const other = await createWorkspaceMember({ role: "owner" });
     const { project: foreign } = await createProjectFixture({
       workspaceId: other.workspace.id,
     });
-    // Same user belongs to both workspaces so access passes and the
-    // workspace rule is what rejects.
-    await db.insert(schema.workspaceUserTable).values({
-      workspaceId: other.workspace.id,
-      userId: owner.user.id,
-      role: "owner",
-      joinedAt: new Date(),
-    });
+    // The caller is not in the other workspace, so the parent's existence
+    // must not show through.
 
     const response = await app.request(
       `/api/project/${a.id}/parent`,
       setParentRequest(foreign.id),
     );
+    const missing = await app.request(
+      `/api/project/${a.id}/parent`,
+      setParentRequest(`missing-${randomUUID()}`),
+    );
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual(await missing.json());
     expect(await parentOf(a.id)).toBeNull();
   });
 
