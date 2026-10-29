@@ -65,6 +65,7 @@
 							"core/functional/plan-and-execute-tasks",
 							"core/functional/backlog-planning",
 							"core/functional/calendar-and-gantt",
+							"core/functional/pinned-resources",
 							"core/functional/configure-workflows",
 							"core/functional/manage-workspace-labels"
 						]
@@ -166,7 +167,8 @@
 							"core/integrations/discord",
 							"core/integrations/mattermost",
 							"core/integrations/telegram",
-							"core/integrations/outgoing-webhooks"
+							"core/integrations/outgoing-webhooks",
+							"core/integrations/google-calendar"
 						]
 					},
 					{

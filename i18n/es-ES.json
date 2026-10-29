@@ -836,7 +836,9 @@
 			"statusPaused": "En pausa",
 			"connect": "Conectar",
 			"configure": "Configurar",
-			"done": "Listo"
+			"done": "Listo",
+			"googleCalendarSectionSubtitle": "Keep task dates in sync with a shared Google Calendar, in both directions.",
+			"googleCalendarSectionTitle": "Google Calendar"
 		},
 		"projectVisibility": {
 			"pageTitle": "Visibilidad del Proyecto",
@@ -2412,6 +2414,25 @@
 		},
 		"shared": {
 			"autosave": "Los cambios se guardan automáticamente"
+		},
+		"googleCalendarIntegration": {
+			"calendarIdLabel": "Calendar ID",
+			"connect": "Connect calendar",
+			"disconnectDescription": "Tasks stop syncing. Events already on the calendar stay where they are.",
+			"disconnectTitle": "Disconnect Google Calendar?",
+			"firstSyncPending": "The first sync runs within a minute.",
+			"lastSynced": "Last synced {{time}}",
+			"loadError": "Could not load the Google Calendar settings. Try again in a moment.",
+			"notConfigured": "Google Calendar is not set up on this Kaneo instance. Ask an administrator to add a Google service account.",
+			"shareHint": "Share your Google Calendar with this address and allow \"Make changes to events\":",
+			"syncError": "Last sync failed: {{message}}",
+			"timeZoneLabel": "Time zone",
+			"toast": {
+				"removed": "Google Calendar disconnected",
+				"removeError": "Failed to disconnect Google Calendar",
+				"saved": "Google Calendar connected",
+				"saveError": "Failed to connect Google Calendar"
+			}
 		}
 	},
 	"navigation": {
@@ -2445,7 +2466,8 @@
 			"home": "Home",
 			"inbox": "Inbox",
 			"invitePeople": "Invite people",
-			"myTasks": "My tasks"
+			"myTasks": "My tasks",
+			"resources": "Resources"
 		},
 		"projectList": {
 			"viewProject": "Ver Proyecto",
@@ -3589,6 +3611,50 @@
 			},
 			"empty": "Nothing assigned to you",
 			"loadError": "Your tasks couldn't be loaded."
+		},
+		"resources": {
+			"actionsAria": "Actions for {{name}}",
+			"add": "Add link",
+			"create": "Add link",
+			"createError": "The link couldn't be added.",
+			"createSuccess": "Link pinned",
+			"deleteConfirm": "Remove link",
+			"deleteDescription": "The link is unpinned for everyone. The page it points to isn't affected.",
+			"deleteError": "The link couldn't be removed.",
+			"deleteSuccess": "Link removed",
+			"deleteTitle": "Remove \"{{name}}\"?",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "Logos, fonts and colors",
+			"dialogDescription": "Links open in a new tab for everyone who can see this list.",
+			"dragAria": "Reorder {{name}}",
+			"edit": "Edit",
+			"editTitle": "Edit link",
+			"emojiLabel": "Emoji (optional)",
+			"emptyDescription": "Pin the folders, files and tools your team opens every day.",
+			"emptyDescriptionReadOnly": "Nothing has been pinned here yet.",
+			"emptyTitle": "No links pinned yet",
+			"homeEmpty": "Pin your team's most-used links here.",
+			"homeTitle": "Pinned resources",
+			"loadError": "Resources couldn't be loaded.",
+			"manage": "Manage",
+			"newTitle": "Add a link",
+			"opensInNewTab": "(opens in a new tab)",
+			"pageTitle": "Resources",
+			"projectDescription": "Links for this project: folders, files and dashboards.",
+			"projectPageTitle": "{{name}} resources",
+			"reorderError": "The new order couldn't be saved.",
+			"retry": "Try again",
+			"save": "Save",
+			"saving": "Saving...",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Brand guidelines",
+			"updateError": "The link couldn't be updated.",
+			"updateSuccess": "Link updated",
+			"urlInvalid": "Enter a web address that starts with http:// or https://.",
+			"urlLabel": "Link",
+			"urlPlaceholder": "https://drive.google.com/…",
+			"viewAll": "All resources",
+			"workspaceDescription": "Links the whole team keeps close: folders, guidelines, dashboards and tools."
 		}
 	},
 	"team": {

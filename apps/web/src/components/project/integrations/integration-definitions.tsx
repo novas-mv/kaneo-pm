@@ -1,4 +1,4 @@
-import { Webhook } from "lucide-react";
+import { CalendarDays, Webhook } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { DiscordIcon } from "@/components/icons/discord-icon";
 import { GiteaIcon } from "@/components/icons/gitea-icon";
@@ -9,6 +9,7 @@ import { SlackIcon } from "@/components/icons/slack-icon";
 import { TelegramIcon } from "@/components/icons/telegram-icon";
 import { DiscordIntegrationSettings } from "@/components/project/discord-integration-settings";
 import { GenericWebhookIntegrationSettings } from "@/components/project/generic-webhook-integration-settings";
+import { GoogleCalendarIntegrationSettings } from "@/components/project/integrations/google-calendar/google-calendar-integration-settings";
 import { GiteaIntegrationSettings } from "@/components/project/gitea-integration/gitea-integration-settings";
 import { GitHubIntegrationSettings } from "@/components/project/github-integration/github-integration-settings";
 import { GitlabIntegrationSettings } from "@/components/project/gitlab-integration/gitlab-integration-settings";
@@ -24,11 +25,12 @@ export type IntegrationId =
   | "discord"
   | "mattermost"
   | "telegram"
-  | "webhook";
+  | "webhook"
+  | "google-calendar";
 
 export type IntegrationDefinition = {
   id: IntegrationId;
-  category: "code" | "chat";
+  category: "code" | "chat" | "calendar";
   name: string | { key: string };
   descriptionKey: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -109,5 +111,15 @@ export const INTEGRATIONS: IntegrationDefinition[] = [
     icon: Webhook,
     iconClassName: "text-muted-foreground",
     Settings: GenericWebhookIntegrationSettings,
+  },
+  {
+    id: "google-calendar",
+    category: "calendar",
+    name: { key: "settings:projectIntegrations.googleCalendarSectionTitle" },
+    descriptionKey:
+      "settings:projectIntegrations.googleCalendarSectionSubtitle",
+    icon: CalendarDays,
+    iconClassName: "text-[#4285F4]",
+    Settings: GoogleCalendarIntegrationSettings,
   },
 ];

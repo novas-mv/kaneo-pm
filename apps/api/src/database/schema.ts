@@ -1498,6 +1498,46 @@ export const customFieldValueTable = pgTable(
   ],
 );
 
+// Curated links pinned for a workspace, or for one project when projectId is set.
+export const resourceLinkTable = pgTable(
+  "resource_link",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    projectId: text("project_id").references(() => projectTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    title: text("title").notNull(),
+    url: text("url").notNull(),
+    description: text("description"),
+    emoji: text("emoji"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .default(utcNow)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .default(utcNow)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("resource_link_workspace_project_position_idx").on(
+      table.workspaceId,
+      table.projectId,
+      table.position,
+    ),
+    index("resource_link_project_id_idx").on(table.projectId),
+  ],
+);
+
 // These records outlive their original owner so failed object deletion can retry.
 export const storageCleanupTable = pgTable("storage_cleanup", {
   objectKey: text("object_key").primaryKey(),

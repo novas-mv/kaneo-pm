@@ -8,6 +8,7 @@ import {
   integrationTable,
   labelTable,
   projectTable,
+  resourceLinkTable,
   taskRelationTable,
   taskTable,
   userNotificationWorkspaceProjectTable,
@@ -237,11 +238,15 @@ async function moveProject(
           ),
         );
 
-      // Assets and task labels denormalize the project's workspace.
+      // Assets, resource links and task labels denormalize the project's workspace.
       await tx
         .update(assetTable)
         .set({ workspaceId: targetWorkspaceId })
         .where(eq(assetTable.projectId, id));
+      await tx
+        .update(resourceLinkTable)
+        .set({ workspaceId: targetWorkspaceId })
+        .where(eq(resourceLinkTable.projectId, id));
 
       // Subquery rather than a materialized id list: this one scales with the
       // project's total task count.

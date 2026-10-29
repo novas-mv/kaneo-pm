@@ -1,5 +1,5 @@
 {
-  "id": "daa01f42-2286-4457-b0f1-0c6ec6de95a1",
+  "id": "727741c0-b1ca-4c05-9380-3fd243ca26c7",
   "prevId": "350dc7df-5403-479c-a671-802af0e36ee2",
   "version": "7",
   "dialect": "postgresql",
@@ -3008,30 +3008,9 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "parent_project_id": {
-          "name": "parent_project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
-        "project_parentProjectId_idx": {
-          "name": "project_parentProjectId_idx",
-          "columns": [
-            {
-              "expression": "parent_project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "project_background_object_key_idx": {
           "name": "project_background_object_key_idx",
           "columns": [
@@ -3083,19 +3062,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
-        },
-        "project_parent_project_id_project_id_fk": {
-          "name": "project_parent_project_id_project_id_fk",
-          "tableFrom": "project",
-          "tableTo": "project",
-          "columnsFrom": [
-            "parent_project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3109,6 +3075,152 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.resource_link": {
+      "name": "resource_link",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(now() AT TIME ZONE 'utc')"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(now() AT TIME ZONE 'utc')"
+        }
+      },
+      "indexes": {
+        "resource_link_workspace_project_position_idx": {
+          "name": "resource_link_workspace_project_position_idx",
+          "columns": [
+            {
+              "expression": "workspace_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "resource_link_project_id_idx": {
+          "name": "resource_link_project_id_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "resource_link_workspace_id_workspace_id_fk": {
+          "name": "resource_link_workspace_id_workspace_id_fk",
+          "tableFrom": "resource_link",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "resource_link_project_id_project_id_fk": {
+          "name": "resource_link_project_id_project_id_fk",
+          "tableFrom": "resource_link",
+          "tableTo": "project",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
