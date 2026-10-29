@@ -3559,7 +3559,7 @@
 			"titlePlaceholder": "Brand guidelines",
 			"urlLabel": "Link",
 			"urlPlaceholder": "https://drive.google.com/…",
-			"urlInvalid": "Enter a web address that starts with http:// or https://.",
+			"urlInvalid": "Enter a web address that starts with http:// or https://, without a username or password.",
 			"descriptionLabel": "Description (optional)",
 			"descriptionPlaceholder": "Logos, fonts and colors",
 			"emojiLabel": "Emoji (optional)",

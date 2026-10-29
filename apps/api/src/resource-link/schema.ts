@@ -9,9 +9,9 @@ export const workspaceLinkParam = workspaceParam.extend({ id: z.string() });
 export const projectLinkParam = projectParam.extend({ id: z.string() });
 
 function isPlainHttpUrl(value: string) {
-  return (
-    isHttpUrl(value) && !new URL(value).username && !new URL(value).password
-  );
+  if (!isHttpUrl(value)) return false;
+  const { username, password } = new URL(value);
+  return !username && !password;
 }
 
 const title = z.string().trim().min(1).max(120).describe("Display title");
