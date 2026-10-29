@@ -144,6 +144,7 @@ function evictPrivateQueries(
       "comments",
       "labels",
       "external-links",
+      "resource-links",
       "projects",
       "project",
       "workspace",

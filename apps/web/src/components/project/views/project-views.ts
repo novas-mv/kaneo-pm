@@ -8,15 +8,27 @@ import {
 } from "lucide-react";
 import type { TaskLayout } from "@/store/user-preferences";
 
-export type ProjectView = "board" | "list" | "backlog" | "calendar" | "gantt";
+export type ProjectView =
+  | "board"
+  | "list"
+  | "backlog"
+  | "calendar"
+  | "gantt"
+  | "resources";
 
-export type ProjectRoute = "board" | "backlog" | "calendar" | "gantt";
+export type ProjectRoute =
+  | "board"
+  | "backlog"
+  | "calendar"
+  | "gantt"
+  | "resources";
 
 export const PROJECT_ROUTE_PATHS = {
   board: "/dashboard/workspace/$workspaceId/project/$projectId/board",
   backlog: "/dashboard/workspace/$workspaceId/project/$projectId/backlog",
   calendar: "/dashboard/workspace/$workspaceId/project/$projectId/calendar",
   gantt: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
+  resources: "/dashboard/workspace/$workspaceId/project/$projectId/resources",
 } as const;
 
 export const PROJECT_VIEWS: ReadonlyArray<{
@@ -62,9 +74,11 @@ export function resolveProjectView(
   return route === "board" ? viewMode : route;
 }
 
-export const TASK_LAYOUTS = PROJECT_VIEWS.filter(
-  (view) => view.id !== "backlog",
-);
+export function isTaskView(view: ProjectView): view is TaskLayout {
+  return view !== "backlog" && view !== "resources";
+}
+
+export const TASK_LAYOUTS = PROJECT_VIEWS.filter((view) => isTaskView(view.id));
 
 export function tasksViewFor(
   taskLayout: TaskLayout,
