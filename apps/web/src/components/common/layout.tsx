@@ -57,7 +57,6 @@ function Layout({ children, className }: LayoutProps) {
         defaultOpen={sidebarDefaultOpen}
         style={
           {
-            "--sidebar-width": "calc(var(--spacing) * 60)",
             "--header-height": "calc(var(--spacing) * 12)",
           } as React.CSSProperties
         }

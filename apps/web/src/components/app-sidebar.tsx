@@ -11,6 +11,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarRail,
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -49,6 +50,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <ThemeToggleDropdown />
         </div>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
