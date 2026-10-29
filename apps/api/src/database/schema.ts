@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   customType,
   foreignKey,
@@ -371,8 +372,13 @@ export const projectTable = pgTable(
     backgroundObjectKey: text("background_object_key"),
     backgroundMimeType: text("background_mime_type"),
     backgroundVersion: text("background_version"),
+    parentProjectId: text("parent_project_id").references(
+      (): AnyPgColumn => projectTable.id,
+      { onDelete: "set null" },
+    ),
   },
   (table) => [
+    index("project_parentProjectId_idx").on(table.parentProjectId),
     index("project_background_object_key_idx")
       .on(table.backgroundObjectKey)
       .where(sql`${table.backgroundObjectKey} is not null`),
@@ -1489,6 +1495,46 @@ export const customFieldValueTable = pgTable(
       table.taskId,
       table.fieldId,
     ),
+  ],
+);
+
+// Curated links pinned for a workspace, or for one project when projectId is set.
+export const resourceLinkTable = pgTable(
+  "resource_link",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaceTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    projectId: text("project_id").references(() => projectTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+    title: text("title").notNull(),
+    url: text("url").notNull(),
+    description: text("description"),
+    emoji: text("emoji"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .default(utcNow)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .default(utcNow)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("resource_link_workspace_project_position_idx").on(
+      table.workspaceId,
+      table.projectId,
+      table.position,
+    ),
+    index("resource_link_project_id_idx").on(table.projectId),
   ],
 );
 

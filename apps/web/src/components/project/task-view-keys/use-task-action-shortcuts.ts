@@ -12,6 +12,7 @@ import {
   type BulkRequest,
   useBulkRequestStore,
 } from "@/components/bulk-selection/bulk-request-store";
+import { slugFor, useRollup } from "@/components/project/rollup-context";
 import useAuth from "@/components/providers/auth-provider/hooks/use-auth";
 import type getProjects from "@/fetchers/project/get-projects";
 import { useBulkOperations } from "@/hooks/mutations/task/use-bulk-operations";
@@ -34,8 +35,23 @@ const findTask = (project: ProjectWithTasks | undefined, taskId: string) =>
     ...project.archivedTasks,
   ].find((task) => task.id === taskId);
 
-export function useTaskActionShortcuts(selection: TaskSelectionStore) {
+type TaskActionShortcutsOptions = {
+  /** The board the view shows; defaults to the open project's own board. */
+  board?: ProjectWithTasks;
+  /**
+   * The status, priority, assignee, label, due date and delete pickers act
+   * on the open project's columns and members, so a rolled-up view turns
+   * them off.
+   */
+  pickers?: boolean;
+};
+
+export function useTaskActionShortcuts(
+  selection: TaskSelectionStore,
+  { board, pickers = true }: TaskActionShortcutsOptions = {},
+) {
   const { t } = useTranslation();
+  const rollup = useRollup();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: workspace } = useActiveWorkspace();
@@ -93,7 +109,7 @@ export function useTaskActionShortcuts(selection: TaskSelectionStore) {
   const withFocusedTask = (act: (task: Task) => void) => {
     const taskId = selection.getState().focusedTaskId;
     const task = taskId
-      ? findTask(useProjectStore.getState().project, taskId)
+      ? findTask(board ?? useProjectStore.getState().project, taskId)
       : undefined;
     if (task) act(task);
   };
@@ -103,13 +119,17 @@ export function useTaskActionShortcuts(selection: TaskSelectionStore) {
   const assign = { ...view, enabled: canAssignTasks() };
   const labels = { ...view, enabled: canUpdateLabels() };
   const remove = { ...view, enabled: canDeleteTasks() };
+  const picker = (scope: { enabled: boolean }) => ({
+    ...scope,
+    enabled: scope.enabled && pickers,
+  });
 
-  useShortcut("changeStatus", () => request("status"), edit);
-  useShortcut("changePriority", () => request("priority"), edit);
-  useShortcut("assignTask", () => request("assignee"), assign);
-  useShortcut("changeLabels", () => request("labels"), labels);
-  useShortcut("setDueDate", () => request("dueDate"), edit);
-  useShortcut("deleteTask", () => request("delete"), remove);
+  useShortcut("changeStatus", () => request("status"), picker(edit));
+  useShortcut("changePriority", () => request("priority"), picker(edit));
+  useShortcut("assignTask", () => request("assignee"), picker(assign));
+  useShortcut("changeLabels", () => request("labels"), picker(labels));
+  useShortcut("setDueDate", () => request("dueDate"), picker(edit));
+  useShortcut("deleteTask", () => request("delete"), picker(remove));
 
   useShortcut(
     "assignToMe",
@@ -140,7 +160,11 @@ export function useTaskActionShortcuts(selection: TaskSelectionStore) {
     "copyTaskId",
     () =>
       withFocusedTask((task) => {
-        const slug = useProjectStore.getState().project?.slug;
+        const slug = slugFor(
+          rollup,
+          task.projectId,
+          useProjectStore.getState().project?.slug,
+        );
         if (!slug || !task.number) return;
         void copy(
           `${slug}-${task.number}`,

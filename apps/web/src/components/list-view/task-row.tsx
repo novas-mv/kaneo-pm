@@ -25,6 +25,7 @@ import { isOwnDomEvent } from "@/lib/is-own-dom-event";
 import { isTaskCompleted } from "@/lib/due-date-status";
 import { toast } from "@/lib/toast";
 import useBulkSelectionStore from "@/store/bulk-selection";
+import { useRollup } from "@/components/project/rollup-context";
 import useProjectStore from "@/store/project";
 import type Task from "@/types/task";
 import TaskCardContextMenuContent from "../kanban-board/task-card-context-menu/task-card-context-menu-content";
@@ -92,6 +93,8 @@ function TaskRow({
   });
 
   const { project } = useProjectStore();
+  // Bulk selection is off on a rolled-up view.
+  const canSelect = useRollup() === null;
   const taskIsCompleted = isTaskCompleted(task.status, project?.columns);
   const { data: workspace } = useActiveWorkspace();
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState<
@@ -157,13 +160,13 @@ function TaskRow({
     if (!project || !task || !isOwnDomEvent(e)) return;
     if (e.defaultPrevented) return;
 
-    if (e.shiftKey) {
+    if (canSelect && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
       return;
     }
 
-    if (e.metaKey || e.ctrlKey) {
+    if (canSelect && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       toggleSelection(task.id);
       return;
@@ -176,7 +179,7 @@ function TaskRow({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.target !== e.currentTarget) return;
-    if (e.key === "Enter" && e.shiftKey) {
+    if (canSelect && e.key === "Enter" && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
       return;
@@ -314,7 +317,7 @@ function TaskRow({
           <TaskCardContextMenuContent
             task={task}
             taskCardContext={{
-              projectId: project.id,
+              projectId: task.projectId,
               worskpaceId: workspace.id,
               workspaceSlug: workspace.slug,
             }}

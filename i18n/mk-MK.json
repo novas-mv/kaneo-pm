@@ -2424,7 +2424,8 @@
 			"home": "Home",
 			"inbox": "Inbox",
 			"invitePeople": "Invite people",
-			"myTasks": "My tasks"
+			"myTasks": "My tasks",
+			"resources": "Resources"
 		},
 		"projectList": {
 			"viewProject": "Погледни проект",
@@ -2436,7 +2437,9 @@
 			"deleteConfirmDescription": "Ова трајно ќе го отстрани проектот и сите негови податоци. Не можеш да ја вратиш оваа акција.",
 			"deletedToast": "Проектот е избришан",
 			"deleteProject": "Избриши проект",
-			"switcherLabel": "Промени проект или приказ"
+			"switcherLabel": "Промени проект или приказ",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Пребарај задачи, проекти, коментари...",
@@ -3275,6 +3278,7 @@
 			"pageTitle": "{{name}} / Календар",
 			"previousMonth": "Претходен месец",
 			"taskAriaLabel": "{{title}}, {{range}}: отвори задача",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Календар",
 			"today": "Денес",
 			"loadError": "Неуспешно вчитување на задачите.",
@@ -3376,6 +3380,11 @@
 			"startsOn": "Почнува: {{date}}",
 			"beforeStart": "{{date}} е пред датумот на почеток",
 			"afterDue": "{{date}} е по рокот"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3441,7 +3450,9 @@
 				"noAccessTitle": "You don't have access to this project",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"notFoundTitle": "Project not found"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Пребарување",
@@ -3531,6 +3542,50 @@
 			},
 			"empty": "Nothing assigned to you",
 			"loadError": "Your tasks couldn't be loaded."
+		},
+		"resources": {
+			"actionsAria": "Actions for {{name}}",
+			"add": "Add link",
+			"create": "Add link",
+			"createError": "The link couldn't be added.",
+			"createSuccess": "Link pinned",
+			"deleteConfirm": "Remove link",
+			"deleteDescription": "The link is unpinned for everyone. The page it points to isn't affected.",
+			"deleteError": "The link couldn't be removed.",
+			"deleteSuccess": "Link removed",
+			"deleteTitle": "Remove \"{{name}}\"?",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "Logos, fonts and colors",
+			"dialogDescription": "Links open in a new tab for everyone who can see this list.",
+			"dragAria": "Reorder {{name}}",
+			"edit": "Edit",
+			"editTitle": "Edit link",
+			"emojiLabel": "Emoji (optional)",
+			"emptyDescription": "Pin the folders, files and tools your team opens every day.",
+			"emptyDescriptionReadOnly": "Nothing has been pinned here yet.",
+			"emptyTitle": "No links pinned yet",
+			"homeEmpty": "Pin your team's most-used links here.",
+			"homeTitle": "Pinned resources",
+			"loadError": "Resources couldn't be loaded.",
+			"manage": "Manage",
+			"newTitle": "Add a link",
+			"opensInNewTab": "(opens in a new tab)",
+			"pageTitle": "Resources",
+			"projectDescription": "Links for this project: folders, files and dashboards.",
+			"projectPageTitle": "{{name}} resources",
+			"reorderError": "The new order couldn't be saved.",
+			"retry": "Try again",
+			"save": "Save",
+			"saving": "Saving...",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Brand guidelines",
+			"updateError": "The link couldn't be updated.",
+			"updateSuccess": "Link updated",
+			"urlInvalid": "Enter a web address that starts with http:// or https://.",
+			"urlLabel": "Link",
+			"urlPlaceholder": "https://drive.google.com/…",
+			"viewAll": "All resources",
+			"workspaceDescription": "Links the whole team keeps close: folders, guidelines, dashboards and tools."
 		}
 	},
 	"team": {

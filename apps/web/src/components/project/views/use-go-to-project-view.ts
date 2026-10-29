@@ -5,6 +5,7 @@ import {
   PROJECT_ROUTE_PATHS,
   type ProjectRoute,
   type ProjectView,
+  isTaskView,
   routeForView,
 } from "./project-views";
 
@@ -24,7 +25,7 @@ export function useGoToProjectView({
   return useCallback(
     (view: ProjectView) => {
       if (view === "board" || view === "list") setViewMode(view);
-      if (view !== "backlog") setTaskLayout(view);
+      if (isTaskView(view)) setTaskLayout(view);
       const route = routeForView(view);
       if (route === currentRoute) return;
       navigate({

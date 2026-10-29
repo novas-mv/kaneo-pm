@@ -1,3 +1,5 @@
+import { ProjectTag } from "@/components/project/project-tag";
+import { useTaskSlug } from "@/components/project/rollup-context";
 import { useTranslation } from "react-i18next";
 import { CardFieldList } from "@/components/custom-fields/card-field-list";
 import { useTaskCardFields } from "@/components/custom-fields/use-task-card-fields";
@@ -51,6 +53,7 @@ export function TaskRowBody({
     showTaskItemCounts,
   } = useUserPreferencesStore();
   const cardFields = useTaskCardFields(task.projectId, task.id);
+  const slug = useTaskSlug(task.projectId, projectSlug);
   const priorityLabel = `${t("tasks:priority.label")}: ${getPriorityLabel(task.priority ?? "")}`;
 
   return (
@@ -73,12 +76,13 @@ export function TaskRowBody({
       )}
       {showTaskNumbers && (
         <span className="w-13 shrink-0 truncate font-mono text-muted-foreground text-xs">
-          {projectSlug}-{task.number}
+          {slug}-{task.number}
         </span>
       )}
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate text-foreground text-sm">{task.title}</span>
+        <ProjectTag projectId={task.projectId} />
         <div className="flex shrink-0 items-center gap-0.5">
           <SubtasksChip
             task={task}

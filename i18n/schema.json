@@ -10247,6 +10247,12 @@
 						},
 						"switcherLabel": {
 							"type": "string"
+						},
+						"removeFromGroup": {
+							"type": "string"
+						},
+						"moveIntoGroup": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -10259,7 +10265,9 @@
 						"deleteConfirmDescription",
 						"deletedToast",
 						"deleteProject",
-						"switcherLabel"
+						"switcherLabel",
+						"removeFromGroup",
+						"moveIntoGroup"
 					]
 				},
 				"search": {
@@ -12857,6 +12865,9 @@
 						"taskAriaLabel": {
 							"type": "string"
 						},
+						"taskInProjectAriaLabel": {
+							"type": "string"
+						},
 						"noTasksThisMonth": {
 							"type": "string"
 						}
@@ -12872,6 +12883,7 @@
 						"loadError",
 						"dayTasksAriaLabel",
 						"taskAriaLabel",
+						"taskInProjectAriaLabel",
 						"noTasksThisMonth"
 					]
 				},
@@ -13654,6 +13666,22 @@
 						}
 					},
 					"required": ["reorderFailed"]
+				},
+				"groupScope": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"label": {
+							"type": "string"
+						},
+						"own": {
+							"type": "string"
+						},
+						"everything": {
+							"type": "string"
+						}
+					},
+					"required": ["label", "own", "everything"]
 				}
 			},
 			"required": [
@@ -13697,7 +13725,8 @@
 				"descriptionRetry",
 				"descriptionLoading",
 				"descriptionLoadError",
-				"board"
+				"board",
+				"groupScope"
 			]
 		},
 		"invitations": {
@@ -13905,6 +13934,12 @@
 						"reorderError": {
 							"type": "string"
 						},
+						"groupError": {
+							"type": "string"
+						},
+						"groupNotAllowed": {
+							"type": "string"
+						},
 						"unavailable": {
 							"type": "object",
 							"additionalProperties": false,
@@ -13949,6 +13984,8 @@
 						"noDueDate",
 						"reorderHandle",
 						"reorderError",
+						"groupError",
+						"groupNotAllowed",
 						"unavailable"
 					]
 				},

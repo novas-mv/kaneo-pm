@@ -7,6 +7,10 @@ export const projectSchema = z
     id: z.string(),
     workspaceId: z.string(),
     backgroundVersion: z.string().nullable(),
+    parentProjectId: z.string().nullable().openapi({
+      description:
+        "Id of the parent project when this project is nested under one; null for top-level projects.",
+    }),
     slug: z.string().openapi({
       description: "Short prefix used in task identifiers, e.g. KAN-12.",
     }),

@@ -136,6 +136,30 @@ describe("project WebSocket access", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it("rollup child socket does not navigate on access revoked", () => {
+    cached.queries = [
+      { queryKey: ["projects", "workspace-a"] },
+      { queryKey: ["projects", "workspace-a", "child-a"] },
+    ];
+    renderHook(() => useProjectWebSocket("child-a", { rollupChild: true }));
+    act(() => {
+      TestSocket.instances[0].open();
+      TestSocket.instances[0].onclose?.({
+        code: 1008,
+        reason: "Project access revoked",
+      });
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(evictProjectCache).toHaveBeenCalledWith(client, "child-a");
+    expect(client.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ["projects", "workspace-a"],
+    });
+    expect(client.clear).not.toHaveBeenCalled();
+    expect(TestSocket.instances).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("falls back to the dashboard when the project's workspace is unknown", () => {
     renderHook(() => useProjectWebSocket("project-a"));
     act(() => {

@@ -25,6 +25,7 @@ import { isOwnDomEvent } from "@/lib/is-own-dom-event";
 import { isTaskCompleted } from "@/lib/due-date-status";
 import { toast } from "@/lib/toast";
 import useBacklogBulkSelectionStore from "@/store/backlog-bulk-selection";
+import { useRollup } from "@/components/project/rollup-context";
 import useProjectStore from "@/store/project";
 import type Task from "@/types/task";
 import TaskCardContextMenuContent from "../kanban-board/task-card-context-menu/task-card-context-menu-content";
@@ -54,6 +55,8 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
   });
 
   const projectId = useProjectStore((state) => state.project?.id);
+  // Bulk selection is off on a rolled-up view.
+  const canSelect = useRollup() === null;
   const projectSlug = useProjectStore((state) => state.project?.slug);
   const projectColumns = useProjectStore((state) => state.project?.columns);
   const taskIsCompleted = isTaskCompleted(task.status, projectColumns);
@@ -101,13 +104,13 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
     if (!projectId || !task || !isOwnDomEvent(e)) return;
     if (e.defaultPrevented) return;
 
-    if (e.shiftKey) {
+    if (canSelect && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
       return;
     }
 
-    if (e.metaKey || e.ctrlKey) {
+    if (canSelect && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       toggleSelection(task.id);
       return;
@@ -132,7 +135,7 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.target !== e.currentTarget) return;
-    if (e.key === "Enter" && e.shiftKey) {
+    if (canSelect && e.key === "Enter" && e.shiftKey) {
       e.preventDefault();
       selectRange(task.id);
     }
@@ -198,7 +201,7 @@ const BacklogTaskRow = memo(function BacklogTaskRow({
           <TaskCardContextMenuContent
             task={task}
             taskCardContext={{
-              projectId,
+              projectId: task.projectId,
               worskpaceId: workspace.id,
               workspaceSlug: workspace.slug,
             }}

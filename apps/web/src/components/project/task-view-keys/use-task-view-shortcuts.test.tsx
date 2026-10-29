@@ -234,3 +234,38 @@ describe("useTaskViewShortcuts", () => {
     expect(callbacks.onToggleAllGroups).toHaveBeenCalledTimes(1);
   });
 });
+
+function RollupHarness() {
+  useTaskViewShortcuts({
+    layout: "board",
+    selection: useBulkSelectionStore,
+    getGroups: () => groups,
+    project: { id: "parent", workspaceId: "workspace-1" },
+    getTaskProjectId: (taskId) => (taskId === "d" ? "child" : undefined),
+  });
+  return null;
+}
+
+it("open focused task on a rolled-up board uses the task's own projectId", () => {
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ShortcutTestWrapper>
+        <RollupHarness />
+      </ShortcutTestWrapper>
+    </QueryClientProvider>,
+  );
+  focus("d");
+  press({ key: "Enter", code: "Enter" });
+  expect(mocks.navigate).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      params: { workspaceId: "workspace-1", projectId: "child", taskId: "d" },
+    }),
+  );
+  focus("a");
+  press({ key: "Enter", code: "Enter" });
+  expect(mocks.navigate).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      params: { workspaceId: "workspace-1", projectId: "parent", taskId: "a" },
+    }),
+  );
+});

@@ -2424,7 +2424,8 @@
 			"home": "Startseite",
 			"inbox": "Posteingang",
 			"invitePeople": "Personen einladen",
-			"myTasks": "Meine Aufgaben"
+			"myTasks": "Meine Aufgaben",
+			"resources": "Resources"
 		},
 		"projectList": {
 			"viewProject": "Projekt ansehen",
@@ -2436,7 +2437,9 @@
 			"deleteConfirmDescription": "Dadurch wird das Projekt und alle zugehörigen Daten dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
 			"deletedToast": "Projekt gelöscht",
 			"deleteProject": "Projekt löschen",
-			"switcherLabel": "Projekt oder Ansicht wechseln"
+			"switcherLabel": "Projekt oder Ansicht wechseln",
+			"removeFromGroup": "Remove from group",
+			"moveIntoGroup": "Move into group"
 		},
 		"search": {
 			"inputPlaceholder": "Aufgaben, Projekte, Kommentare suchen...",
@@ -3275,6 +3278,7 @@
 			"pageTitle": "{{name}} / Kalender",
 			"previousMonth": "Vorheriger Monat",
 			"taskAriaLabel": "{{title}}, {{range}}: Aufgabe öffnen",
+			"taskInProjectAriaLabel": "{{title}}, {{project}}, {{range}}: open task",
 			"title": "Kalender",
 			"today": "Heute",
 			"loadError": "Aufgaben konnten nicht geladen werden.",
@@ -3376,6 +3380,11 @@
 			"startsOn": "Beginnt {{date}}",
 			"beforeStart": "{{date}} liegt vor dem Startdatum",
 			"afterDue": "{{date}} liegt nach dem Fälligkeitsdatum"
+		},
+		"groupScope": {
+			"label": "Show tasks from",
+			"own": "Own only",
+			"everything": "Everything"
 		}
 	},
 	"invitations": {
@@ -3441,7 +3450,9 @@
 				"noAccessTitle": "Du hast keinen Zugriff auf dieses Projekt",
 				"notFoundDescription": "Dieses Projekt existiert nicht oder wurde gelöscht.",
 				"notFoundTitle": "Projekt nicht gefunden"
-			}
+			},
+			"groupError": "Failed to update project group",
+			"groupNotAllowed": "This project can't be grouped there"
 		},
 		"search": {
 			"pageTitle": "Suche",
@@ -3531,6 +3542,50 @@
 			},
 			"empty": "Dir ist nichts zugewiesen",
 			"loadError": "Deine Aufgaben konnten nicht geladen werden."
+		},
+		"resources": {
+			"actionsAria": "Actions for {{name}}",
+			"add": "Add link",
+			"create": "Add link",
+			"createError": "The link couldn't be added.",
+			"createSuccess": "Link pinned",
+			"deleteConfirm": "Remove link",
+			"deleteDescription": "The link is unpinned for everyone. The page it points to isn't affected.",
+			"deleteError": "The link couldn't be removed.",
+			"deleteSuccess": "Link removed",
+			"deleteTitle": "Remove \"{{name}}\"?",
+			"descriptionLabel": "Description (optional)",
+			"descriptionPlaceholder": "Logos, fonts and colors",
+			"dialogDescription": "Links open in a new tab for everyone who can see this list.",
+			"dragAria": "Reorder {{name}}",
+			"edit": "Edit",
+			"editTitle": "Edit link",
+			"emojiLabel": "Emoji (optional)",
+			"emptyDescription": "Pin the folders, files and tools your team opens every day.",
+			"emptyDescriptionReadOnly": "Nothing has been pinned here yet.",
+			"emptyTitle": "No links pinned yet",
+			"homeEmpty": "Pin your team's most-used links here.",
+			"homeTitle": "Pinned resources",
+			"loadError": "Resources couldn't be loaded.",
+			"manage": "Manage",
+			"newTitle": "Add a link",
+			"opensInNewTab": "(opens in a new tab)",
+			"pageTitle": "Resources",
+			"projectDescription": "Links for this project: folders, files and dashboards.",
+			"projectPageTitle": "{{name}} resources",
+			"reorderError": "The new order couldn't be saved.",
+			"retry": "Try again",
+			"save": "Save",
+			"saving": "Saving...",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Brand guidelines",
+			"updateError": "The link couldn't be updated.",
+			"updateSuccess": "Link updated",
+			"urlInvalid": "Enter a web address that starts with http:// or https://.",
+			"urlLabel": "Link",
+			"urlPlaceholder": "https://drive.google.com/…",
+			"viewAll": "All resources",
+			"workspaceDescription": "Links the whole team keeps close: folders, guidelines, dashboards and tools."
 		}
 	},
 	"team": {

@@ -32,8 +32,9 @@ vi.mock("@/components/page-title", () => ({ default: () => null }));
 vi.mock("@/components/task/task-details-sheet", () => ({
   default: () => null,
 }));
-vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
-  useGetTasks: () => ({
+vi.mock("@/hooks/queries/task/use-get-group-tasks", () => ({
+  useGetGroupTasks: () => ({
+    childIds: [],
     data: {
       name: "Project",
       slug: "PROJ",
@@ -41,6 +42,12 @@ vi.mock("@/hooks/queries/task/use-get-tasks", () => ({
       plannedTasks: [],
     },
   }),
+}));
+vi.mock("@/hooks/use-task-sheet-project-id", () => ({
+  useTaskSheetProjectId: (_shown: unknown, _taskId: unknown, id: string) => id,
+}));
+vi.mock("@/components/project/rollup-scope", () => ({
+  RollupScope: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@/hooks/mutations/task/use-update-task", () => ({
   useUpdateTask: () => ({ mutateAsync: m.update }),

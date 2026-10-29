@@ -69,6 +69,7 @@ import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-
 import useGetProjectMembers from "@/hooks/queries/workspace-users/use-get-project-members";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
+import { childProjectIds } from "@/lib/group-board";
 import { uploadDraftAsset } from "@/lib/upload-draft-asset";
 import { formatDateMedium } from "@/lib/format";
 import { getInitials } from "@/lib/get-initials";
@@ -263,11 +264,30 @@ function CreateTaskModalContent({
   const { data: workspaceProjects } = useGetProjects({
     workspaceId: workspace?.id || "",
   });
+  // From a parent project, the task can go to the parent (preselected) or one
+  // of its children. A column-specific status stays with the open project.
+  const groupProjectIds =
+    explicitProjectId && (!status || status === "planned")
+      ? [
+          explicitProjectId,
+          ...childProjectIds(workspaceProjects, explicitProjectId),
+        ]
+      : [];
+  const canPickInGroup = groupProjectIds.length > 1;
+  const targetProjectId =
+    canPickInGroup && groupProjectIds.includes(selectedProjectId)
+      ? selectedProjectId
+      : explicitProjectId || selectedProjectId;
   // Only a project from this workspace's query may receive new content.
   // The global project store can still contain the last visited workspace.
   const resolvedProject = workspaceProjects?.find(
-    (candidate) => candidate.id === (explicitProjectId || selectedProjectId),
+    (candidate) => candidate.id === targetProjectId,
   );
+  const pickableProjects = canPickInGroup
+    ? workspaceProjects?.filter((candidate) =>
+        groupProjectIds.includes(candidate.id),
+      )
+    : workspaceProjects;
   const resolvedProjectId = resolvedProject?.id ?? "";
   const { data: projectMembers } = useGetProjectMembers({
     workspaceId: workspace?.id || "",
@@ -859,7 +879,7 @@ function CreateTaskModalContent({
             )}
 
             <div className="flex flex-wrap items-center gap-2 py-2">
-              {!explicitProjectId && (
+              {(!explicitProjectId || canPickInGroup) && (
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
@@ -880,7 +900,7 @@ function CreateTaskModalContent({
                   </PopoverTrigger>
                   <PopoverContent className="w-48 p-1" align="start">
                     <div className="space-y-1">
-                      {workspaceProjects?.map((workspaceProject) => (
+                      {pickableProjects?.map((workspaceProject) => (
                         <button
                           key={workspaceProject.id}
                           type="button"

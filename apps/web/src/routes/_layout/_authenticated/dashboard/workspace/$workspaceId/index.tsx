@@ -7,6 +7,7 @@ import WorkspaceLayout from "@/components/common/workspace-layout";
 import { ActivityFeed } from "@/components/home/activity-feed";
 import { getDayPart } from "@/components/home/day-part";
 import { HomeProjects } from "@/components/home/home-projects";
+import { HomeResources } from "@/components/home/home-resources";
 import { UpNext } from "@/components/home/up-next";
 import { WeekStrip } from "@/components/home/week-strip";
 import PageTitle from "@/components/page-title";
@@ -35,7 +36,8 @@ function RouteComponent() {
     isError,
   } = useGetAssignedTasks(workspaceId);
   const { data: projects } = useGetProjects({ workspaceId }, true);
-  const { canCreateTasks, canCreateProjects } = useWorkspacePermission();
+  const { canCreateTasks, canCreateProjects, canManageSettings } =
+    useWorkspacePermission();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const needsProjectFirst = projects?.length === 0 && canCreateProjects();
@@ -97,6 +99,11 @@ function RouteComponent() {
                 })}
               </p>
             )}
+
+            <HomeResources
+              workspaceId={workspaceId}
+              canManage={canManageSettings()}
+            />
 
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
               <div className="flex min-w-0 flex-col gap-9">
