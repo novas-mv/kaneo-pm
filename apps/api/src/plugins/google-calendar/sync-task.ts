@@ -7,6 +7,8 @@ import {
   type GoogleCalendarConfig,
   googleCalendarConfigSchema,
 } from "./config";
+import { linkedEventId } from "./event-link";
+import { fitToExisting } from "./fit-event";
 import { buildEvent, eventIdForTask, eventMatches } from "./mapping";
 
 export type CalendarTarget = {
@@ -43,7 +45,9 @@ export async function syncTaskToCalendar(
   { removeWhenUndated = true }: { removeWhenUndated?: boolean } = {},
 ) {
   const { calendarId, timeZone } = target.config;
-  const eventId = eventIdForTask(taskId);
+  // A task imported from Google keeps writing to that event, never a new one.
+  const imported = await linkedEventId(taskId, target.integrationId);
+  const eventId = imported ?? eventIdForTask(taskId);
 
   const [row] = await db
     .select({
@@ -63,7 +67,7 @@ export async function syncTaskToCalendar(
     return;
   }
 
-  const desired = buildEvent(row.task, {
+  const built = buildEvent(row.task, {
     timeZone,
     integrationId: target.integrationId,
     projectName: row.projectName,
@@ -71,12 +75,16 @@ export async function syncTaskToCalendar(
     taskUrl: taskUrl(row.workspaceId, row.task.projectId, row.task.id),
   });
 
-  if (!desired) {
+  if (!built) {
     if (removeWhenUndated) await deleteEvent(calendarId, eventId);
     return;
   }
 
   const existing = await getEvent(calendarId, eventId);
+  const desired = fitToExisting({ ...built, id: eventId }, existing, {
+    timeZone,
+    imported: Boolean(imported),
+  });
   if (existing && eventMatches(existing, desired)) return;
   await upsertEvent(calendarId, desired);
 }
@@ -86,15 +94,22 @@ export async function syncTasksToCalendar(
   target: CalendarTarget,
 ) {
   let failed = 0;
+  let firstError: string | null = null;
   for (const taskId of taskIds) {
     try {
       await syncTaskToCalendar(taskId, target, { removeWhenUndated: false });
     } catch (error) {
       failed += 1;
+      firstError ??= error instanceof Error ? error.message : String(error);
       console.error(`Google Calendar sync failed for task ${taskId}:`, error);
     }
   }
-  return { failed };
+  // Google's own reason, such as a 403 for a calendar shared read-only, is
+  // what tells people how to fix a failed sync, so lastError carries it.
+  const error = failed
+    ? `${failed} tasks failed to sync: ${firstError}`.slice(0, 300)
+    : null;
+  return { failed, error };
 }
 
 export async function datedTaskIdsInProject(projectId: string) {

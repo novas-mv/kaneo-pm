@@ -1,4 +1,4 @@
-import { expect, it } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 import { planGoogleEdits } from "./merge";
 import { buildEvent, type CalendarTask } from "./mapping";
 
@@ -79,13 +79,92 @@ it("takes both dates for a task that already has a range", () => {
   });
 });
 
-it("ignores events with no snapshot and timed events", () => {
+it("ignores events with no snapshot", () => {
   const plain = { ...pushed(task()), extendedProperties: undefined };
   expect(planGoogleEdits({ ...plain, summary: "X" }, task(), zone)).toEqual({});
-  const timed = {
+});
+
+it("takes the exact times when Google makes an all-day event timed", () => {
+  const event = {
     ...pushed(task()),
-    start: { dateTime: "2026-11-02T10:00:00Z" },
-    end: { dateTime: "2026-11-02T11:00:00Z" },
+    start: { dateTime: "2026-11-02T10:00:00+05:00" },
+    end: { dateTime: "2026-11-02T11:00:00+05:00" },
   };
-  expect(planGoogleEdits(timed, task(), zone)).toEqual({});
+  expect(planGoogleEdits(event, task(), zone)).toEqual({
+    start: "2026-11-02T05:00:00.000Z",
+    due: "2026-11-02T06:00:00.000Z",
+  });
+});
+
+describe("timed tasks", () => {
+  // 15:00 in the Maldives.
+  const timedTask = task({ dueDate: new Date("2026-11-02T10:00:00Z") });
+
+  it("takes nothing when the timed event is what Kaneo pushed", () => {
+    const event = {
+      ...pushed(timedTask),
+      // Google answers in the calendar's offset.
+      start: { dateTime: "2026-11-02T15:00:00+05:00", timeZone: zone },
+      end: { dateTime: "2026-11-02T15:00:00+05:00", timeZone: zone },
+    };
+    expect(planGoogleEdits(event, timedTask, zone)).toEqual({});
+  });
+
+  it("moves a timed single-date task to the new time", () => {
+    const event = {
+      ...pushed(timedTask),
+      start: { dateTime: "2026-11-03T17:30:00+05:00" },
+      end: { dateTime: "2026-11-03T17:30:00+05:00" },
+    };
+    expect(planGoogleEdits(event, timedTask, zone)).toEqual({
+      due: "2026-11-03T12:30:00.000Z",
+    });
+  });
+
+  it("gives a start time when the event is stretched", () => {
+    const event = {
+      ...pushed(timedTask),
+      end: { dateTime: "2026-11-02T16:00:00+05:00" },
+    };
+    expect(planGoogleEdits(event, timedTask, zone)).toEqual({
+      start: "2026-11-02T10:00:00.000Z",
+      due: "2026-11-02T11:00:00.000Z",
+    });
+  });
+
+  it("drops the time when Google makes the event all-day", () => {
+    const event = {
+      ...pushed(timedTask),
+      start: { date: "2026-11-04" },
+      end: { date: "2026-11-05" },
+    };
+    expect(planGoogleEdits(event, timedTask, zone)).toEqual({
+      due: "2026-11-04",
+      untimed: true,
+    });
+  });
+
+  it("keeps a time added in Kaneo over the stale all-day event", () => {
+    const event = pushed(task());
+    expect(planGoogleEdits(event, timedTask, zone)).toEqual({});
+  });
+
+  it("keeps a Kaneo time edit when Google only renamed the event", () => {
+    const event = { ...pushed(timedTask), summary: "Renamed" };
+    const edited = task({ dueDate: new Date("2026-11-02T11:00:00Z") });
+    expect(planGoogleEdits(event, edited, zone)).toEqual({ title: "Renamed" });
+  });
+});
+
+it("reads an old all-day snapshot against a task that has a time", () => {
+  // Kaneo pushed all-day events before timed sync, even for timed tasks.
+  const timedTask = task({ dueDate: new Date("2026-11-02T10:00:00Z") });
+  const event = {
+    ...pushed(task()),
+    start: { date: "2026-11-05" },
+    end: { date: "2026-11-06" },
+  };
+  expect(planGoogleEdits(event, timedTask, zone)).toEqual({
+    due: "2026-11-05",
+  });
 });
