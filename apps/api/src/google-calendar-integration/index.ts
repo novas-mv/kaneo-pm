@@ -18,6 +18,8 @@ import {
   assertCalendarAccess,
   GoogleCalendarError,
 } from "../plugins/google-calendar/client";
+import { dropCalendarLinks } from "../plugins/google-calendar/event-link";
+import { calendarIdOf } from "../plugins/google-calendar/shared-calendars";
 import {
   DEFAULT_TIME_ZONE,
   type GoogleCalendarConfig,
@@ -196,6 +198,13 @@ const googleCalendarIntegration = apiRouter<
     // A new config has no sync token, so the next run pushes every dated task.
     const existing = await findIntegration(projectId);
     if (existing) {
+      if (
+        calendarIdOf(existing.config) !== calendarIdOf(JSON.stringify(config))
+      ) {
+        // Imported tasks pointed at events in the old calendar. Without the
+        // links they are pushed to the new calendar like any other task.
+        await dropCalendarLinks(existing.id);
+      }
       await db
         .update(integrationTable)
         .set({ config: JSON.stringify(config), isActive: true })

@@ -2,103 +2,16 @@ import { and, eq, gte } from "drizzle-orm";
 import * as v from "valibot";
 import db from "../../database";
 import { integrationTable, taskTable } from "../../database/schema";
-import { publishEvent } from "../../events";
-import {
-  publishTaskMutation,
-  recordTaskMutation,
-} from "../../task/controllers/task-mutation-effects";
+import { applyChange } from "./apply-change";
 import { isGoogleCalendarConfigured } from "./auth";
+import { calendarIdOf, sharedCalendarIds } from "./shared-calendars";
 import { GoogleCalendarError, listChanges } from "./client";
 import { googleCalendarConfigSchema } from "./config";
-import { planGoogleEdits } from "./merge";
-import { type CalendarEvent, eventIdForTask } from "./mapping";
 import {
   type CalendarTarget,
   datedTaskIdsInProject,
   syncTasksToCalendar,
-  syncTaskToCalendar,
 } from "./sync-task";
-import { shiftToDay } from "./zone";
-
-type Task = typeof taskTable.$inferSelect;
-
-function taskIdOf(event: CalendarEvent, integrationId: string) {
-  const owner = event.extendedProperties?.private?.kaneoIntegrationId;
-  const taskId = event.extendedProperties?.private?.kaneoTaskId;
-  // Only the event Kaneo created for the task counts. Copies and recurring
-  // exceptions inherit the properties but not the id.
-  if (!taskId || owner !== integrationId) return null;
-  return event.id === eventIdForTask(taskId) ? taskId : null;
-}
-
-async function applyEventToTask(
-  event: CalendarEvent,
-  task: Task,
-  target: CalendarTarget,
-) {
-  const { timeZone } = target.config;
-  const edits = planGoogleEdits(event, task, timeZone);
-  const changes: Partial<Pick<Task, "title" | "startDate" | "dueDate">> = {};
-  if (edits.title) changes.title = edits.title;
-  if (edits.start) {
-    changes.startDate = shiftToDay(task.startDate, edits.start, timeZone);
-  }
-  if (edits.due) {
-    changes.dueDate = shiftToDay(
-      task.dueDate ?? task.startDate,
-      edits.due,
-      timeZone,
-    );
-  }
-  if (Object.keys(changes).length === 0) return;
-
-  const updated = await db.transaction(async (tx) => {
-    const [row] = await tx
-      .update(taskTable)
-      .set(changes)
-      .where(eq(taskTable.id, task.id))
-      .returning();
-    if (row) {
-      await recordTaskMutation(tx, task, {
-        title: changes.title,
-        dueDate: changes.dueDate,
-      });
-    }
-    return row;
-  });
-  if (!updated) return;
-
-  await publishTaskMutation(task, updated, undefined, {
-    fields: ["title", "dueDate"],
-    sourceIntegrationId: target.integrationId,
-  });
-  await publishEvent("task.updated", {
-    taskId: updated.id,
-    projectId: updated.projectId,
-    title: updated.title,
-    status: updated.status,
-    userId: null,
-  });
-}
-
-async function applyChange(event: CalendarEvent, target: CalendarTarget) {
-  const taskId = taskIdOf(event, target.integrationId);
-  // Events that did not start in Kaneo, and deletions in Google, never touch tasks.
-  if (!taskId || event.status === "cancelled") return;
-
-  const task = await db.query.taskTable.findFirst({
-    where: and(
-      eq(taskTable.id, taskId),
-      eq(taskTable.projectId, target.projectId),
-    ),
-  });
-  if (!task) return;
-
-  await applyEventToTask(event, task, target);
-  // Writes only when the event differs from the task, which also refreshes the
-  // snapshot and restores fields Google cannot hold, such as the description.
-  await syncTaskToCalendar(taskId, target);
-}
 
 type SavedState = {
   syncToken?: string | null;
@@ -135,7 +48,10 @@ async function saveState(
 }
 
 // Returns true when the run recorded an error.
-async function syncIntegration(row: typeof integrationTable.$inferSelect) {
+async function syncIntegration(
+  row: typeof integrationTable.$inferSelect,
+  { canImport }: { canImport: boolean },
+) {
   const parsed = v.safeParse(
     googleCalendarConfigSchema,
     JSON.parse(row.config),
@@ -153,15 +69,13 @@ async function syncIntegration(row: typeof integrationTable.$inferSelect) {
     if (!syncToken) {
       // First run: Kaneo is the source of truth, so push every dated task first
       // and only then take the sync token, so those writes are not read back.
-      const { failed } = await syncTasksToCalendar(
+      const { failed, error } = await syncTasksToCalendar(
         await datedTaskIdsInProject(row.projectId),
         target,
       );
       if (failed > 0) {
         // No token yet, so the next run pushes everything again.
-        await saveState(row.id, calendarId, {
-          lastError: `${failed} tasks failed to sync`,
-        });
+        await saveState(row.id, calendarId, { lastError: error });
         return true;
       }
       const { nextSyncToken } = await listChanges(calendarId);
@@ -176,7 +90,7 @@ async function syncIntegration(row: typeof integrationTable.$inferSelect) {
     const changes = await listChanges(calendarId, syncToken);
     for (const event of changes.items) {
       try {
-        await applyChange(event, target);
+        await applyChange(event, target, { canImport });
       } catch (error) {
         console.error(
           `Google Calendar pull failed for event ${event.id}:`,
@@ -197,14 +111,14 @@ async function syncIntegration(row: typeof integrationTable.$inferSelect) {
             ),
           )
       : [];
-    const { failed } = await syncTasksToCalendar(
+    const { failed, error } = await syncTasksToCalendar(
       recent.map((task) => task.id),
       target,
     );
 
     await saveState(row.id, calendarId, {
       syncToken: changes.nextSyncToken ?? syncToken,
-      lastError: failed ? `${failed} tasks failed to sync` : null,
+      lastError: error,
       // Moving the window forward only after a clean run keeps failed pushes in it.
       ...(failed ? {} : { syncedAt: startedAt }),
     });
@@ -236,9 +150,13 @@ export async function syncGoogleCalendars() {
       eq(integrationTable.isActive, true),
     ),
   });
+  // A calendar connected to several projects cannot tell which one a new
+  // event belongs to, so none of them imports from it.
+  const shared = sharedCalendarIds(rows);
   let degraded = false;
   for (const row of rows) {
-    if (await syncIntegration(row)) degraded = true;
+    const canImport = !shared.has(calendarIdOf(row.config) ?? "");
+    if (await syncIntegration(row, { canImport })) degraded = true;
   }
   return { degraded };
 }

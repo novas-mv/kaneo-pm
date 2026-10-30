@@ -1,9 +1,9 @@
 ---
 title: Google Calendar
-description: Keep a project's task dates in sync with a shared Google Calendar. Changes made in Kaneo or in Google Calendar show up on both sides.
+description: Keep a project's task dates in sync with a shared Google Calendar. Changes made in Kaneo or in Google Calendar show up on both sides, and events added in Google become tasks.
 ---
 
-Each project can sync with one shared Google Calendar. Every task with a start or due date becomes an all-day event. Moving or renaming the event in Google Calendar updates the task.
+Each project can sync with one shared Google Calendar. Every task with a start or due date becomes an event: all-day when the task has only dates, timed when it has a time of day. Moving or renaming the event in Google Calendar updates the task. An event you add directly to the calendar becomes a task in the project.
 
 <Info>
 Sync is per project and needs one Google service account for the whole instance. The service account is a robot login, so nobody has to connect a personal Google account and no token expires when someone changes a password.
@@ -14,12 +14,40 @@ Sync is per project and needs one Google service account for the whole instance.
 | In Kaneo | In Google Calendar |
 | --- | --- |
 | Task title | Event title |
-| Start and due date | All-day event spanning those days. A task with one date is a one-day event. |
+| Start and due date, dates only | All-day event spanning those days. A task with one date is a one-day event. |
+| Start or due date with a time of day | Timed event from the start time to the due time. A task with one time is an event at that time with no length. |
 | Project and status | Event description, with a link back to the task |
 | Task without dates | No event |
 | Task deleted or moved to another project | Event removed |
 
-Kaneo to Google runs as soon as a task changes. Google to Kaneo is checked once a minute. Kaneo remembers what it last wrote to each event, so only the fields you changed in Google are applied. If both sides changed the same field, the Kaneo value wins. Deleting an event in Google leaves the task alone, and events created directly in Google do not become tasks.
+Kaneo to Google runs as soon as a task changes. Google to Kaneo is checked once a minute. Kaneo remembers what it last wrote to each event, so only the fields you changed in Google are applied. If both sides changed the same field, the Kaneo value wins. Deleting an event in Google leaves the task alone.
+
+## Events added in Google
+
+Within a minute, an event you create or change directly in the connected calendar becomes a task in the project.
+
+| In Google Calendar | New task in Kaneo |
+| --- | --- |
+| Event title | Task title. An event without a title becomes "(No title)". |
+| One-day all-day event | Due date on that day |
+| All-day event over several days | Start date on the first day, due date on the last day |
+| Timed event | Start date at the event's start time, due date at its end time. An event with no length gives a due time only. |
+| Any event | Status is the project's first open column. No assignee, no description. |
+
+Dates from an all-day event sit at noon on that day in the project's time zone.
+
+These events do not become tasks:
+
+- Events that were already on the calendar when you connected it. They become tasks only after someone changes them.
+- Cancelled or deleted events.
+- Repeating events, because one task cannot hold a series.
+- Special events, such as out-of-office or focus time.
+- Events Kaneo created or already linked to a task.
+- Any event on a calendar that is connected to more than one project, because Kaneo cannot tell which project it belongs to. Kaneo still pushes tasks to that calendar.
+
+After the import, the task and the event stay linked, and the same rules as above apply. Kaneo updates the event you created. It never adds a second event for the task. Kaneo also keeps what you set in Google: the description of an imported event stays as you wrote it, and when a task has dates only, a timed event keeps its times while its day still matches the task. When you move such a task to another day in Kaneo, the event becomes an all-day event on the new days. Moving or resizing a timed event in Google gives the task those exact times. Making a timed event all-day in Google removes the time from the task.
+
+If you delete an imported event in Google, the task stays. If you delete the task in Kaneo, or move it to another project, the event stays in the calendar and does not come back as a new task. If you remove the task's dates in Kaneo, Kaneo removes the event, as it does for any task without dates.
 
 ## Set up the instance
 
@@ -40,12 +68,18 @@ GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON=<contents of the key file>
 3. Copy the **Calendar ID** from **Integrate calendar**.
 4. In Kaneo, open **Settings → Projects → your project → Integrations → Google Calendar**, paste the Calendar ID, check the time zone, and click **Connect calendar**.
 
-The first sync runs within a minute and pushes every task that has a date. Tasks added to the calendar later show up as they change.
+The first sync runs within a minute and pushes every task that has a date. Events that are already on the calendar do not become tasks. After that, events added or changed in Google become tasks within a minute.
 
 ## Time zones
 
-The time zone decides which day a task date falls on, so a task due late in the evening does not land on the next day. It defaults to `Indian/Maldives`.
+The time zone decides which day a date-only task falls on, so it does not land on the day before or after. It defaults to `Indian/Maldives`.
+
+Timed events do not use this setting. Kaneo sends the exact moment, and Google Calendar shows each viewer the time in their own zone. A task due at 15:00 in Malé shows at 15:00 for a viewer in Malé and at 10:00 for a viewer in London.
+
+Kaneo stores every date with a time, so it treats a date as date-only when it sits at midnight or noon in the project's time zone, or at midnight UTC. Any other time counts as a time of day. Set the project's time zone to the zone your team picks dates in, or dates picked in another zone can show as timed events at midnight.
 
 ## Turn it off
 
-Disconnect the calendar in the project's integration settings. Events already on the calendar stay where they are and are no longer updated.
+Disconnect the calendar in the project's integration settings. Events already on the calendar stay where they are and are no longer updated. Tasks imported from the calendar stay in the project.
+
+If you connect the project to a different calendar, imported tasks lose their link to the old calendar. Kaneo then pushes them to the new calendar like any other task.
