@@ -8,6 +8,7 @@ import {
   labelTable,
   projectTable,
   taskTable,
+  userTable,
   taskReminderSentTable,
   workspaceUserTable,
 } from "../../database/schema";
@@ -253,6 +254,15 @@ async function bulkUpdateTasks({
         );
       }
 
+      const assignee = assigneeId
+        ? await db.query.userTable.findFirst({
+            columns: { name: true },
+            where: eq(userTable.id, assigneeId),
+          })
+        : undefined;
+      const assigneeNames = new Map(
+        assigneeId && assignee ? [[assigneeId, assignee.name]] : [],
+      );
       const before = await db.transaction(async (tx) => {
         const locked = await tx
           .select({
@@ -301,6 +311,7 @@ async function bulkUpdateTasks({
           userId,
           {
             fields: ["userId"],
+            assigneeNames,
             assignees: {
               added: change?.added ?? [],
               removed: change?.removed ?? [],

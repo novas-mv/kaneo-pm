@@ -54,9 +54,12 @@ async function publishAssigneeEvents(
   common: { taskId: string; projectId: string; userId?: string; title: string },
   previousPrimary: string | null,
   { added, removed }: { added: string[]; removed: string[] },
+  knownNames?: ReadonlyMap<string, string>,
 ) {
-  const names =
-    added.length + removed.length > 0
+  // Bulk callers resolve names once and pass them in, so no per-task lookup.
+  const names = knownNames
+    ? [...knownNames].map(([id, name]) => ({ id, name }))
+    : added.length + removed.length > 0
       ? await db
           .select({ id: userTable.id, name: userTable.name })
           .from(userTable)
@@ -93,6 +96,7 @@ export async function publishTaskMutation(
     // When given, replaces the single-assignee comparison: one event per person
     // added or removed, so only the newly added get notified.
     assignees?: { added: string[]; removed: string[] };
+    assigneeNames?: ReadonlyMap<string, string>;
     sourceIntegrationId?: string;
   } = {},
 ) {
