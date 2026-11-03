@@ -31,7 +31,7 @@ services:
       retries: 5
 
   kaneo:
-    image: ghcr.io/novas-mv/kaneo:7cf429f7
+    image: ghcr.io/novas-mv/kaneo:2642639c
     environment:
       - KANEO_CLIENT_URL=${KANEO_CLIENT_URL:?}
       - AUTH_SECRET=${SERVICE_HEX_64_KANEO:?}
