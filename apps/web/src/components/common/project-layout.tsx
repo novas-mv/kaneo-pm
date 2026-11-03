@@ -7,9 +7,11 @@ import ProjectCrumbSelect from "@/components/common/header/project-crumb-select"
 import WorkspaceCrumbSelect from "@/components/common/header/workspace-crumb-select";
 import Layout from "@/components/common/layout";
 import { GroupScopeSwitch } from "@/components/project/group-scope-switch";
+import { LayoutTabs } from "@/components/project/views/layout-tabs";
 import { ProjectScopeToggle } from "@/components/project/views/project-scope-toggle";
 import {
   PROJECT_ROUTE_PATHS,
+  isTaskView,
   type ProjectRoute,
   resolveProjectView,
 } from "@/components/project/views/project-views";
@@ -159,6 +161,9 @@ export default function ProjectLayout({
                 currentView={currentView}
                 onSelect={goToView}
               />
+            )}
+            {showViewSwitcher && isTaskView(currentView) && (
+              <LayoutTabs currentView={currentView} onSelect={goToView} />
             )}
             <GroupScopeSwitch projectId={projectId} workspaceId={workspaceId} />
             {summary}
