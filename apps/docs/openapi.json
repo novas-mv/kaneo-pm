@@ -2478,6 +2478,10 @@
           "projectName": {
             "type": "string"
           },
+          "isPersonal": {
+            "type": "boolean",
+            "description": "True when the result is in, or is, your private personal project. Its stored name is not translated."
+          },
           "projectSlug": {
             "type": "string"
           },

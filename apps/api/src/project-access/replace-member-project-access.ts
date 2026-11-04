@@ -45,6 +45,7 @@ export async function replaceMemberProjectAccess(
     workspaceId,
     access.projectIds,
     database,
+    { includePersonal: false },
   );
   if (projectIds.length === 0) return;
 

@@ -13,6 +13,10 @@ export async function deletePersonalProjects(userId: string) {
     .where(eq(projectTable.ownerUserId, userId));
 
   for (const project of owned) {
-    await deleteProject(project.id, project.workspaceId);
+    try {
+      await deleteProject(project.id, project.workspaceId);
+    } catch (error) {
+      console.error("Failed to delete personal project:", project.id, error);
+    }
   }
 }

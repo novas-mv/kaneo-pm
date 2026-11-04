@@ -28,7 +28,12 @@ type BuildSettingsNavInput = {
   canImport: boolean;
   canManageContactOptions: boolean;
   hasAdminAccess: boolean;
-  projects: { id: string; name: string; icon?: string | null }[];
+  projects: {
+    id: string;
+    name: string;
+    icon?: string | null;
+    ownerUserId?: string | null;
+  }[];
 };
 
 const PROJECT_SECTIONS = [
@@ -39,6 +44,12 @@ const PROJECT_SECTIONS = [
   { id: "integrations", labelKey: "settings:projectIntegrations.title" },
   { id: "calendar", labelKey: "settings:calendarFeeds.title" },
 ] as const;
+
+const PERSONAL_HIDDEN = new Set<string>([
+  "visibility",
+  "integrations",
+  "calendar",
+]);
 
 function buildProject(
   t: Translate,
@@ -52,7 +63,10 @@ function buildProject(
     id: project.id,
     name: project.name,
     icon,
-    links: PROJECT_SECTIONS.map((section) => ({
+    // A personal project is private: no public sharing, integrations or feeds.
+    links: PROJECT_SECTIONS.filter(
+      (section) => !project.ownerUserId || !PERSONAL_HIDDEN.has(section.id),
+    ).map((section) => ({
       id: `project-${project.id}-${section.id}`,
       label: t(section.labelKey),
       to: `/dashboard/settings/projects/${project.id}/${section.id}`,

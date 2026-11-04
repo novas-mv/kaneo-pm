@@ -1,6 +1,8 @@
 import { client } from "@kaneo/libs";
 
 import { HttpError } from "@/lib/http-error";
+import { personalLabel } from "@/lib/personal-label";
+import { withPersonalSearchResult } from "@/lib/personal-project-name";
 
 type SearchParams = {
   q: string;
@@ -31,8 +33,14 @@ async function globalSearch(params: SearchParams) {
   }
 
   const data = await response.json();
+  const label = personalLabel();
 
-  return data;
+  return {
+    ...data,
+    results: data.results.map((result) =>
+      withPersonalSearchResult(result, label),
+    ),
+  };
 }
 
 export default globalSearch;

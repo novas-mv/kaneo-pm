@@ -1,7 +1,7 @@
 import { client } from "@kaneo/libs";
 import type { InferResponseType } from "hono/client";
 import { HttpError } from "@/lib/http-error";
-import { i18n } from "@/lib/i18n";
+import { personalLabel } from "@/lib/personal-label";
 import { withPersonalTaskProjectName } from "@/lib/personal-project-name";
 
 export type AssignedTasks = InferResponseType<
@@ -27,7 +27,7 @@ async function getAssignedTasks(
   }
 
   const data = await response.json();
-  const label = i18n.t("navigation:sidebar.personal");
+  const label = personalLabel();
 
   return {
     ...data,

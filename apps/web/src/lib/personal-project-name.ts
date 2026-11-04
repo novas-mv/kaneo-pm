@@ -11,3 +11,17 @@ export function withPersonalTaskProjectName<
 >(task: T, label: string): T {
   return task.isPersonal ? { ...task, projectName: label } : task;
 }
+
+export function withPersonalSearchResult<
+  T extends {
+    type: string;
+    isPersonal?: boolean;
+    title: string;
+    projectName?: string;
+  },
+>(result: T, label: string): T {
+  if (!result.isPersonal) return result;
+  return result.type === "project"
+    ? { ...result, title: label }
+    : { ...result, projectName: label };
+}

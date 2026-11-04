@@ -87,8 +87,6 @@ export async function deleteAccountData(userId: string) {
     });
   }
 
-  await deletePersonalProjects(userId);
-
   if (plan.workspaceIdsToDelete.length > 0) {
     const admins = await db
       .select({ userId: userTable.id })
@@ -134,6 +132,11 @@ export async function deleteAccountData(userId: string) {
   for (const workspaceId of plan.workspaceIdsToLeave) {
     await revokeWorkspaceConnections(userId, workspaceId, { force: true });
   }
+
+  // Last, so a failure above leaves private tasks intact. A project that can't
+  // be deleted here is still removed with the user row; only its uploaded
+  // files would miss storage cleanup.
+  await deletePersonalProjects(userId);
 
   return plan;
 }

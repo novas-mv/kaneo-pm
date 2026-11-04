@@ -408,4 +408,41 @@ describe("personal project", () => {
       .where(eq(schema.projectTable.id, ctx.work.project.id));
     expect(teamProject).toBeDefined();
   });
+
+  it("flags search results that live in the personal project", async () => {
+    const ctx = await setup();
+    const response = await ctx.as(ctx.owner)(
+      `/search?workspaceId=${ctx.workspace.id}&q=Secret&type=tasks`,
+    );
+    const { results } = (await response.json()) as {
+      results: { id: string; isPersonal?: boolean }[];
+    };
+    expect(results).toEqual([
+      expect.objectContaining({ id: ctx.task.id, isPersonal: true }),
+    ]);
+
+    const team = await ctx.as(ctx.owner)(
+      `/search?workspaceId=${ctx.workspace.id}&q=Existing&type=tasks`,
+    );
+    const teamResults = (await team.json()) as {
+      results: { isPersonal?: boolean }[];
+    };
+    expect(teamResults.results[0]?.isPersonal).toBeUndefined();
+  });
+
+  it("refuses to grant a personal project to another member", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.workspaceUserTable)
+      .set({ role: "admin" })
+      .where(eq(schema.workspaceUserTable.userId, ctx.owner.id));
+    const response = await ctx.as(ctx.owner)(
+      `/workspace/${ctx.workspace.id}/members/${ctx.teammate.id}/project-access`,
+      {
+        method: "PUT",
+        body: { projectAccess: "selected", projectIds: [ctx.personal.id] },
+      },
+    );
+    expect(response.status).toBe(400);
+  });
 });

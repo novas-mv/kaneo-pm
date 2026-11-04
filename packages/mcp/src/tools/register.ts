@@ -164,6 +164,22 @@ export function registerTools(
   );
 
   registerTool(
+    "get_personal_project",
+    {
+      description:
+        "Get the signed-in user's private personal project in a workspace, creating it if it does not exist yet. Only that user can see it. Create personal tasks with create_task using the returned project id; they are assigned to the user automatically.",
+      inputSchema: z.object({ workspaceId: nonEmptyString }),
+    },
+    async (args) =>
+      run(() =>
+        client.json("/api/project/personal", {
+          method: "POST",
+          body: JSON.stringify({ workspaceId: args.workspaceId }),
+        }),
+      ),
+  );
+
+  registerTool(
     "update_project",
     {
       description:

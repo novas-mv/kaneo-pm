@@ -6,6 +6,7 @@ export async function findWorkspaceProjectIds(
   workspaceId: string,
   projectIds: readonly string[],
   database: DbOrTx = db,
+  { includePersonal = true }: { includePersonal?: boolean } = {},
 ): Promise<string[]> {
   const ids = [...new Set(projectIds)];
   if (ids.length === 0) return [];
@@ -16,8 +17,7 @@ export async function findWorkspaceProjectIds(
     .where(
       and(
         eq(schema.projectTable.workspaceId, workspaceId),
-        // Personal projects are private to their owner and can't be granted.
-        isNull(schema.projectTable.ownerUserId),
+        includePersonal ? undefined : isNull(schema.projectTable.ownerUserId),
         inArray(schema.projectTable.id, ids),
       ),
     );

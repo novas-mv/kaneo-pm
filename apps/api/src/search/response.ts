@@ -12,6 +12,10 @@ export const searchResultSchema = z
     }),
     projectId: z.string().optional(),
     projectName: z.string().optional(),
+    isPersonal: z.boolean().optional().openapi({
+      description:
+        "True when the result is in, or is, your private personal project. Its stored name is not translated.",
+    }),
     projectSlug: z.string().optional(),
     workspaceId: z.string().optional(),
     workspaceName: z.string().optional(),
