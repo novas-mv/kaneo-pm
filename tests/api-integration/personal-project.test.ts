@@ -8,6 +8,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import deleteAccountData from "../../apps/api/src/user/controllers/delete-account-data";
 import { createTaskFixture } from "./helpers/project-access/create-task-fixture";
 import { addWorkspaceMember } from "./helpers/project-access/add-workspace-member";
 import { projectAccessApi } from "./helpers/project-access/project-access-api";
@@ -378,5 +379,33 @@ describe("personal project", () => {
     expect(await ids("personal")).toEqual({ ids: [ctx.task.id], total: 1 });
     expect(await ids("work")).toEqual({ ids: [ctx.workTask.id], total: 1 });
     expect((await ids("all")).total).toBe(2);
+  });
+
+  it("deletes a user's personal project and queues its files when the account is deleted", async () => {
+    const ctx = await setup();
+    await db.insert(schema.assetTable).values({
+      workspaceId: ctx.workspace.id,
+      projectId: ctx.personal.id,
+      taskId: ctx.task.id,
+      objectKey: "personal/secret.png",
+      filename: "secret.png",
+      mimeType: "image/png",
+      size: 10,
+    });
+
+    await deleteAccountData(ctx.owner.id);
+
+    const projects = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.id, ctx.personal.id));
+    expect(projects).toHaveLength(0);
+    const queued = await db.select().from(schema.storageCleanupTable);
+    expect(queued.map((row) => row.objectKey)).toContain("personal/secret.png");
+    const [teamProject] = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.id, ctx.work.project.id));
+    expect(teamProject).toBeDefined();
   });
 });

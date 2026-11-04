@@ -1,4 +1,9 @@
 import { ApiError, request } from "./client";
+import { i18n } from "@/lib/i18n";
+import {
+  withPersonalProjectName,
+  withPersonalTaskProjectName,
+} from "@/lib/personal-project-name";
 import type {
   Activity,
   AssignedTasks,
@@ -154,12 +159,19 @@ export const api = {
     post<unknown>("api/auth/organization/reject-invitation", { invitationId }),
 
   // --- Projects ---
-  projects: (workspaceId: string, includeArchived?: boolean) =>
-    get<Project[]>("api/project", {
+  projects: async (workspaceId: string, includeArchived?: boolean) => {
+    const projects = await get<Project[]>("api/project", {
       workspaceId,
       includeArchived: includeArchived ? "true" : undefined,
-    }),
-  project: (id: string) => get<Project>(`api/project/${id}`),
+    });
+    const label = i18n.t("mobile:myTasks.personal");
+    return projects.map((project) => withPersonalProjectName(project, label));
+  },
+  project: async (id: string) =>
+    withPersonalProjectName(
+      await get<Project>(`api/project/${id}`),
+      i18n.t("mobile:myTasks.personal"),
+    ),
   createProject: (body: {
     name: string;
     workspaceId: string;
@@ -189,8 +201,18 @@ export const api = {
       relatedPage,
       limit: 100,
     }),
-  assignedTasks: (workspaceId: string) =>
-    get<AssignedTasks>("api/task/assigned", { workspaceId }),
+  assignedTasks: async (workspaceId: string) => {
+    const assigned = await get<AssignedTasks>("api/task/assigned", {
+      workspaceId,
+    });
+    const label = i18n.t("mobile:myTasks.personal");
+    return {
+      ...assigned,
+      tasks: assigned.tasks.map((task) =>
+        withPersonalTaskProjectName(task, label),
+      ),
+    };
+  },
   task: (id: string) => get<Task>(`api/task/${id}`, { view: "detail" }),
   taskByTicketId: (ticketId: string, workspaceId?: string) =>
     get<Task>(`api/task/by-ticket-id/${encodeURIComponent(ticketId)}`, {

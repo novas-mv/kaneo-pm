@@ -1,6 +1,8 @@
 import { client } from "@kaneo/libs";
 import type { InferResponseType } from "hono/client";
 import { HttpError } from "@/lib/http-error";
+import { i18n } from "@/lib/i18n";
+import { withPersonalTaskProjectName } from "@/lib/personal-project-name";
 
 export type AssignedTasks = InferResponseType<
   (typeof client)["task"]["assigned"]["$get"],
@@ -24,7 +26,13 @@ async function getAssignedTasks(
     throw await HttpError.fromResponse(response);
   }
 
-  return response.json();
+  const data = await response.json();
+  const label = i18n.t("navigation:sidebar.personal");
+
+  return {
+    ...data,
+    tasks: data.tasks.map((task) => withPersonalTaskProjectName(task, label)),
+  };
 }
 
 export default getAssignedTasks;

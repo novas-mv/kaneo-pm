@@ -6,6 +6,7 @@ import {
 } from "../../billing/controllers/find-billable-workspaces";
 import { syncWorkspaceSeats } from "../../billing/controllers/sync-seats";
 import db from "../../database";
+import { deletePersonalProjects } from "../../project/controllers/delete-personal-projects";
 import { revokeWorkspaceConnections } from "../../ws";
 import {
   userTable,
@@ -85,6 +86,8 @@ export async function deleteAccountData(userId: string) {
       ),
     });
   }
+
+  await deletePersonalProjects(userId);
 
   if (plan.workspaceIdsToDelete.length > 0) {
     const admins = await db

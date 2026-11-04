@@ -91,12 +91,15 @@ async function createTask({
   const normalizedCustomFields = deduplicateCustomFields(customFields);
 
   // Personal tasks belong to their owner, so they show up in My tasks.
-  const [personalOwner] = await db
-    .select({ ownerUserId: projectTable.ownerUserId })
+  const [project] = await db
+    .select({
+      workspaceId: projectTable.workspaceId,
+      ownerUserId: projectTable.ownerUserId,
+    })
     .from(projectTable)
     .where(eq(projectTable.id, projectId));
-  const requestedAssignees = personalOwner?.ownerUserId
-    ? [personalOwner.ownerUserId]
+  const requestedAssignees = project?.ownerUserId
+    ? [project.ownerUserId]
     : normalizeAssigneeIds(assigneeIds ?? [userId]);
   const normalizedUserId = requestedAssignees[0];
 
@@ -153,7 +156,7 @@ async function createTask({
   if (requestedAssignees.length > 0) {
     await assertAssignableUsers(
       requestedAssignees,
-      await getProjectWorkspaceId(projectId),
+      project?.workspaceId ?? (await getProjectWorkspaceId(projectId)),
       projectId,
     );
 
