@@ -3512,7 +3512,7 @@
 			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"noAccessTitle": "You don't have access to this project",
-				"noAccessDescription": "Ask a workspace admin to give you access.",
+				"noAccessDescription": "This project may be private to someone else. If it is a team project, ask a workspace admin for access.",
 				"notFoundTitle": "Project not found",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"backToWorkspace": "Back to workspace"
