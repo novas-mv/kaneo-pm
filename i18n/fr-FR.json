@@ -2536,7 +2536,9 @@
 			"invitePeople": "Inviter des personnes",
 			"myTasks": "Mes tâches",
 			"resources": "Resources",
-			"contacts": "Contacts"
+			"contacts": "Contacts",
+			"onlyYou": "Only you",
+			"personal": "Personal"
 		},
 		"projectList": {
 			"viewProject": "Voir le projet",
@@ -3667,7 +3669,21 @@
 				"project": "Projet"
 			},
 			"pageTitle": "Mes tâches",
-			"truncated": "Affichage des {{shown}} premières tâches sur {{total}}."
+			"truncated": "Affichage des {{shown}} premières tâches sur {{total}}.",
+			"filter": {
+				"all": "All",
+				"label": "Show",
+				"personal": "Personal",
+				"work": "Work"
+			},
+			"quickAdd": {
+				"add": "Add task",
+				"destination": "Where should it go?",
+				"error": "The task couldn't be added.",
+				"label": "Add a task",
+				"personal": "Personal (only you)",
+				"placeholder": "Add a task…"
+			}
 		},
 		"myWork": {
 			"due": {
@@ -3679,7 +3695,9 @@
 				"tomorrow": "Demain"
 			},
 			"empty": "Rien ne vous est assigné",
-			"loadError": "Impossible de charger vos tâches."
+			"loadError": "Impossible de charger vos tâches.",
+			"personalHint": "Only you can see this task",
+			"personalTag": "Personal"
 		},
 		"resources": {
 			"actionsAria": "Actions for {{name}}",

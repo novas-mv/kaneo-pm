@@ -889,6 +889,13 @@
             ],
             "description": "Id of the parent project when this project is nested under one; null for top-level projects."
           },
+          "ownerUserId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set only on the signed-in user's private Personal project, which nobody else can see; null for ordinary projects."
+          },
           "slug": {
             "type": "string",
             "description": "Short prefix used in task identifiers, e.g. KAN-12."
@@ -941,6 +948,7 @@
           "workspaceId",
           "backgroundVersion",
           "parentProjectId",
+          "ownerUserId",
           "slug",
           "icon",
           "name",
@@ -1188,6 +1196,10 @@
               "null"
             ]
           },
+          "isPersonal": {
+            "type": "boolean",
+            "description": "True for tasks in your private Personal project, which only you can see."
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -1208,6 +1220,7 @@
           "projectName",
           "projectSlug",
           "projectIcon",
+          "isPersonal",
           "labels"
         ]
       },
@@ -9620,6 +9633,89 @@
           },
           "409": {
             "description": "Another project in the workspace uses this key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/project/personal": {
+      "post": {
+        "operationId": "ensurePersonalProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get or create your personal project",
+        "description": "Return the signed-in user's private Personal project in a workspace, creating it on first use. Only that user can see or change it; workspace admins and other members cannot. Calling it again returns the same project.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workspaceId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "workspaceId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The personal project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or workspace ID could not be determined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing task:create permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
             "content": {
               "application/json": {
                 "schema": {

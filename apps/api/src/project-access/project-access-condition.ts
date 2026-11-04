@@ -4,7 +4,22 @@ export function projectAccessCondition(
   userId: string | SQLWrapper,
   projectId: string | SQLWrapper,
 ) {
+  // A project with an owner is a private Personal project: only the owner may
+  // reach it. No role, including workspace owners and instance admins, widens
+  // that, and the owner needs no workspace project grant of their own.
   return sql<boolean>`(
+    EXISTS (
+      SELECT 1 FROM project AS personal_project
+      WHERE personal_project.id = ${projectId}
+        AND personal_project.owner_user_id = ${userId}
+    )
+    OR (
+    NOT EXISTS (
+      SELECT 1 FROM project AS personal_project
+      WHERE personal_project.id = ${projectId}
+        AND personal_project.owner_user_id IS NOT NULL
+    )
+    AND (
     EXISTS (
       SELECT 1 FROM "user" AS access_user
       WHERE access_user.id = ${userId}
@@ -29,6 +44,8 @@ export function projectAccessCondition(
             AND access_grant.user_id = ${userId}
             AND access_grant.project_id = access_project.id
         )
+    )
+  )
     )
   )`;
 }

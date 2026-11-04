@@ -35,6 +35,7 @@ import getProjectCtrl from "./controllers/get-project";
 import getProjectsCtrl from "./controllers/get-projects";
 import moveProjectCtrl from "./controllers/move-project";
 import reorderProjectsCtrl from "./controllers/reorder-projects";
+import { ensurePersonalProject } from "./personal-project";
 import setProjectParentCtrl from "./controllers/set-project-parent";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
@@ -57,6 +58,7 @@ import {
   moveProjectBody,
   projectParam,
   reorderProjectsBody,
+  workspaceIdBody,
   setProjectParentBody,
   updateProjectBody,
   uploadProjectBackgroundBody,
@@ -142,6 +144,32 @@ const createProjectRoute = createRoute({
     400: errorResponse("Invalid body, or workspace ID could not be determined"),
     403: errorResponse("Missing project:create permission"),
     409: errorResponse("Another project in the workspace uses this key"),
+    404: errorResponse("Workspace not found"),
+  },
+});
+
+const ensurePersonalProjectRoute = createRoute({
+  method: "post",
+  operationId: "ensurePersonalProject",
+  path: "/personal",
+  tags: ["Projects"],
+  summary: "Get or create your personal project",
+  description:
+    "Return the signed-in user's private Personal project in a workspace, creating it on first use. Only that user can see or change it; workspace admins and other members cannot. Calling it again returns the same project.",
+  middleware: [
+    workspaceAccess.fromBody(),
+    requireWorkspacePermission({ task: ["create"] }),
+  ] as const,
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: workspaceIdBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse("The personal project", projectSchema),
+    400: errorResponse("Invalid body, or workspace ID could not be determined"),
+    403: errorResponse("Missing task:create permission"),
     404: errorResponse("Workspace not found"),
   },
 });
@@ -492,6 +520,13 @@ const project = apiRouter<BaseVariables & { workspaceId: string }>()
       c.get("userId"),
     );
     return c.json(toPublicProject(newProject), 200);
+  })
+  .openapi(ensurePersonalProjectRoute, async (c) => {
+    const project = await ensurePersonalProject(
+      c.get("workspaceId"),
+      c.get("userId"),
+    );
+    return c.json(toPublicProject(project), 200);
   })
   .openapi(getProjectRoute, async (c) => {
     const { id } = c.req.valid("param");

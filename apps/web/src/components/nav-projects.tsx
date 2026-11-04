@@ -69,11 +69,16 @@ import { Button } from "./ui/button";
 export function NavProjects() {
   const { t } = useTranslation();
   const { data: workspace } = useActiveWorkspace();
-  const { data: projects } = useGetProjects(
+  const { data: allProjects } = useGetProjects(
     {
       workspaceId: workspace?.id || "",
     },
     true,
+  );
+  // The private Personal project has its own "Only you" section.
+  const projects = useMemo(
+    () => allProjects?.filter((project) => !project.ownerUserId),
+    [allProjects],
   );
   const queryClient = useQueryClient();
   const { mutateAsync: deleteProject } = useDeleteProject();

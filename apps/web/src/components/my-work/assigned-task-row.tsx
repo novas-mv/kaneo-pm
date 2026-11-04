@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { AssignedTask } from "@/fetchers/task/get-assigned-tasks";
 import { getColumnIcon } from "@/lib/column";
 import { getStatusDisplayLabel } from "@/lib/i18n/domain";
@@ -17,6 +19,8 @@ export function AssignedTaskRow({
   workspaceId,
   showLabels = false,
 }: AssignedTaskRowProps) {
+  const { t } = useTranslation();
+
   return (
     <Link
       to="/dashboard/workspace/$workspaceId/project/$projectId/task/$taskId"
@@ -33,9 +37,13 @@ export function AssignedTaskRow({
         {getColumnIcon(task.status, false, task.statusIcon)}
       </span>
       <span className="hidden w-16 shrink-0 truncate font-medium text-muted-foreground text-xs sm:block">
-        {task.number == null
-          ? task.projectSlug
-          : `${task.projectSlug}-${task.number}`}
+        {task.isPersonal
+          ? task.number == null
+            ? ""
+            : `#${task.number}`
+          : task.number == null
+            ? task.projectSlug
+            : `${task.projectSlug}-${task.number}`}
       </span>
       <span className="min-w-0 flex-1 truncate text-foreground text-sm">
         {task.title}
@@ -57,9 +65,19 @@ export function AssignedTaskRow({
           ))}
         </span>
       )}
-      <span className="hidden w-28 shrink-0 truncate text-muted-foreground text-xs sm:block">
-        {task.projectName}
-      </span>
+      {task.isPersonal ? (
+        <span
+          className="hidden w-28 shrink-0 items-center gap-1 truncate text-muted-foreground text-xs sm:flex"
+          title={t("workspace:myWork.personalHint")}
+        >
+          <Lock aria-hidden="true" className="size-3 shrink-0" />
+          <span className="truncate">{t("workspace:myWork.personalTag")}</span>
+        </span>
+      ) : (
+        <span className="hidden w-28 shrink-0 truncate text-muted-foreground text-xs sm:block">
+          {task.projectName}
+        </span>
+      )}
       <DueDateText
         dueDate={task.dueDate}
         className="shrink-0 text-right sm:w-20"

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CircleCheck } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import WorkspaceLayout from "@/components/common/workspace-layout";
 import {
@@ -8,6 +8,12 @@ import {
   MyTasksGroupByToggle,
 } from "@/components/my-tasks/my-tasks-group-by";
 import { MyTasksList } from "@/components/my-tasks/my-tasks-list";
+import {
+  filterAssignedTasks,
+  type MyTasksScope,
+} from "@/components/my-work/filter-assigned-tasks";
+import { MyTasksQuickAdd } from "@/components/my-tasks/my-tasks-quick-add";
+import { MyTasksScopeFilter } from "@/components/my-tasks/my-tasks-scope-filter";
 import PageTitle from "@/components/page-title";
 import {
   Empty,
@@ -18,6 +24,7 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import useGetAssignedTasks from "@/hooks/queries/task/use-get-assigned-tasks";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/workspace/$workspaceId/my-tasks",
@@ -33,7 +40,13 @@ function RouteComponent() {
     isLoading,
     isError,
   } = useGetAssignedTasks(workspaceId);
+  const { data: session } = authClient.useSession();
   const [groupBy, setGroupBy] = useState<MyTasksGroupBy>("dueDate");
+  const [scope, setScope] = useState<MyTasksScope>("all");
+  const visibleTasks = useMemo(
+    () => filterAssignedTasks(assigned?.tasks ?? [], scope),
+    [assigned?.tasks, scope],
+  );
 
   return (
     <>
@@ -42,11 +55,20 @@ function RouteComponent() {
         title={t("workspace:myTasks.pageTitle")}
         headerActions={
           assigned?.tasks.length ? (
-            <MyTasksGroupByToggle value={groupBy} onChange={setGroupBy} />
+            <div className="flex items-center gap-3">
+              <MyTasksScopeFilter value={scope} onChange={setScope} />
+              <MyTasksGroupByToggle value={groupBy} onChange={setGroupBy} />
+            </div>
           ) : null
         }
       >
         <div className="h-full overflow-y-auto">
+          {session?.user.id && (
+            <MyTasksQuickAdd
+              workspaceId={workspaceId}
+              currentUserId={session.user.id}
+            />
+          )}
           {isLoading ? (
             <div className="flex flex-col px-4">
               {[1, 2, 3, 4].map((row) => (
@@ -79,7 +101,7 @@ function RouteComponent() {
             </Empty>
           ) : (
             <MyTasksList
-              tasks={assigned.tasks}
+              tasks={visibleTasks}
               total={assigned.total}
               groupBy={groupBy}
               workspaceId={workspaceId}

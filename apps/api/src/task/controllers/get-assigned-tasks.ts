@@ -95,6 +95,7 @@ async function getAssignedTasks(
         projectName: projectTable.name,
         projectSlug: projectTable.slug,
         projectIcon: projectTable.icon,
+        isPersonal: sql<boolean>`${projectTable.ownerUserId} is not null`,
       })
       .from(taskTable)
       .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
