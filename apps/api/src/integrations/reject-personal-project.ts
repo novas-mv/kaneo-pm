@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 import { assertNotPersonalProject } from "../project/personal-project";
 
-const MESSAGE =
+export const PERSONAL_PROJECT_INTEGRATIONS_MESSAGE =
   "Integrations, webhooks and calendar feeds aren't available for a personal project";
 
 // Data sent to outside services would leave the owner's private space, so these
@@ -10,11 +10,11 @@ const MESSAGE =
 export function rejectPersonalProject(idKey = "projectId") {
   return async (c: Context, next: Next) => {
     const projectId = c.req.param(idKey);
-    if (projectId) await assertNotPersonalProject(projectId, MESSAGE);
+    if (projectId)
+      await assertNotPersonalProject(
+        projectId,
+        PERSONAL_PROJECT_INTEGRATIONS_MESSAGE,
+      );
     return next();
   };
-}
-
-export async function rejectPersonalProjectId(projectId: string) {
-  await assertNotPersonalProject(projectId, MESSAGE);
 }

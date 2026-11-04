@@ -130,7 +130,12 @@ describe("personal project", () => {
       method: "PUT",
       body: { userId: ctx.teammate.id },
     });
-    expect(response.ok).toBe(false);
+    expect(response.status).toBe(403);
+    const [row] = await db
+      .select()
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, ctx.task.id));
+    expect(row?.userId).toBe(ctx.owner.id);
   });
 
   for (const [label, pick] of [
@@ -321,6 +326,9 @@ describe("personal project", () => {
       .from(schema.taskTable)
       .where(eq(schema.taskTable.id, ctx.task.id));
     expect(moved?.projectId).toBe(ctx.work.project.id);
+    expect(moved?.columnId).toBe(ctx.work.columns.todo.id);
+    expect(moved?.number).toBe(2);
+    expect(moved?.userId).toBe(ctx.owner.id);
   });
 
   it("does not offer integrations, webhooks or calendar feeds", async () => {
@@ -347,5 +355,28 @@ describe("personal project", () => {
         message: expect.stringContaining("personal project"),
       });
     }
+  });
+
+  it("filters My tasks by scope on the server", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: ctx.owner.id })
+      .where(eq(schema.taskTable.id, ctx.workTask.id));
+    const request = ctx.as(ctx.owner);
+    const ids = async (scope: string) => {
+      const response = await request(
+        `/task/assigned?workspaceId=${ctx.workspace.id}&scope=${scope}`,
+      );
+      const body = (await response.json()) as {
+        tasks: { id: string }[];
+        total: number;
+      };
+      return { ids: body.tasks.map((t) => t.id).sort(), total: body.total };
+    };
+
+    expect(await ids("personal")).toEqual({ ids: [ctx.task.id], total: 1 });
+    expect(await ids("work")).toEqual({ ids: [ctx.workTask.id], total: 1 });
+    expect((await ids("all")).total).toBe(2);
   });
 });

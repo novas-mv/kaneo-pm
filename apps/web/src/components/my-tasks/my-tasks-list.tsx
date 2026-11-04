@@ -55,7 +55,11 @@ export function MyTasksList({
                   : "text-foreground",
               )}
             >
-              {group.bucket ? bucketTitles[group.bucket] : group.title}
+              {group.bucket
+                ? bucketTitles[group.bucket]
+                : group.isPersonal
+                  ? t("workspace:myWork.personalTag")
+                  : group.title}
             </span>
             <span className="font-normal text-muted-foreground text-xs tabular-nums">
               {group.tasks.length}

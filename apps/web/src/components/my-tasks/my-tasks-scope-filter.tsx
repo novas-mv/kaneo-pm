@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { MyTasksScope } from "@/components/my-work/filter-assigned-tasks";
+import type { AssignedTasksScope as MyTasksScope } from "@/fetchers/task/get-assigned-tasks";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 

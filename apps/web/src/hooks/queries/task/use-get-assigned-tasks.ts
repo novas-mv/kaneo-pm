@@ -1,13 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import getAssignedTasks from "@/fetchers/task/get-assigned-tasks";
+import getAssignedTasks, {
+  type AssignedTasksScope,
+} from "@/fetchers/task/get-assigned-tasks";
 
 function useGetAssignedTasks(
   workspaceId: string | undefined,
   countOnly = false,
+  scope: AssignedTasksScope = "all",
 ) {
   return useQuery({
-    queryKey: ["assigned-tasks", workspaceId, { countOnly }],
-    queryFn: () => getAssignedTasks(workspaceId ?? "", countOnly),
+    queryKey: ["assigned-tasks", workspaceId, { countOnly, scope }],
+    queryFn: () => getAssignedTasks(workspaceId ?? "", countOnly, scope),
+    // Switching the filter keeps the old rows on screen until the new ones
+    // arrive, but never carries them across workspaces.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[1] === workspaceId ? previous : undefined,
     enabled: Boolean(workspaceId),
     // The app default skips refetching on mount; these lists go stale while
     // the user works elsewhere.

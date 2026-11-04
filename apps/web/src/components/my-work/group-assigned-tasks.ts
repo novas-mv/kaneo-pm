@@ -6,6 +6,9 @@ export type AssignedTaskGroup = {
   // Set for due-date groups; project groups are labelled by `title`.
   bucket?: DueBucket;
   title?: string;
+  // The private Personal project's stored name isn't translated, so the list
+  // swaps in the localized label for it.
+  isPersonal?: boolean;
   tasks: AssignedTask[];
 };
 
@@ -39,6 +42,7 @@ export function groupAssignedTasksByProject(
     const group = byProject.get(task.projectId) ?? {
       id: task.projectId,
       title: task.projectName,
+      isPersonal: task.isPersonal,
       tasks: [],
     };
     group.tasks.push(task);

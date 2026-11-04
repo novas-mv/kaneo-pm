@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import db, { schema } from "../database";
 import type { DbOrTx } from "./db-or-tx";
 
@@ -16,6 +16,8 @@ export async function findWorkspaceProjectIds(
     .where(
       and(
         eq(schema.projectTable.workspaceId, workspaceId),
+        // Personal projects are private to their owner and can't be granted.
+        isNull(schema.projectTable.ownerUserId),
         inArray(schema.projectTable.id, ids),
       ),
     );

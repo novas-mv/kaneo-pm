@@ -123,7 +123,7 @@ const listAssignedTasksRoute = createRoute({
   tags: ["Tasks"],
   summary: "List my assigned tasks",
   description:
-    "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels.",
+    "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels. Use scope to see only your personal tasks or only work tasks.",
   middleware: [
     workspaceAccess.fromQuery(),
     requireWorkspacePermission({ project: ["read"], task: ["read"] }),
@@ -892,12 +892,13 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   // Registered ahead of the `/{id}` routes, which would otherwise claim it.
   .openapi(listAssignedTasksRoute, async (c) => {
-    const { workspaceId, countOnly } = c.req.valid("query");
+    const { workspaceId, countOnly, scope } = c.req.valid("query");
     return c.json(
       await getAssignedTasks(
         workspaceId,
         c.get("userId"),
         countOnly === "true",
+        scope,
       ),
       200,
     );

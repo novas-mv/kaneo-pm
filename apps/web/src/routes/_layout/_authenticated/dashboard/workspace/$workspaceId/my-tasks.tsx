@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CircleCheck } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import WorkspaceLayout from "@/components/common/workspace-layout";
 import {
@@ -8,10 +8,6 @@ import {
   MyTasksGroupByToggle,
 } from "@/components/my-tasks/my-tasks-group-by";
 import { MyTasksList } from "@/components/my-tasks/my-tasks-list";
-import {
-  filterAssignedTasks,
-  type MyTasksScope,
-} from "@/components/my-work/filter-assigned-tasks";
 import { MyTasksQuickAdd } from "@/components/my-tasks/my-tasks-quick-add";
 import { MyTasksScopeFilter } from "@/components/my-tasks/my-tasks-scope-filter";
 import PageTitle from "@/components/page-title";
@@ -23,7 +19,9 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { AssignedTasksScope } from "@/fetchers/task/get-assigned-tasks";
 import useGetAssignedTasks from "@/hooks/queries/task/use-get-assigned-tasks";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute(
@@ -35,18 +33,15 @@ export const Route = createFileRoute(
 function RouteComponent() {
   const { t } = useTranslation();
   const { workspaceId } = Route.useParams();
+  const [scope, setScope] = useState<AssignedTasksScope>("all");
   const {
     data: assigned,
     isLoading,
     isError,
-  } = useGetAssignedTasks(workspaceId);
+  } = useGetAssignedTasks(workspaceId, false, scope);
   const { data: session } = authClient.useSession();
+  const { canCreateTasks } = useWorkspacePermission();
   const [groupBy, setGroupBy] = useState<MyTasksGroupBy>("dueDate");
-  const [scope, setScope] = useState<MyTasksScope>("all");
-  const visibleTasks = useMemo(
-    () => filterAssignedTasks(assigned?.tasks ?? [], scope),
-    [assigned?.tasks, scope],
-  );
 
   return (
     <>
@@ -54,7 +49,7 @@ function RouteComponent() {
       <WorkspaceLayout
         title={t("workspace:myTasks.pageTitle")}
         headerActions={
-          assigned?.tasks.length ? (
+          assigned?.tasks.length || scope !== "all" ? (
             <div className="flex items-center gap-3">
               <MyTasksScopeFilter value={scope} onChange={setScope} />
               <MyTasksGroupByToggle value={groupBy} onChange={setGroupBy} />
@@ -63,7 +58,7 @@ function RouteComponent() {
         }
       >
         <div className="h-full overflow-y-auto">
-          {session?.user.id && (
+          {session?.user.id && canCreateTasks() && (
             <MyTasksQuickAdd
               workspaceId={workspaceId}
               currentUserId={session.user.id}
@@ -101,7 +96,7 @@ function RouteComponent() {
             </Empty>
           ) : (
             <MyTasksList
-              tasks={visibleTasks}
+              tasks={assigned.tasks}
               total={assigned.total}
               groupBy={groupBy}
               workspaceId={workspaceId}
