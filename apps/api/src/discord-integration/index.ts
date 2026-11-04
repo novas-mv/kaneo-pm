@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { rejectPersonalProject } from "../integrations/reject-personal-project";
 import { HTTPException } from "hono/http-exception";
 import db from "../database";
 import { integrationTable } from "../database/schema";
@@ -81,6 +82,7 @@ async function getDiscordIntegration(projectId: string) {
 
 const manageAccess = [
   workspaceAccess.fromProject("projectId"),
+  rejectPersonalProject(),
   requireWorkspacePermission({ workspace: ["manage_settings"] }),
 ];
 

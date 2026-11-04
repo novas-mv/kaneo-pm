@@ -248,8 +248,12 @@ export function HomeTabView({
                 key={task.id}
                 compact
                 title={task.title}
-                ticket={ticketId(task.projectSlug, task.number)}
+                ticket={ticketId(
+                  task.isPersonal ? null : task.projectSlug,
+                  task.number,
+                )}
                 project={task.projectName}
+                personal={task.isPersonal}
                 dueDate={task.dueDate}
                 status={task.status}
                 statusIcon={task.statusIcon}

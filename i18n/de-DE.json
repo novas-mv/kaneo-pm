@@ -4518,7 +4518,9 @@
 			},
 			"showing": "{{shown}} von {{total}} Aufgaben",
 			"assigned_one": "{{count}} zugewiesen",
-			"assigned_other": "{{count}} zugewiesen"
+			"assigned_other": "{{count}} zugewiesen",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Start",

@@ -4682,7 +4682,9 @@
 			"assigned_one": "{{count}} призначене",
 			"assigned_few": "{{count}} призначені",
 			"assigned_many": "{{count}} призначених",
-			"assigned_other": "{{count}} призначених"
+			"assigned_other": "{{count}} призначених",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Головна",

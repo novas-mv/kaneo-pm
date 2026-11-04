@@ -4600,7 +4600,9 @@
 			"showing": "{{shown}} di {{total}} attività",
 			"assigned_one": "{{count}} assegnata",
 			"assigned_other": "{{count}} assegnate",
-			"assigned_many": "{{count}} assegnate"
+			"assigned_many": "{{count}} assegnate",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Home",

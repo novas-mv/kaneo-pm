@@ -4518,7 +4518,9 @@
 			},
 			"showing": "Εμφάνιση {{shown}} από {{total}} εργασίες",
 			"assigned_one": "{{count}} ανατεθειμένη",
-			"assigned_other": "{{count}} ανατεθειμένες"
+			"assigned_other": "{{count}} ανατεθειμένες",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Αρχική",

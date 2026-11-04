@@ -4409,7 +4409,9 @@
 				"title": "Niets aan jou toegewezen"
 			},
 			"showing": "{{shown}} van {{total}} taken worden getoond",
-			"title": "Mijn taken"
+			"title": "Mijn taken",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "Activiteit",

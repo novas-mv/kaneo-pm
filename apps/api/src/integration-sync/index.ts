@@ -6,6 +6,7 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
+import { rejectPersonalProject } from "../integrations/reject-personal-project";
 import { readSyncRules } from "../plugins/sync/rules";
 import db from "../database";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
@@ -32,6 +33,7 @@ const access = [
 ];
 const manage = [
   ...access,
+  rejectPersonalProject(),
   requireWorkspacePermission({ workspace: ["manage_settings"] }),
 ];
 const errors = {

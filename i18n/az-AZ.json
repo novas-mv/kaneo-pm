@@ -4409,7 +4409,9 @@
 				"title": "Sizə heç nə təyin edilməyib"
 			},
 			"showing": "{{total}} tapşırıqdan {{shown}} göstərilir",
-			"title": "Tapşırıqlarım"
+			"title": "Tapşırıqlarım",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "Fəaliyyət",

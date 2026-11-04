@@ -4326,7 +4326,9 @@
 				"title": "할당된 작업이 없습니다"
 			},
 			"showing": "작업 {{total}}개 중 {{shown}}개 표시",
-			"title": "내 작업"
+			"title": "내 작업",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "활동",

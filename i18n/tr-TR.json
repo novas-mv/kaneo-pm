@@ -4409,7 +4409,9 @@
 				"title": "Size atanmış bir şey yok"
 			},
 			"showing": "{{total}} talebin {{shown}} tanesi gösteriliyor",
-			"title": "Taleplerim"
+			"title": "Taleplerim",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "Etkinlik",

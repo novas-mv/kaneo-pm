@@ -12642,7 +12642,7 @@
           "Tasks"
         ],
         "summary": "Move task",
-        "description": "Move a task to another project, optionally into a named column. Both projects must be in the same workspace.",
+        "description": "Move a task to another project, optionally into a named column. Both projects must be in the same workspace. A task in your personal project can be moved to a team project, but a team task can't be moved into a personal project.",
         "parameters": [
           {
             "schema": {
@@ -12687,7 +12687,7 @@
             }
           },
           "400": {
-            "description": "Invalid body",
+            "description": "Invalid body, or the destination is a personal project",
             "content": {
               "application/json": {
                 "schema": {

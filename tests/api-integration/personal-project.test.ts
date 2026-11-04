@@ -8,6 +8,7 @@ import {
   createProjectFixture,
   createWorkspaceMember,
 } from "./helpers/fixtures";
+import { createTaskFixture } from "./helpers/project-access/create-task-fixture";
 import { addWorkspaceMember } from "./helpers/project-access/add-workspace-member";
 import { projectAccessApi } from "./helpers/project-access/project-access-api";
 
@@ -58,7 +59,14 @@ async function setup() {
   });
   const task = (await taskResponse.json()) as { id: string };
 
+  const workTask = await createTaskFixture(
+    work,
+    "Existing team task",
+    teammate.id,
+  );
+
   return {
+    workTask,
     workspace,
     owner,
     teammate,
@@ -291,5 +299,53 @@ describe("personal project", () => {
         })
       ).status,
     ).toBe(200);
+  });
+
+  it("lets a personal task be promoted to a team project but not the reverse", async () => {
+    const ctx = await setup();
+    const request = ctx.as(ctx.owner);
+
+    const into = await request(`/task/move/${ctx.workTask.id}`, {
+      method: "PUT",
+      body: { destinationProjectId: ctx.personal.id },
+    });
+    expect(into.status).toBe(400);
+
+    const out = await request(`/task/move/${ctx.task.id}`, {
+      method: "PUT",
+      body: { destinationProjectId: ctx.work.project.id },
+    });
+    expect(out.status).toBe(200);
+    const [moved] = await db
+      .select()
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, ctx.task.id));
+    expect(moved?.projectId).toBe(ctx.work.project.id);
+  });
+
+  it("does not offer integrations, webhooks or calendar feeds", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.workspaceUserTable)
+      .set({ role: "admin" })
+      .where(eq(schema.workspaceUserTable.userId, ctx.owner.id));
+    const request = ctx.as(ctx.owner);
+
+    const attempts: [string, unknown][] = [
+      [
+        `/slack-integration/project/${ctx.personal.id}`,
+        { webhookUrl: "https://hooks.slack.com/services/T/B/x" },
+      ],
+      [`/calendar-feed/project/${ctx.personal.id}`, { timeZone: "UTC" }],
+    ];
+    for (const [path, body] of attempts) {
+      const response = await request(path, { method: "POST", body });
+      const { message } = (await response.json()) as { message: string };
+      expect({ path, status: response.status, message }).toEqual({
+        path,
+        status: 400,
+        message: expect.stringContaining("personal project"),
+      });
+    }
   });
 });

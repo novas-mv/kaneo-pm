@@ -31,6 +31,7 @@ import {
   Image,
   Layers,
   Layout,
+  Lock,
   Lightbulb,
   Link2,
   List,
@@ -80,6 +81,7 @@ import { useColors } from "@/theme";
  */
 const NAMED_ICONS: Record<string, LucideIcon> = {
   Layout,
+  Lock,
   Briefcase,
   FolderKanban,
   Target,

@@ -114,6 +114,14 @@ async function moveTask({
 
   await assertProjectAccess(currentUserId, destinationProjectId);
 
+  // A personal task can be promoted to a team project, but a team task can't
+  // be pulled into someone's private space where its teammates lose it.
+  if (destinationProject.ownerUserId && !sourceProject.ownerUserId) {
+    throw new HTTPException(400, {
+      message: "Tasks can't be moved into a personal project",
+    });
+  }
+
   const resolvedColumn = await resolveDestinationStatus(
     destinationProjectId,
     existingTask.status,

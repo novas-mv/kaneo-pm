@@ -51,15 +51,16 @@ export async function ensurePersonalProject(
 
 // A Personal project stays private to its owner: it can't be published,
 // nested, archived or moved to another workspace.
-export async function assertNotPersonalProject(projectId: string) {
+export async function assertNotPersonalProject(
+  projectId: string,
+  message = "This isn't allowed for a personal project",
+) {
   const [project] = await db
     .select({ ownerUserId: projectTable.ownerUserId })
     .from(projectTable)
     .where(eq(projectTable.id, projectId))
     .limit(1);
   if (project?.ownerUserId) {
-    throw new HTTPException(400, {
-      message: "This isn't allowed for a personal project",
-    });
+    throw new HTTPException(400, { message });
   }
 }

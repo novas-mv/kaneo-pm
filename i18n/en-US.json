@@ -4518,7 +4518,9 @@
 			},
 			"showing": "Showing {{shown}} of {{total}} tasks",
 			"assigned_one": "{{count}} assigned",
-			"assigned_other": "{{count}} assigned"
+			"assigned_other": "{{count}} assigned",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Home",

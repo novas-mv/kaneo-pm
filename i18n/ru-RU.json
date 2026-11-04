@@ -4734,7 +4734,9 @@
 			"assigned_one": "{{count}} назначена",
 			"assigned_few": "{{count}} назначены",
 			"assigned_many": "{{count}} назначено",
-			"assigned_other": "{{count}} назначено"
+			"assigned_other": "{{count}} назначено",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Главная",

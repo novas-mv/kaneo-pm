@@ -4436,7 +4436,9 @@
 				"message": "Tugas yang ditugaskan kepada Anda di ruang kerja ini akan muncul di sini."
 			},
 			"showing": "Menampilkan {{shown}} dari {{total}} tugas",
-			"assigned_other": "{{count}} ditugaskan"
+			"assigned_other": "{{count}} ditugaskan",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Beranda",

@@ -4326,7 +4326,9 @@
 				"title": "暂时没有指派给你的任务"
 			},
 			"showing": "显示 {{total}} 个任务中的 {{shown}} 个",
-			"title": "我的任务"
+			"title": "我的任务",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "活动",

@@ -4492,7 +4492,9 @@
 				"title": "Nada atribuído a você"
 			},
 			"showing": "Mostrando {{shown}} de {{total}} tarefas",
-			"title": "Minhas tarefas"
+			"title": "Minhas tarefas",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "Atividade",

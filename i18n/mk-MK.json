@@ -4518,7 +4518,9 @@
 			},
 			"showing": "Прикажани {{shown}} од {{total}} задачи",
 			"assigned_one": "{{count}} доделена",
-			"assigned_other": "{{count}} доделени"
+			"assigned_other": "{{count}} доделени",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Почетна",

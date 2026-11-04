@@ -394,7 +394,7 @@ const moveTaskRoute = createRoute({
   tags: ["Tasks"],
   summary: "Move task",
   description:
-    "Move a task to another project, optionally into a named column. Both projects must be in the same workspace.",
+    "Move a task to another project, optionally into a named column. Both projects must be in the same workspace. A task in your personal project can be moved to a team project, but a team task can't be moved into a personal project.",
   middleware: [
     workspaceAccess.fromTask(),
     requireWorkspacePermission({ task: ["update"] }),
@@ -412,7 +412,9 @@ const moveTaskRoute = createRoute({
       "The moved task, with both project ids",
       moveTaskResultSchema,
     ),
-    400: errorResponse("Invalid body"),
+    400: errorResponse(
+      "Invalid body, or the destination is a personal project",
+    ),
     403: errorResponse(
       "No access to the project, or missing task:update permission",
     ),

@@ -4326,7 +4326,9 @@
 				"title": "沒有指派給你的任務"
 			},
 			"showing": "顯示 {{total}} 個任務中的 {{shown}} 個",
-			"title": "我的任務"
+			"title": "我的任務",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "活動",

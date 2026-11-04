@@ -151,8 +151,12 @@ export function MyTasksTab({ workspaceId }: { workspaceId: string }) {
                 <TaskRow
                   key={task.id}
                   title={task.title}
-                  ticket={ticketId(task.projectSlug, task.number)}
+                  ticket={ticketId(
+                    task.isPersonal ? null : task.projectSlug,
+                    task.number,
+                  )}
                   project={by === "project" ? null : task.projectName}
+                  personal={task.isPersonal && by !== "project"}
                   labels={task.labels}
                   dueDate={task.dueDate}
                   status={task.status}

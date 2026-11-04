@@ -4436,7 +4436,9 @@
 				"message": "Công việc được giao cho bạn trong không gian làm việc này sẽ hiện ở đây."
 			},
 			"showing": "Đang hiện {{shown}}/{{total}} công việc",
-			"assigned_other": "{{count}} được giao"
+			"assigned_other": "{{count}} được giao",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Trang chủ",

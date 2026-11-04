@@ -4600,7 +4600,9 @@
 			"showing": "{{shown}} tâches sur {{total}}",
 			"assigned_one": "{{count}} assignée",
 			"assigned_other": "{{count}} assignées",
-			"assigned_many": "{{count}} assignées"
+			"assigned_many": "{{count}} assignées",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Accueil",

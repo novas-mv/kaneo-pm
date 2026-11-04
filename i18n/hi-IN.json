@@ -4518,7 +4518,9 @@
 			},
 			"showing": "{{total}} में से {{shown}} कार्य दिखाए जा रहे हैं",
 			"assigned_one": "{{count}} असाइन",
-			"assigned_other": "{{count}} असाइन"
+			"assigned_other": "{{count}} असाइन",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "होम",

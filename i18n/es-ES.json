@@ -4600,7 +4600,9 @@
 			"showing": "Mostrando {{shown}} de {{total}} tareas",
 			"assigned_one": "{{count}} asignada",
 			"assigned_other": "{{count}} asignadas",
-			"assigned_many": "{{count}} asignadas"
+			"assigned_many": "{{count}} asignadas",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Inicio",

@@ -4682,7 +4682,9 @@
 			"assigned_one": "{{count}} przypisane",
 			"assigned_few": "{{count}} przypisane",
 			"assigned_many": "{{count}} przypisanych",
-			"assigned_other": "{{count}} przypisanego"
+			"assigned_other": "{{count}} przypisanego",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Start",
