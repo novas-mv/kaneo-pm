@@ -87,8 +87,8 @@ describe("personal work refresh", () => {
       ]);
       expect(result.current.count).toEqual({ tasks: [], total: 101 });
     });
-    expect(mocks.assigned).toHaveBeenCalledWith("workspace", false);
-    expect(mocks.assigned).toHaveBeenCalledWith("workspace", true);
+    expect(mocks.assigned).toHaveBeenCalledWith("workspace", false, "all");
+    expect(mocks.assigned).toHaveBeenCalledWith("workspace", true, "all");
     client.clear();
   });
 

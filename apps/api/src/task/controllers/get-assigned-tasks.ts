@@ -5,6 +5,7 @@ import {
   desc,
   eq,
   inArray,
+  isNotNull,
   isNull,
   ne,
   sql,
@@ -35,8 +36,11 @@ async function getAssignedTasks(
   workspaceId: string,
   userId: string,
   countOnly = false,
+  scope: "all" | "work" | "personal" = "all",
 ) {
   const openAndMine = and(
+    scope === "personal" ? isNotNull(projectTable.ownerUserId) : undefined,
+    scope === "work" ? isNull(projectTable.ownerUserId) : undefined,
     eq(projectTable.workspaceId, workspaceId),
     isNull(projectTable.archivedAt),
     taskAssignedTo(userId),
@@ -95,6 +99,7 @@ async function getAssignedTasks(
         projectName: projectTable.name,
         projectSlug: projectTable.slug,
         projectIcon: projectTable.icon,
+        isPersonal: sql<boolean>`${projectTable.ownerUserId} is not null`,
       })
       .from(taskTable)
       .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))

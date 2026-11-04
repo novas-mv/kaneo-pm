@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, or, sql } from "drizzle-orm";
 import db from "../../database";
 import {
   activityTable,
@@ -37,6 +37,7 @@ type SearchResult = {
   content?: string;
   projectId?: string;
   projectName?: string;
+  isPersonal?: boolean;
   workspaceId?: string;
   workspaceName?: string;
   userId?: string;
@@ -493,6 +494,33 @@ async function globalSearch(params: SearchParams): Promise<{
   });
 
   const finalResults = results.slice(0, limit);
+
+  // One lookup flags results that belong to the viewer's private Personal
+  // project, so clients can show a localized name for it.
+  const resultProjectIds = [
+    ...new Set(
+      finalResults.flatMap((result) => {
+        const id = result.type === "project" ? result.id : result.projectId;
+        return id ? [id] : [];
+      }),
+    ),
+  ];
+  if (resultProjectIds.length > 0) {
+    const personal = await db
+      .select({ id: projectTable.id })
+      .from(projectTable)
+      .where(
+        and(
+          inArray(projectTable.id, resultProjectIds),
+          isNotNull(projectTable.ownerUserId),
+        ),
+      );
+    const personalIds = new Set(personal.map((project) => project.id));
+    for (const result of finalResults) {
+      const id = result.type === "project" ? result.id : result.projectId;
+      if (id && personalIds.has(id)) result.isPersonal = true;
+    }
+  }
 
   return {
     results: finalResults,

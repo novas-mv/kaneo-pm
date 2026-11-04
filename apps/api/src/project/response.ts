@@ -11,6 +11,10 @@ export const projectSchema = z
       description:
         "Id of the parent project when this project is nested under one; null for top-level projects.",
     }),
+    ownerUserId: z.string().nullable().openapi({
+      description:
+        "Set only on the signed-in user's private Personal project, which nobody else can see; null for ordinary projects.",
+    }),
     slug: z.string().openapi({
       description: "Short prefix used in task identifiers, e.g. KAN-12.",
     }),

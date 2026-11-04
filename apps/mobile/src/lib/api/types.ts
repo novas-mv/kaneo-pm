@@ -142,6 +142,8 @@ export type Project = {
   description?: string | null;
   createdAt?: string | null;
   isPublic?: boolean | null;
+  /** Set only on the signed-in user's private Personal project. */
+  ownerUserId?: string | null;
   archivedAt?: string | null;
   position?: number | null;
   statistics?: {
@@ -247,6 +249,8 @@ export type AssignedTask = {
   projectName: string;
   projectIcon?: string | null;
   projectSlug: string;
+  /** In the signed-in user's private Personal project. */
+  isPersonal?: boolean;
   labels?: TaskLabel[];
 };
 

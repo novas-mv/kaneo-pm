@@ -6,6 +6,7 @@ import {
   jsonResponse,
   z,
 } from "../openapi";
+import { rejectPersonalProject } from "../integrations/reject-personal-project";
 import {
   hasWorkspacePermission,
   requireWorkspacePermission,
@@ -27,6 +28,7 @@ import {
 
 const sharingMiddleware = [
   workspaceAccess.fromProject("projectId"),
+  rejectPersonalProject(),
   requireWorkspacePermission({ project: ["share"] }),
 ];
 const managementErrors = {

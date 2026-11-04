@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { rejectPersonalProject } from "../integrations/reject-personal-project";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db from "../database";
@@ -43,6 +44,7 @@ import {
 
 const manageAccess = [
   workspaceAccess.fromProject("projectId"),
+  rejectPersonalProject(),
   requireWorkspacePermission({ workspace: ["manage_settings"] }),
 ];
 

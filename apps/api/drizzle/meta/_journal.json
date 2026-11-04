@@ -512,6 +512,13 @@
       "when": 1793641419416,
       "tag": "0072_common_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1793786987906,
+      "tag": "0073_wise_sabra",
+      "breakpoints": true
     }
   ]
 }

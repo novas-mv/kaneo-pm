@@ -19,6 +19,7 @@ function task(id: string, dueDate: Date | null): AssignedTask {
     projectName: "Web",
     projectSlug: "WEB",
     projectIcon: null,
+    isPersonal: false,
     labels: [],
   };
 }

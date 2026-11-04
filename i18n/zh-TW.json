@@ -2438,7 +2438,9 @@
 			"myTasks": "我的任務",
 			"invitePeople": "邀請成員",
 			"resources": "Resources",
-			"contacts": "Contacts"
+			"contacts": "Contacts",
+			"onlyYou": "Only you",
+			"personal": "Personal"
 		},
 		"projectList": {
 			"viewProject": "檢視專案",
@@ -3517,7 +3519,9 @@
 				"thisWeek": "本週",
 				"later": "之後",
 				"noDueDate": "無截止日"
-			}
+			},
+			"personalHint": "Only you can see this task",
+			"personalTag": "Personal"
 		},
 		"myTasks": {
 			"pageTitle": "我的任務",
@@ -3527,7 +3531,21 @@
 				"dueDate": "截止日",
 				"project": "專案"
 			},
-			"truncated": "顯示 {{total}} 個任務中的前 {{shown}} 個。"
+			"truncated": "顯示 {{total}} 個任務中的前 {{shown}} 個。",
+			"filter": {
+				"all": "All",
+				"label": "Show",
+				"personal": "Personal",
+				"work": "Work"
+			},
+			"quickAdd": {
+				"add": "Add task",
+				"destination": "Where should it go?",
+				"error": "The task couldn't be added.",
+				"label": "Add a task",
+				"personal": "Personal (only you)",
+				"placeholder": "Add a task…"
+			}
 		},
 		"resources": {
 			"actionsAria": "Actions for {{name}}",
@@ -4308,7 +4326,9 @@
 				"title": "沒有指派給你的任務"
 			},
 			"showing": "顯示 {{total}} 個任務中的 {{shown}} 個",
-			"title": "我的任務"
+			"title": "我的任務",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"activity": "活動",

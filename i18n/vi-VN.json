@@ -2438,7 +2438,9 @@
 			"invitePeople": "Invite people",
 			"myTasks": "My tasks",
 			"resources": "Resources",
-			"contacts": "Contacts"
+			"contacts": "Contacts",
+			"onlyYou": "Only you",
+			"personal": "Personal"
 		},
 		"projectList": {
 			"viewProject": "Xem dự án",
@@ -3515,7 +3517,21 @@
 				"project": "Project"
 			},
 			"pageTitle": "My tasks",
-			"truncated": "Showing the first {{shown}} of {{total}} tasks."
+			"truncated": "Showing the first {{shown}} of {{total}} tasks.",
+			"filter": {
+				"all": "All",
+				"label": "Show",
+				"personal": "Personal",
+				"work": "Work"
+			},
+			"quickAdd": {
+				"add": "Add task",
+				"destination": "Where should it go?",
+				"error": "The task couldn't be added.",
+				"label": "Add a task",
+				"personal": "Personal (only you)",
+				"placeholder": "Add a task…"
+			}
 		},
 		"myWork": {
 			"due": {
@@ -3527,7 +3543,9 @@
 				"tomorrow": "Tomorrow"
 			},
 			"empty": "Nothing assigned to you",
-			"loadError": "Your tasks couldn't be loaded."
+			"loadError": "Your tasks couldn't be loaded.",
+			"personalHint": "Only you can see this task",
+			"personalTag": "Personal"
 		},
 		"resources": {
 			"actionsAria": "Actions for {{name}}",
@@ -4418,7 +4436,9 @@
 				"message": "Công việc được giao cho bạn trong không gian làm việc này sẽ hiện ở đây."
 			},
 			"showing": "Đang hiện {{shown}}/{{total}} công việc",
-			"assigned_other": "{{count}} được giao"
+			"assigned_other": "{{count}} được giao",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Trang chủ",

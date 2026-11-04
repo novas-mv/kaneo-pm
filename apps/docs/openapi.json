@@ -889,6 +889,13 @@
             ],
             "description": "Id of the parent project when this project is nested under one; null for top-level projects."
           },
+          "ownerUserId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set only on the signed-in user's private Personal project, which nobody else can see; null for ordinary projects."
+          },
           "slug": {
             "type": "string",
             "description": "Short prefix used in task identifiers, e.g. KAN-12."
@@ -941,6 +948,7 @@
           "workspaceId",
           "backgroundVersion",
           "parentProjectId",
+          "ownerUserId",
           "slug",
           "icon",
           "name",
@@ -1188,6 +1196,10 @@
               "null"
             ]
           },
+          "isPersonal": {
+            "type": "boolean",
+            "description": "True for tasks in your private Personal project, which only you can see."
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -1208,6 +1220,7 @@
           "projectName",
           "projectSlug",
           "projectIcon",
+          "isPersonal",
           "labels"
         ]
       },
@@ -2464,6 +2477,10 @@
           },
           "projectName": {
             "type": "string"
+          },
+          "isPersonal": {
+            "type": "boolean",
+            "description": "True when the result is in, or is, your private personal project. Its stored name is not translated."
           },
           "projectSlug": {
             "type": "string"
@@ -9634,6 +9651,89 @@
         }
       }
     },
+    "/project/personal": {
+      "post": {
+        "operationId": "ensurePersonalProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get or create your personal project",
+        "description": "Return the signed-in user's private Personal project in a workspace, creating it on first use. Only that user can see or change it; workspace admins and other members cannot. Calling it again returns the same project.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workspaceId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "workspaceId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The personal project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, or workspace ID could not be determined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing task:create permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
     "/project/{id}": {
       "get": {
         "operationId": "getProject",
@@ -11069,7 +11169,7 @@
           "Tasks"
         ],
         "summary": "List my assigned tasks",
-        "description": "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels.",
+        "description": "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels. Use scope to see only your personal tasks or only work tasks.",
         "parameters": [
           {
             "schema": {
@@ -11092,6 +11192,21 @@
             "required": false,
             "description": "Return only the total, with an empty tasks array, without loading task rows or labels.",
             "name": "countOnly",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "work",
+                "personal"
+              ],
+              "description": "Limit to tasks in your private personal project (personal) or in every other project (work). Defaults to all. The 100-task cap and total apply to the chosen scope."
+            },
+            "required": false,
+            "description": "Limit to tasks in your private personal project (personal) or in every other project (work). Defaults to all. The 100-task cap and total apply to the chosen scope.",
+            "name": "scope",
             "in": "query"
           }
         ],
@@ -12546,7 +12661,7 @@
           "Tasks"
         ],
         "summary": "Move task",
-        "description": "Move a task to another project, optionally into a named column. Both projects must be in the same workspace.",
+        "description": "Move a task to another project, optionally into a named column. Both projects must be in the same workspace. A task in your personal project can be moved to a team project, but a team task can't be moved into a personal project.",
         "parameters": [
           {
             "schema": {
@@ -12591,7 +12706,7 @@
             }
           },
           "400": {
-            "description": "Invalid body",
+            "description": "Invalid body, or the destination is a personal project",
             "content": {
               "application/json": {
                 "schema": {

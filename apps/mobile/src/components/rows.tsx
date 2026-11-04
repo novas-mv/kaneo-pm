@@ -1,3 +1,5 @@
+import { Lock } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import type { TaskLabel } from "@/lib/api/types";
@@ -22,6 +24,7 @@ export function TaskRow({
   title,
   ticket,
   project,
+  personal,
   labels,
   dueDate,
   status,
@@ -33,6 +36,8 @@ export function TaskRow({
   title: string;
   ticket?: string;
   project?: string | null;
+  /** A task in the user's private Personal project; shows a lock and tag instead of `project`. */
+  personal?: boolean;
   labels?: TaskLabel[];
   dueDate?: string | null;
   /** Column slug; drawn with the column's default Kaneo icon. */
@@ -45,6 +50,7 @@ export function TaskRow({
   compact?: boolean;
 }) {
   const c = useColors();
+  const { t } = useTranslation(["mobile"]);
   const overdue = isOverdue(dueDate);
   const due = formatDueShort(dueDate);
   const dueToday = sameDay(parseDay(dueDate), today());
@@ -89,7 +95,17 @@ export function TaskRow({
               {ticket}
             </Txt>
           ) : null}
-          {project ? (
+          {personal ? (
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              accessibilityLabel={t("mobile:myTasks.personalHint")}
+            >
+              <Lock size={11} color={c.faint} />
+              <Txt variant="caption" tone="faint" numberOfLines={1}>
+                {t("mobile:myTasks.personal")}
+              </Txt>
+            </View>
+          ) : project ? (
             <Txt variant="caption" tone="faint" numberOfLines={1}>
               {project}
             </Txt>

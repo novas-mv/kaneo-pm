@@ -2487,7 +2487,9 @@
 			"myTasks": "My tasks",
 			"resources": "Resources",
 			"invitePeople": "Invite people",
-			"contacts": "Contacts"
+			"contacts": "Contacts",
+			"onlyYou": "Only you",
+			"personal": "Personal"
 		},
 		"projectList": {
 			"viewProject": "View Project",
@@ -3510,7 +3512,7 @@
 			"groupNotAllowed": "This project can't be grouped there",
 			"unavailable": {
 				"noAccessTitle": "You don't have access to this project",
-				"noAccessDescription": "Ask a workspace admin to give you access.",
+				"noAccessDescription": "This project may be private to someone else. If it is a team project, ask a workspace admin for access.",
 				"notFoundTitle": "Project not found",
 				"notFoundDescription": "This project doesn't exist or has been deleted.",
 				"backToWorkspace": "Back to workspace"
@@ -3593,7 +3595,9 @@
 				"thisWeek": "This week",
 				"later": "Later",
 				"noDueDate": "No due date"
-			}
+			},
+			"personalTag": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"myTasks": {
 			"pageTitle": "My tasks",
@@ -3603,7 +3607,21 @@
 				"dueDate": "Due date",
 				"project": "Project"
 			},
-			"truncated": "Showing the first {{shown}} of {{total}} tasks."
+			"truncated": "Showing the first {{shown}} of {{total}} tasks.",
+			"filter": {
+				"label": "Show",
+				"all": "All",
+				"work": "Work",
+				"personal": "Personal"
+			},
+			"quickAdd": {
+				"label": "Add a task",
+				"placeholder": "Add a task…",
+				"destination": "Where should it go?",
+				"personal": "Personal (only you)",
+				"add": "Add task",
+				"error": "The task couldn't be added."
+			}
 		},
 		"resources": {
 			"pageTitle": "Resources",
@@ -4500,7 +4518,9 @@
 			},
 			"showing": "Showing {{shown}} of {{total}} tasks",
 			"assigned_one": "{{count}} assigned",
-			"assigned_other": "{{count}} assigned"
+			"assigned_other": "{{count}} assigned",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Home",

@@ -1,4 +1,14 @@
-import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import db from "../../database";
 import {
   projectTable,
@@ -72,7 +82,13 @@ async function listWorkspaces({ search, page, limit }: ListWorkspacesInput) {
     db
       .select({ workspaceId: projectTable.workspaceId, value: count() })
       .from(projectTable)
-      .where(inArray(projectTable.workspaceId, workspaceIds))
+      .where(
+        and(
+          inArray(projectTable.workspaceId, workspaceIds),
+          // Personal projects are private to their owners, even from admins.
+          isNull(projectTable.ownerUserId),
+        ),
+      )
       .groupBy(projectTable.workspaceId),
   ]);
 

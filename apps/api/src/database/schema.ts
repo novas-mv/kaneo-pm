@@ -376,9 +376,18 @@ export const projectTable = pgTable(
       (): AnyPgColumn => projectTable.id,
       { onDelete: "set null" },
     ),
+    // Set only on a user's private Personal project. Only that user may see or
+    // touch it; null for every ordinary project.
+    ownerUserId: text("owner_user_id").references(() => userTable.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   },
   (table) => [
     index("project_parentProjectId_idx").on(table.parentProjectId),
+    uniqueIndex("project_workspace_owner_unique")
+      .on(table.workspaceId, table.ownerUserId)
+      .where(sql`${table.ownerUserId} is not null`),
     index("project_background_object_key_idx")
       .on(table.backgroundObjectKey)
       .where(sql`${table.backgroundObjectKey} is not null`),

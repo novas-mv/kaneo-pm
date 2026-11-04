@@ -2585,7 +2585,9 @@
 			"invitePeople": "Invite people",
 			"myTasks": "My tasks",
 			"resources": "Resources",
-			"contacts": "Contacts"
+			"contacts": "Contacts",
+			"onlyYou": "Only you",
+			"personal": "Personal"
 		},
 		"projectList": {
 			"viewProject": "Переглянути проєкт",
@@ -3743,7 +3745,21 @@
 				"project": "Project"
 			},
 			"pageTitle": "My tasks",
-			"truncated": "Showing the first {{shown}} of {{total}} tasks."
+			"truncated": "Showing the first {{shown}} of {{total}} tasks.",
+			"filter": {
+				"all": "All",
+				"label": "Show",
+				"personal": "Personal",
+				"work": "Work"
+			},
+			"quickAdd": {
+				"add": "Add task",
+				"destination": "Where should it go?",
+				"error": "The task couldn't be added.",
+				"label": "Add a task",
+				"personal": "Personal (only you)",
+				"placeholder": "Add a task…"
+			}
 		},
 		"myWork": {
 			"due": {
@@ -3755,7 +3771,9 @@
 				"tomorrow": "Tomorrow"
 			},
 			"empty": "Nothing assigned to you",
-			"loadError": "Your tasks couldn't be loaded."
+			"loadError": "Your tasks couldn't be loaded.",
+			"personalHint": "Only you can see this task",
+			"personalTag": "Personal"
 		},
 		"resources": {
 			"actionsAria": "Actions for {{name}}",
@@ -4664,7 +4682,9 @@
 			"assigned_one": "{{count}} призначене",
 			"assigned_few": "{{count}} призначені",
 			"assigned_many": "{{count}} призначених",
-			"assigned_other": "{{count}} призначених"
+			"assigned_other": "{{count}} призначених",
+			"personal": "Personal",
+			"personalHint": "Only you can see this task"
 		},
 		"nav": {
 			"home": "Головна",

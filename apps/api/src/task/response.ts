@@ -333,6 +333,10 @@ export const assignedTasksSchema = z
           projectName: z.string(),
           projectSlug: z.string(),
           projectIcon: z.string().nullable(),
+          isPersonal: z.boolean().openapi({
+            description:
+              "True for tasks in your private Personal project, which only you can see.",
+          }),
           labels: z.array(taskLabelSchema),
         })
         .openapi("AssignedTask"),

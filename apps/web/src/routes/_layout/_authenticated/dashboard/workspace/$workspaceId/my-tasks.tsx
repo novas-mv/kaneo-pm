@@ -8,6 +8,8 @@ import {
   MyTasksGroupByToggle,
 } from "@/components/my-tasks/my-tasks-group-by";
 import { MyTasksList } from "@/components/my-tasks/my-tasks-list";
+import { MyTasksQuickAdd } from "@/components/my-tasks/my-tasks-quick-add";
+import { MyTasksScopeFilter } from "@/components/my-tasks/my-tasks-scope-filter";
 import PageTitle from "@/components/page-title";
 import {
   Empty,
@@ -17,7 +19,10 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { AssignedTasksScope } from "@/fetchers/task/get-assigned-tasks";
 import useGetAssignedTasks from "@/hooks/queries/task/use-get-assigned-tasks";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/workspace/$workspaceId/my-tasks",
@@ -28,11 +33,14 @@ export const Route = createFileRoute(
 function RouteComponent() {
   const { t } = useTranslation();
   const { workspaceId } = Route.useParams();
+  const [scope, setScope] = useState<AssignedTasksScope>("all");
   const {
     data: assigned,
     isLoading,
     isError,
-  } = useGetAssignedTasks(workspaceId);
+  } = useGetAssignedTasks(workspaceId, false, scope);
+  const { data: session } = authClient.useSession();
+  const { canCreateTasks } = useWorkspacePermission();
   const [groupBy, setGroupBy] = useState<MyTasksGroupBy>("dueDate");
 
   return (
@@ -41,12 +49,21 @@ function RouteComponent() {
       <WorkspaceLayout
         title={t("workspace:myTasks.pageTitle")}
         headerActions={
-          assigned?.tasks.length ? (
-            <MyTasksGroupByToggle value={groupBy} onChange={setGroupBy} />
+          assigned?.tasks.length || scope !== "all" ? (
+            <div className="flex items-center gap-3">
+              <MyTasksScopeFilter value={scope} onChange={setScope} />
+              <MyTasksGroupByToggle value={groupBy} onChange={setGroupBy} />
+            </div>
           ) : null
         }
       >
         <div className="h-full overflow-y-auto">
+          {session?.user.id && canCreateTasks() && (
+            <MyTasksQuickAdd
+              workspaceId={workspaceId}
+              currentUserId={session.user.id}
+            />
+          )}
           {isLoading ? (
             <div className="flex flex-col px-4">
               {[1, 2, 3, 4].map((row) => (

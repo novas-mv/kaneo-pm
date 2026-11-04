@@ -123,7 +123,7 @@ const listAssignedTasksRoute = createRoute({
   tags: ["Tasks"],
   summary: "List my assigned tasks",
   description:
-    "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels.",
+    "Get the open tasks assigned to the caller across a workspace's active projects. Completed and archived tasks are excluded. Ordered by due date (undated last), then priority. At most 100 tasks are returned; total counts all of them. Set countOnly=true to return just that total without loading task rows or labels. Use scope to see only your personal tasks or only work tasks.",
   middleware: [
     workspaceAccess.fromQuery(),
     requireWorkspacePermission({ project: ["read"], task: ["read"] }),
@@ -394,7 +394,7 @@ const moveTaskRoute = createRoute({
   tags: ["Tasks"],
   summary: "Move task",
   description:
-    "Move a task to another project, optionally into a named column. Both projects must be in the same workspace.",
+    "Move a task to another project, optionally into a named column. Both projects must be in the same workspace. A task in your personal project can be moved to a team project, but a team task can't be moved into a personal project.",
   middleware: [
     workspaceAccess.fromTask(),
     requireWorkspacePermission({ task: ["update"] }),
@@ -412,7 +412,9 @@ const moveTaskRoute = createRoute({
       "The moved task, with both project ids",
       moveTaskResultSchema,
     ),
-    400: errorResponse("Invalid body"),
+    400: errorResponse(
+      "Invalid body, or the destination is a personal project",
+    ),
     403: errorResponse(
       "No access to the project, or missing task:update permission",
     ),
@@ -890,12 +892,13 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   // Registered ahead of the `/{id}` routes, which would otherwise claim it.
   .openapi(listAssignedTasksRoute, async (c) => {
-    const { workspaceId, countOnly } = c.req.valid("query");
+    const { workspaceId, countOnly, scope } = c.req.valid("query");
     return c.json(
       await getAssignedTasks(
         workspaceId,
         c.get("userId"),
         countOnly === "true",
+        scope,
       ),
       200,
     );

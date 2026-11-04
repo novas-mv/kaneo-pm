@@ -66,6 +66,15 @@ describe("MCP tool catalog", () => {
     expect(request.auth).toBe("Bearer test-token");
   });
 
+  it("gets or creates the personal project through the idempotent endpoint", async () => {
+    await call("get_personal_project", { workspaceId: "ws 1" });
+
+    const request = lastRequest();
+    expect(request.url).toBe("http://api.test/api/project/personal");
+    expect(request.method).toBe("POST");
+    expect(request.body).toEqual({ workspaceId: "ws 1" });
+  });
+
   it("passes only the search filters that were supplied", async () => {
     await call("search", { q: "login bug" });
     expect(lastRequest().url).toBe("http://api.test/api/search?q=login+bug");

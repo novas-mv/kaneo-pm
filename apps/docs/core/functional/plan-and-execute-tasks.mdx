@@ -95,6 +95,19 @@ If your project defines extra fields, they appear under **Fields** in the task's
 
 Required fields always keep a value, so they have no **Clear** option. If one is still empty when you create a task, Kaneo highlights it and tells you how many are missing.
 
+## Keep personal tasks private
+
+Each person can keep tasks that only they can see. Under **My tasks**, type a title, choose **Personal (only you)**, and select **Add task**. The first time you do this, Kaneo creates your private **Personal** project in that workspace. It appears in the sidebar under **Only you**, below your team's projects.
+
+A personal project works like any other: it has a board, list, calendar, labels and subtasks. The difference is who can reach it:
+
+- Only you can see or change it, including through your own API keys and MCP clients (the `get_personal_project` MCP tool finds or creates it). Workspace owners, admins and instance admins cannot see it.
+- Its tasks are always assigned to you, so they show up under **My tasks** and on Home next to your work tasks. A lock and a **Personal** tag mark them. Use **All**, **Work** or **Personal** at the top of **My tasks** to filter the list.
+- It can't be made public, nested under another project, archived, or connected to integrations, webhooks or calendar feeds.
+- You can move a personal task into a team project to share it. You can't move a team task into your personal project, because the people working on it would lose it.
+
+If your account is deleted, your personal project and its tasks are deleted with it.
+
 ## Delete a task
 
 Use **Delete Task** only when you want to remove the task, rather than mark it done. Check the confirmation before proceeding. If deletion or assignment is unavailable, your workspace role may not permit it.

@@ -18,6 +18,12 @@ async function archiveProject(id: string, workspaceId: string) {
     });
   }
 
+  if (existingProject.ownerUserId) {
+    throw new HTTPException(400, {
+      message: "A personal project can't be archived",
+    });
+  }
+
   const [archivedProject] = await db
     .update(projectTable)
     .set({ archivedAt: new Date() })

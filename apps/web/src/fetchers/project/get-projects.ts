@@ -1,6 +1,8 @@
 import { client } from "@kaneo/libs";
 import type { InferRequestType } from "hono/client";
 import { HttpError } from "@/lib/http-error";
+import { personalLabel } from "@/lib/personal-label";
+import { withPersonalProjectName } from "@/lib/personal-project-name";
 
 export type GetProjectsRequest = InferRequestType<
   (typeof client)["project"]["$get"]
@@ -21,8 +23,9 @@ async function getProjects({
   }
 
   const data = await response.json();
+  const label = personalLabel();
 
-  return data;
+  return data.map((project) => withPersonalProjectName(project, label));
 }
 
 export default getProjects;

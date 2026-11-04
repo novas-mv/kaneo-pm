@@ -90,7 +90,17 @@ async function createTask({
   const resolvedPriority = priority || "no-priority";
   const normalizedCustomFields = deduplicateCustomFields(customFields);
 
-  const requestedAssignees = normalizeAssigneeIds(assigneeIds ?? [userId]);
+  // Personal tasks belong to their owner, so they show up in My tasks.
+  const [project] = await db
+    .select({
+      workspaceId: projectTable.workspaceId,
+      ownerUserId: projectTable.ownerUserId,
+    })
+    .from(projectTable)
+    .where(eq(projectTable.id, projectId));
+  const requestedAssignees = project?.ownerUserId
+    ? [project.ownerUserId]
+    : normalizeAssigneeIds(assigneeIds ?? [userId]);
   const normalizedUserId = requestedAssignees[0];
 
   await assertValidTaskStatus(resolvedStatus, projectId);
@@ -146,7 +156,7 @@ async function createTask({
   if (requestedAssignees.length > 0) {
     await assertAssignableUsers(
       requestedAssignees,
-      await getProjectWorkspaceId(projectId),
+      project?.workspaceId ?? (await getProjectWorkspaceId(projectId)),
       projectId,
     );
 

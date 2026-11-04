@@ -36,6 +36,10 @@ export const assignedTasksQuery = z.object({
     description:
       "Return only the total, with an empty tasks array, without loading task rows or labels.",
   }),
+  scope: z.enum(["all", "work", "personal"]).optional().openapi({
+    description:
+      "Limit to tasks in your private personal project (personal) or in every other project (work). Defaults to all. The 100-task cap and total apply to the chosen scope.",
+  }),
 });
 
 const priority = z.enum(VALID_PRIORITIES);

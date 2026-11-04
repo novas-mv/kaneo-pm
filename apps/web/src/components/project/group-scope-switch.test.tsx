@@ -11,6 +11,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { useGroupScope } from "@/hooks/use-group-scope";
 import { GroupScopeSwitch } from "./group-scope-switch";
 
+vi.mock("@/lib/i18n", () => ({ i18n: { t: (key: string) => key } }));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

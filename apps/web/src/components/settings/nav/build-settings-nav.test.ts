@@ -102,4 +102,20 @@ describe("buildSettingsNav", () => {
     );
     expect(nav.projects[0]?.icon).toBeDefined();
   });
+
+  it("keeps sharing, integrations and feeds off a personal project", () => {
+    const nav = build({
+      projects: [
+        { id: "team", name: "Website" },
+        { id: "mine", name: "Personal", ownerUserId: "me" },
+      ],
+    });
+    const sections = (id: string) =>
+      nav.projects
+        .find((project) => project.id === id)
+        ?.links.map((link) => link.id.replace(`project-${id}-`, ""));
+
+    expect(sections("team")).toContain("integrations");
+    expect(sections("mine")).toEqual(["general", "workflow", "custom-fields"]);
+  });
 });

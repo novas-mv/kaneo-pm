@@ -24,6 +24,7 @@ import { publishEvent } from "../../events";
 import { grantProjectToRestrictedMember } from "../../project-access/grant-project-to-restricted-member";
 import { filterUsersWithProjectAccess } from "../../project-access/filter-users-with-project-access";
 import { closeProjectConnections } from "../../ws";
+import { assertNotPersonalProject } from "../personal-project";
 import { findProjectKeyConflict } from "../project-key";
 
 async function moveProject(
@@ -32,6 +33,8 @@ async function moveProject(
   targetWorkspaceId: string,
   currentUserId: string,
 ) {
+  await assertNotPersonalProject(id);
+
   if (sourceWorkspaceId === targetWorkspaceId) {
     throw new HTTPException(400, {
       message: "Project already belongs to this workspace",

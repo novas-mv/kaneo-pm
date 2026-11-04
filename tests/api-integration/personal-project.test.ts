@@ -1,0 +1,448 @@
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
+import db, { schema } from "../../apps/api/src/database";
+import { mockAuthenticatedSession } from "./helpers/auth";
+import { resetTestDatabase } from "./helpers/database";
+import {
+  createProjectFixture,
+  createWorkspaceMember,
+} from "./helpers/fixtures";
+import deleteAccountData from "../../apps/api/src/user/controllers/delete-account-data";
+import { createTaskFixture } from "./helpers/project-access/create-task-fixture";
+import { addWorkspaceMember } from "./helpers/project-access/add-workspace-member";
+import { projectAccessApi } from "./helpers/project-access/project-access-api";
+
+type Viewer = typeof schema.userTable.$inferSelect;
+
+async function setup() {
+  const { user: workspaceOwner, workspace } = await createWorkspaceMember({
+    role: "owner",
+  });
+  const owner = await addWorkspaceMember(workspace.id);
+  const teammate = await addWorkspaceMember(workspace.id);
+  const workspaceAdmin = await addWorkspaceMember(workspace.id, "admin");
+  const [instanceAdmin] = await db
+    .insert(schema.userTable)
+    .values({
+      id: `user-${randomUUID()}`,
+      email: `${randomUUID()}@example.com`,
+      emailVerified: true,
+      name: "Instance admin",
+      role: "user,admin",
+    })
+    .returning();
+  const work = await createProjectFixture({
+    workspaceId: workspace.id,
+    name: "Work",
+  });
+
+  const as = (viewer: Viewer) => {
+    mockAuthenticatedSession(viewer);
+    return projectAccessApi();
+  };
+
+  mockAuthenticatedSession(owner);
+  const request = projectAccessApi();
+  const created = await request("/project/personal", {
+    method: "POST",
+    body: { workspaceId: workspace.id },
+  });
+  const personal = (await created.json()) as { id: string; slug: string };
+  const taskResponse = await request(`/task/${personal.id}`, {
+    method: "POST",
+    body: {
+      title: "Secret errand",
+      description: "private note",
+      priority: "high",
+      status: "to-do",
+    },
+  });
+  const task = (await taskResponse.json()) as { id: string };
+
+  const workTask = await createTaskFixture(
+    work,
+    "Existing team task",
+    teammate.id,
+  );
+
+  return {
+    workTask,
+    workspace,
+    owner,
+    teammate,
+    workspaceOwner,
+    workspaceAdmin,
+    instanceAdmin,
+    work,
+    personal,
+    task,
+    as,
+  };
+}
+
+beforeEach(resetTestDatabase);
+
+describe("personal project", () => {
+  it("creates one project per user and is idempotent", async () => {
+    const ctx = await setup();
+    const request = ctx.as(ctx.owner);
+
+    const again = await Promise.all(
+      [1, 2, 3].map(() =>
+        request("/project/personal", {
+          method: "POST",
+          body: { workspaceId: ctx.workspace.id },
+        }),
+      ),
+    );
+    for (const response of again) {
+      expect(response.status).toBe(200);
+      expect(((await response.json()) as { id: string }).id).toBe(
+        ctx.personal.id,
+      );
+    }
+
+    const rows = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.ownerUserId, ctx.owner.id));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.ownerUserId).toBe(ctx.owner.id);
+  });
+
+  it("auto-assigns personal tasks to the owner and lists them in My tasks", async () => {
+    const ctx = await setup();
+    const response = await ctx.as(ctx.owner)(
+      `/task/assigned?workspaceId=${ctx.workspace.id}`,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      tasks: { id: string; isPersonal: boolean }[];
+    };
+    expect(body.tasks).toEqual([
+      expect.objectContaining({ id: ctx.task.id, isPersonal: true }),
+    ]);
+  });
+
+  it("rejects assigning someone else to a personal task", async () => {
+    const ctx = await setup();
+    const response = await ctx.as(ctx.owner)(`/task/assignee/${ctx.task.id}`, {
+      method: "PUT",
+      body: { userId: ctx.teammate.id },
+    });
+    expect(response.status).toBe(403);
+    const [row] = await db
+      .select()
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, ctx.task.id));
+    expect(row?.userId).toBe(ctx.owner.id);
+  });
+
+  for (const [label, pick] of [
+    ["teammate", (c: Awaited<ReturnType<typeof setup>>) => c.teammate],
+    [
+      "workspace owner",
+      (c: Awaited<ReturnType<typeof setup>>) => c.workspaceOwner,
+    ],
+    [
+      "workspace admin",
+      (c: Awaited<ReturnType<typeof setup>>) => c.workspaceAdmin,
+    ],
+    [
+      "instance admin",
+      (c: Awaited<ReturnType<typeof setup>>) => c.instanceAdmin,
+    ],
+  ] as const) {
+    describe(`as ${label}`, () => {
+      it("cannot list, read or search the personal project", async () => {
+        const ctx = await setup();
+        const request = ctx.as(pick(ctx));
+
+        const list = await request(`/project?workspaceId=${ctx.workspace.id}`);
+        expect(list.status).toBe(200);
+        const projects = (await list.json()) as { id: string }[];
+        expect(projects.map((p) => p.id)).toEqual([ctx.work.project.id]);
+
+        const hidden = [
+          `/project/${ctx.personal.id}`,
+          `/task/tasks/${ctx.personal.id}`,
+          `/task/${ctx.task.id}`,
+          `/task/${ctx.task.id}/description`,
+          `/task/export/${ctx.personal.id}`,
+          `/column/${ctx.personal.id}`,
+          `/activity/${ctx.task.id}`,
+          `/comment/${ctx.task.id}`,
+          `/label/task/${ctx.task.id}`,
+          `/calendar-feed/project/${ctx.personal.id}`,
+        ];
+        for (const path of hidden) {
+          const status = (await request(path)).status;
+          expect({ path, status }).toEqual({ path, status: 403 });
+        }
+
+        const search = await request(
+          `/search?workspaceId=${ctx.workspace.id}&q=Secret&type=all`,
+        );
+        expect(
+          ((await search.json()) as { results: unknown[] }).results,
+        ).toEqual([]);
+
+        const assigned = await request(
+          `/task/assigned?workspaceId=${ctx.workspace.id}`,
+        );
+        expect(JSON.stringify(await assigned.json())).not.toContain("Secret");
+
+        const activity = await request(
+          `/activity/workspace/${ctx.workspace.id}`,
+        );
+        expect(JSON.stringify(await activity.json())).not.toContain("Secret");
+      });
+
+      it("cannot change or create tasks in the personal project", async () => {
+        const ctx = await setup();
+        const request = ctx.as(pick(ctx));
+
+        const writes: [string, string, unknown][] = [
+          ["PUT", `/task/title/${ctx.task.id}`, { title: "Hacked" }],
+          ["DELETE", `/task/${ctx.task.id}`, undefined],
+          [
+            "POST",
+            `/task/${ctx.personal.id}`,
+            {
+              title: "Planted",
+              description: "",
+              priority: "low",
+              status: "to-do",
+            },
+          ],
+          [
+            "PUT",
+            `/project/${ctx.personal.id}`,
+            {
+              name: "x",
+              icon: "x",
+              slug: "x",
+              description: "",
+              isPublic: true,
+            },
+          ],
+          ["DELETE", `/project/${ctx.personal.id}`, undefined],
+        ];
+        for (const [method, path, body] of writes) {
+          const status = (await request(path, { method, body })).status;
+          expect({ method, path, status }).toEqual({
+            method,
+            path,
+            status: 403,
+          });
+        }
+
+        const [row] = await db
+          .select()
+          .from(schema.taskTable)
+          .where(eq(schema.taskTable.id, ctx.task.id));
+        expect(row?.title).toBe("Secret errand");
+      });
+    });
+  }
+
+  it("cannot be made public, nested or archived by its owner", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.workspaceUserTable)
+      .set({ role: "admin" })
+      .where(eq(schema.workspaceUserTable.userId, ctx.owner.id));
+    const request = ctx.as(ctx.owner);
+
+    const publish = await request(`/project/${ctx.personal.id}`, {
+      method: "PUT",
+      body: {
+        name: "Personal",
+        icon: "Lock",
+        slug: ctx.personal.slug,
+        description: "",
+        isPublic: true,
+      },
+    });
+    expect(publish.status).toBe(400);
+
+    const nest = await request(`/project/${ctx.personal.id}/parent`, {
+      method: "PUT",
+      body: { parentProjectId: ctx.work.project.id },
+    });
+    expect(nest.status).toBe(400);
+
+    const archive = await request(`/project/${ctx.personal.id}/archive`, {
+      method: "PUT",
+    });
+    expect(archive.status).toBe(400);
+  });
+
+  it("lets the owner see and edit their own project", async () => {
+    const ctx = await setup();
+    const request = ctx.as(ctx.owner);
+    const search = await request(
+      `/search?workspaceId=${ctx.workspace.id}&q=Secret&type=tasks`,
+    );
+    expect(
+      ((await search.json()) as { results: unknown[] }).results,
+    ).toHaveLength(1);
+    const list = await request(`/project?workspaceId=${ctx.workspace.id}`);
+    const projects = (await list.json()) as {
+      id: string;
+      ownerUserId: string | null;
+    }[];
+    expect(projects.find((p) => p.id === ctx.personal.id)?.ownerUserId).toBe(
+      ctx.owner.id,
+    );
+    expect((await request(`/task/${ctx.task.id}`)).status).toBe(200);
+    expect(
+      (
+        await request(`/task/title/${ctx.task.id}`, {
+          method: "PUT",
+          body: { title: "Renamed" },
+        })
+      ).status,
+    ).toBe(200);
+  });
+
+  it("lets a personal task be promoted to a team project but not the reverse", async () => {
+    const ctx = await setup();
+    const request = ctx.as(ctx.owner);
+
+    const into = await request(`/task/move/${ctx.workTask.id}`, {
+      method: "PUT",
+      body: { destinationProjectId: ctx.personal.id },
+    });
+    expect(into.status).toBe(400);
+
+    const out = await request(`/task/move/${ctx.task.id}`, {
+      method: "PUT",
+      body: { destinationProjectId: ctx.work.project.id },
+    });
+    expect(out.status).toBe(200);
+    const [moved] = await db
+      .select()
+      .from(schema.taskTable)
+      .where(eq(schema.taskTable.id, ctx.task.id));
+    expect(moved?.projectId).toBe(ctx.work.project.id);
+    expect(moved?.columnId).toBe(ctx.work.columns.todo.id);
+    expect(moved?.number).toBe(2);
+    expect(moved?.userId).toBe(ctx.owner.id);
+  });
+
+  it("does not offer integrations, webhooks or calendar feeds", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.workspaceUserTable)
+      .set({ role: "admin" })
+      .where(eq(schema.workspaceUserTable.userId, ctx.owner.id));
+    const request = ctx.as(ctx.owner);
+
+    const attempts: [string, unknown][] = [
+      [
+        `/slack-integration/project/${ctx.personal.id}`,
+        { webhookUrl: "https://hooks.slack.com/services/T/B/x" },
+      ],
+      [`/calendar-feed/project/${ctx.personal.id}`, { timeZone: "UTC" }],
+    ];
+    for (const [path, body] of attempts) {
+      const response = await request(path, { method: "POST", body });
+      const { message } = (await response.json()) as { message: string };
+      expect({ path, status: response.status, message }).toEqual({
+        path,
+        status: 400,
+        message: expect.stringContaining("personal project"),
+      });
+    }
+  });
+
+  it("filters My tasks by scope on the server", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.taskTable)
+      .set({ userId: ctx.owner.id })
+      .where(eq(schema.taskTable.id, ctx.workTask.id));
+    const request = ctx.as(ctx.owner);
+    const ids = async (scope: string) => {
+      const response = await request(
+        `/task/assigned?workspaceId=${ctx.workspace.id}&scope=${scope}`,
+      );
+      const body = (await response.json()) as {
+        tasks: { id: string }[];
+        total: number;
+      };
+      return { ids: body.tasks.map((t) => t.id).sort(), total: body.total };
+    };
+
+    expect(await ids("personal")).toEqual({ ids: [ctx.task.id], total: 1 });
+    expect(await ids("work")).toEqual({ ids: [ctx.workTask.id], total: 1 });
+    expect((await ids("all")).total).toBe(2);
+  });
+
+  it("deletes a user's personal project and queues its files when the account is deleted", async () => {
+    const ctx = await setup();
+    await db.insert(schema.assetTable).values({
+      workspaceId: ctx.workspace.id,
+      projectId: ctx.personal.id,
+      taskId: ctx.task.id,
+      objectKey: "personal/secret.png",
+      filename: "secret.png",
+      mimeType: "image/png",
+      size: 10,
+    });
+
+    await deleteAccountData(ctx.owner.id);
+
+    const projects = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.id, ctx.personal.id));
+    expect(projects).toHaveLength(0);
+    const queued = await db.select().from(schema.storageCleanupTable);
+    expect(queued.map((row) => row.objectKey)).toContain("personal/secret.png");
+    const [teamProject] = await db
+      .select()
+      .from(schema.projectTable)
+      .where(eq(schema.projectTable.id, ctx.work.project.id));
+    expect(teamProject).toBeDefined();
+  });
+
+  it("flags search results that live in the personal project", async () => {
+    const ctx = await setup();
+    const response = await ctx.as(ctx.owner)(
+      `/search?workspaceId=${ctx.workspace.id}&q=Secret&type=tasks`,
+    );
+    const { results } = (await response.json()) as {
+      results: { id: string; isPersonal?: boolean }[];
+    };
+    expect(results).toEqual([
+      expect.objectContaining({ id: ctx.task.id, isPersonal: true }),
+    ]);
+
+    const team = await ctx.as(ctx.owner)(
+      `/search?workspaceId=${ctx.workspace.id}&q=Existing&type=tasks`,
+    );
+    const teamResults = (await team.json()) as {
+      results: { isPersonal?: boolean }[];
+    };
+    expect(teamResults.results[0]?.isPersonal).toBeUndefined();
+  });
+
+  it("refuses to grant a personal project to another member", async () => {
+    const ctx = await setup();
+    await db
+      .update(schema.workspaceUserTable)
+      .set({ role: "admin" })
+      .where(eq(schema.workspaceUserTable.userId, ctx.owner.id));
+    const response = await ctx.as(ctx.owner)(
+      `/workspace/${ctx.workspace.id}/members/${ctx.teammate.id}/project-access`,
+      {
+        method: "PUT",
+        body: { projectAccess: "selected", projectIds: [ctx.personal.id] },
+      },
+    );
+    expect(response.status).toBe(400);
+  });
+});

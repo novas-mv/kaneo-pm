@@ -5,6 +5,7 @@ import { projectTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { assertProjectAccess } from "../../project-access/assert-project-access";
 import { findInaccessibleProjectIds } from "../../project-access/find-inaccessible-project-ids";
+import { assertNotPersonalProject } from "../personal-project";
 import { hasShownChildren, hasShownParent } from "../nesting";
 
 // One message for every nesting-rule failure. Distinct messages would tell a
@@ -29,6 +30,7 @@ async function setProjectParent(
   }
 
   await assertProjectAccess(userId, projectId);
+  await assertNotPersonalProject(projectId);
 
   // An inaccessible parent answers exactly like a missing one, so the
   // response is not an existence oracle.
@@ -38,6 +40,8 @@ async function setProjectParent(
   ) {
     throw parentNotFound();
   }
+
+  if (parentProjectId) await assertNotPersonalProject(parentProjectId);
 
   const [located] = await db
     .select({ workspaceId: projectTable.workspaceId })

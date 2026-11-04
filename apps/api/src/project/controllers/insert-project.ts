@@ -16,6 +16,8 @@ export type NewProject = {
   icon: string;
   slug: string;
   userId: string;
+  // Marks a private Personal project that only this user can access.
+  ownerUserId?: string;
 };
 
 export type ProjectPlacement = {
@@ -45,7 +47,7 @@ async function seedDefaultColumns(tx: Transaction, projectId: string) {
 
 export async function insertProject(
   tx: Transaction,
-  { workspaceId, name, icon, slug, userId }: NewProject,
+  { workspaceId, name, icon, slug, userId, ownerUserId }: NewProject,
 ) {
   // Serialize ordering writes per workspace: without this, two concurrent
   // creates can read the same max(position) and land on the same slot, and a
@@ -59,16 +61,19 @@ export async function insertProject(
 
   const [createdProject] = await tx
     .insert(projectTable)
-    .values({ workspaceId, name, icon, slug, position })
+    .values({ workspaceId, name, icon, slug, position, ownerUserId })
     .returning();
 
   if (createdProject) {
     await seedDefaultColumns(tx, createdProject.id);
-    await grantProjectToRestrictedMember(tx, {
-      workspaceId,
-      userId,
-      projectId: createdProject.id,
-    });
+    // Access to a Personal project comes from ownership, not a grant.
+    if (!ownerUserId) {
+      await grantProjectToRestrictedMember(tx, {
+        workspaceId,
+        userId,
+        projectId: createdProject.id,
+      });
+    }
   }
 
   return createdProject;

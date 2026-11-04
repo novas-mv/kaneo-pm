@@ -4,8 +4,19 @@ export function projectAccessCondition(
   userId: string | SQLWrapper,
   projectId: string | SQLWrapper,
 ) {
-  return sql<boolean>`(
-    EXISTS (
+  // A project with an owner is a private Personal project: only the owner may
+  // reach it. No role, including workspace owners and instance admins, widens
+  // that, and the owner needs no workspace project grant. The subquery is NULL
+  // for ordinary projects (and unknown ids), which fall through to the role and
+  // grant rules below.
+  return sql<boolean>`COALESCE(
+    (
+      SELECT personal_project.owner_user_id IS NOT DISTINCT FROM ${userId}
+      FROM project AS personal_project
+      WHERE personal_project.id = ${projectId}
+        AND personal_project.owner_user_id IS NOT NULL
+    ),
+    (EXISTS (
       SELECT 1 FROM "user" AS access_user
       WHERE access_user.id = ${userId}
         AND 'admin' = ANY(string_to_array(access_user.role, ','))
@@ -29,6 +40,6 @@ export function projectAccessCondition(
             AND access_grant.user_id = ${userId}
             AND access_grant.project_id = access_project.id
         )
-    )
+    ))
   )`;
 }

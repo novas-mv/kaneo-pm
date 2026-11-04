@@ -74,6 +74,8 @@ export async function resolveProjectAccessRequest(request: {
     request.workspaceId,
     projectIds,
     database,
+    // Personal projects are private to their owner and can't be granted.
+    { includePersonal: false },
   );
   if (known.length !== projectIds.length) {
     return {

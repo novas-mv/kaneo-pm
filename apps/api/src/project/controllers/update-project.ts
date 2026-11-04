@@ -38,6 +38,12 @@ async function updateProject(
       });
     }
 
+    if (existingProject.ownerUserId && isPublic) {
+      throw new HTTPException(400, {
+        message: "A personal project can't be made public",
+      });
+    }
+
     if (isPublic !== existingProject.isPublic && !canShare) {
       throw new HTTPException(403, {
         message:

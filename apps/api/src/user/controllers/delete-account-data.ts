@@ -6,6 +6,7 @@ import {
 } from "../../billing/controllers/find-billable-workspaces";
 import { syncWorkspaceSeats } from "../../billing/controllers/sync-seats";
 import db from "../../database";
+import { deletePersonalProjects } from "../../project/controllers/delete-personal-projects";
 import { revokeWorkspaceConnections } from "../../ws";
 import {
   userTable,
@@ -131,6 +132,11 @@ export async function deleteAccountData(userId: string) {
   for (const workspaceId of plan.workspaceIdsToLeave) {
     await revokeWorkspaceConnections(userId, workspaceId, { force: true });
   }
+
+  // Last, so a failure above leaves private tasks intact. A project that can't
+  // be deleted here is still removed with the user row; only its uploaded
+  // files would miss storage cleanup.
+  await deletePersonalProjects(userId);
 
   return plan;
 }
