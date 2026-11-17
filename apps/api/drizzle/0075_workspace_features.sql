@@ -1,0 +1,1 @@
+ALTER TABLE "workspace" ADD COLUMN "features" jsonb DEFAULT '{}'::jsonb NOT NULL;

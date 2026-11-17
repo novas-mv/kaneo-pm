@@ -4416,6 +4416,52 @@
 						"transferOwnership"
 					]
 				},
+				"workspaceFeatures": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"subtitle": {
+							"type": "string"
+						},
+						"readOnlyNote": {
+							"type": "string"
+						},
+						"loadError": {
+							"type": "string"
+						},
+						"retry": {
+							"type": "string"
+						},
+						"toastUpdateError": {
+							"type": "string"
+						},
+						"construction": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								}
+							},
+							"required": ["label", "description"]
+						}
+					},
+					"required": [
+						"title",
+						"subtitle",
+						"readOnlyNote",
+						"loadError",
+						"retry",
+						"toastUpdateError",
+						"construction"
+					]
+				},
 				"workspaceRoles": {
 					"type": "object",
 					"additionalProperties": false,
@@ -10056,6 +10102,7 @@
 				"developerPage",
 				"apiKey",
 				"workspaceGeneral",
+				"workspaceFeatures",
 				"workspaceRoles",
 				"workspaceLabels",
 				"workspaceImport",

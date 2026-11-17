@@ -88,3 +88,10 @@ export {
   type WorkspaceCapability,
   workspaceCapabilities,
 } from "./capabilities.js";
+export {
+  isWorkspaceFeatureKey,
+  resolveWorkspaceFeatures,
+  WORKSPACE_FEATURE_KEYS,
+  type WorkspaceFeatureKey,
+  type WorkspaceFeatures,
+} from "./workspace-features.js";

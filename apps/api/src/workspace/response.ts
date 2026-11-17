@@ -1,9 +1,22 @@
 import {
   WORKSPACE_CAPABILITY_NAMES,
+  WORKSPACE_FEATURE_KEYS,
   type WorkspaceCapability,
+  type WorkspaceFeatureKey,
 } from "@kaneo/permissions";
 import { PROJECT_ACCESS_MODES } from "../project-access/project-access-mode";
 import { responseTimestamp, z } from "../openapi";
+
+const featureShape = Object.fromEntries(
+  WORKSPACE_FEATURE_KEYS.map((key) => [key, z.boolean()]),
+) as Record<WorkspaceFeatureKey, z.ZodBoolean>;
+
+export const workspaceFeaturesSchema = z
+  .object(featureShape)
+  .openapi("WorkspaceFeatures", {
+    description:
+      "Opt-in features and whether each is on in the workspace. Every known feature is listed; features are off until turned on.",
+  });
 
 export const workspaceSchema = z
   .object({
@@ -12,6 +25,7 @@ export const workspaceSchema = z
     slug: z.string(),
     logo: z.string().nullable(),
     description: z.string().nullable(),
+    features: workspaceFeaturesSchema,
     createdAt: responseTimestamp,
     role: z.string().nullable().openapi({
       description:

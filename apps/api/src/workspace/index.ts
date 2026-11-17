@@ -18,16 +18,20 @@ import getWorkspaceCtrl from "./controllers/get-workspace";
 import getWorkspaceMembersCtrl from "./controllers/get-workspace-members";
 import listWorkspacesCtrl from "./controllers/list-workspaces";
 import updateMemberProjectAccessCtrl from "./controllers/update-member-project-access";
+import updateWorkspaceFeatureCtrl from "./controllers/update-workspace-feature";
 import {
   memberProjectAccessListSchema,
   memberProjectAccessSchema,
   workspaceCapabilitiesSchema,
+  workspaceFeaturesSchema,
   workspaceListSchema,
   workspaceMemberListSchema,
   workspaceSchema,
 } from "./response";
 import {
   updateMemberProjectAccessBody,
+  updateWorkspaceFeatureBody,
+  workspaceFeatureParam,
   workspaceIdParam,
   workspaceMemberParam,
   workspaceMembersQuery,
@@ -180,6 +184,38 @@ const updateMemberProjectAccessRoute = createRoute({
   },
 });
 
+const updateWorkspaceFeatureRoute = createRoute({
+  method: "put",
+  operationId: "updateWorkspaceFeature",
+  path: "/{workspaceId}/features/{key}",
+  tags: ["Workspaces"],
+  summary: "Turn a workspace feature on or off",
+  description:
+    "Turn one opt-in feature on or off for the workspace. Needs workspace:manage_settings. Routes that belong to a feature that is off respond 404.",
+  middleware: [
+    workspaceAccess.fromParam("workspaceId"),
+    requireWorkspacePermission({ workspace: ["manage_settings"] }),
+  ] as const,
+  request: {
+    params: workspaceFeatureParam,
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: updateWorkspaceFeatureBody },
+      },
+    },
+  },
+  responses: {
+    200: jsonResponse(
+      "Every feature in the workspace, after the change",
+      workspaceFeaturesSchema,
+    ),
+    400: errorResponse("Unknown feature or invalid body"),
+    403: errorResponse("Missing workspace:manage_settings permission"),
+    404: errorResponse("Workspace not found"),
+  },
+});
+
 const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
   .openapi(listWorkspacesRoute, async (c) =>
     c.json(await listWorkspacesCtrl(c.get("userId")), 200),
@@ -226,6 +262,14 @@ const workspace = apiRouter<BaseVariables & { workspaceId: string }>()
         projectAccess: body.projectAccess,
         projectIds: body.projectIds,
       }),
+      200,
+    );
+  })
+  .openapi(updateWorkspaceFeatureRoute, async (c) => {
+    const { key } = c.req.valid("param");
+    const { enabled } = c.req.valid("json");
+    return c.json(
+      await updateWorkspaceFeatureCtrl(c.get("workspaceId"), key, enabled),
       200,
     );
   });

@@ -1094,6 +1094,18 @@
 			"ownershipTitle": "Ownership",
 			"ownershipSubtitle": "Only the owner sees this."
 		},
+		"workspaceFeatures": {
+			"title": "Features",
+			"subtitle": "Turn on extra tools for this workspace. They stay hidden until you do.",
+			"readOnlyNote": "Only people who can manage workspace settings can turn features on or off.",
+			"loadError": "Couldn't load features.",
+			"retry": "Try again",
+			"toastUpdateError": "Couldn't update {{feature}}",
+			"construction": {
+				"label": "Construction tools",
+				"description": "Tools for running construction projects in this workspace."
+			}
+		},
 		"workspaceRoles": {
 			"pageTitle": "Roles",
 			"title": "Roles",

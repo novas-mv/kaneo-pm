@@ -2556,6 +2556,18 @@
 				"listLabel": "Contact types",
 				"title": "Contact types"
 			}
+		},
+		"workspaceFeatures": {
+			"construction": {
+				"description": "Tools for running construction projects in this workspace.",
+				"label": "Construction tools"
+			},
+			"loadError": "Couldn't load features.",
+			"readOnlyNote": "Only people who can manage workspace settings can turn features on or off.",
+			"retry": "Try again",
+			"subtitle": "Turn on extra tools for this workspace. They stay hidden until you do.",
+			"title": "Features",
+			"toastUpdateError": "Couldn't update {{feature}}"
 		}
 	},
 	"navigation": {

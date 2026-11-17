@@ -1,3 +1,4 @@
+import { WORKSPACE_FEATURE_KEYS } from "@kaneo/permissions";
 import { PROJECT_ACCESS_MODES } from "../project-access/project-access-mode";
 import { z } from "../openapi";
 
@@ -23,5 +24,18 @@ export const updateMemberProjectAccessBody = z.object({
   projectIds: z.array(z.string()).default([]).openapi({
     description:
       'Projects the member can access when projectAccess is "selected".',
+  }),
+});
+
+export const workspaceFeatureParam = z.object({
+  workspaceId: z.string(),
+  key: z.enum(WORKSPACE_FEATURE_KEYS).openapi({
+    description: "The feature to turn on or off.",
+  }),
+});
+
+export const updateWorkspaceFeatureBody = z.object({
+  enabled: z.boolean().openapi({
+    description: "true turns the feature on, false turns it off.",
   }),
 });
