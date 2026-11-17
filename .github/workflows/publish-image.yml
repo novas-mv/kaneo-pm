@@ -1,23 +1,34 @@
 name: Publish Kaneo image
 
-# Builds the all-in-one Kaneo image (Dockerfile.kaneo) from main and pushes it
-# to GitHub Container Registry, tagged with the first 8 characters of the commit
-# SHA. compose.coolify.fork.yml pins that tag.
+# Builds the all-in-one Kaneo image (Dockerfile.kaneo) from main, pushes it to
+# ghcr.io/<owner>/<repo> as :main and :<commit>, then tells Coolify to redeploy.
+# compose.coolify.fork.yml runs :main, so there is no tag to pin by hand.
 #
-# It never runs on its own: open the Actions tab, choose "Publish Kaneo image"
-# and press "Run workflow" on main. It uses GitHub's standard runners and the
-# built-in GITHUB_TOKEN, so no extra secrets or paid services are needed.
+# Manual only: Actions tab -> "Publish Kaneo image" -> "Run workflow" on main.
+# To roll back, enter a full commit SHA in "rollback_to": that commit's image
+# becomes :main again and Coolify redeploys it. Nothing is rebuilt.
+#
+# Coolify: set the repository variable COOLIFY_WEBHOOK (the app's deploy
+# webhook URL) and the secret COOLIFY_TOKEN (a Coolify API token). Without
+# them the image is still pushed; redeploy in Coolify yourself.
 
 on:
   workflow_dispatch:
+    inputs:
+      rollback_to:
+        description: "Rollback: full commit SHA whose image should become :main. Leave empty to build main."
+        required: false
 
 permissions:
   contents: read
 
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
 jobs:
   publish:
-    name: Build and push ghcr.io/${{ github.repository_owner }}/kaneo
-    if: ${{ github.ref == 'refs/heads/main' }}
+    name: Build, push and deploy
+    if: ${{ github.ref == 'refs/heads/main' && !inputs.rollback_to }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -29,10 +40,6 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-
-      - name: Name the image tag
-        id: tag
-        run: echo "short=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -52,6 +59,46 @@ jobs:
           # Intel/AMD servers. Add linux/arm64 here if the server is ARM.
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/kaneo:${{ steps.tag.outputs.short }}
+          tags: |
+            ${{ env.IMAGE }}:main
+            ${{ env.IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Tell Coolify to deploy
+        if: ${{ vars.COOLIFY_WEBHOOK != '' }}
+        env:
+          COOLIFY_WEBHOOK: ${{ vars.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          # Newer Coolify wants POST here, older wants GET: try POST, then GET.
+          curl -fsS -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK" \
+            || curl -fsS -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
+
+  rollback:
+    name: Roll back :main and deploy
+    if: ${{ github.ref == 'refs/heads/main' && inputs.rollback_to }}
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Point :main at the chosen commit
+        env:
+          ROLLBACK_TO: ${{ inputs.rollback_to }}
+        run: docker buildx imagetools create -t "$IMAGE:main" "$IMAGE:$ROLLBACK_TO"
+
+      - name: Tell Coolify to deploy
+        if: ${{ vars.COOLIFY_WEBHOOK != '' }}
+        env:
+          COOLIFY_WEBHOOK: ${{ vars.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          curl -fsS -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK" \
+            || curl -fsS -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"

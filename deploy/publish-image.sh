@@ -3,9 +3,9 @@
 #
 #   ./deploy/publish-image.sh
 #
-# It builds whatever commit is checked out and tags the image with the first 8
-# characters of that commit (the tag compose.coolify.fork.yml pins). Run it from
-# a clean checkout, then set that tag in compose.coolify.fork.yml.
+# Fallback for the "Publish Kaneo image" workflow. It builds whatever commit is
+# checked out and pushes it as :main (what compose.coolify.fork.yml runs) and
+# :<full commit SHA>. Run it from a clean checkout, then redeploy in Coolify.
 #
 # One-time setup: Docker running, and `docker login ghcr.io -u <github-user>`
 # with a personal access token that has the write:packages permission.
@@ -18,18 +18,18 @@ cd "$(dirname "$0")/.."
 
 OWNER="${GHCR_OWNER:-novas-mv}"
 PLATFORM="${PLATFORM:-linux/amd64}"
-IMAGE="ghcr.io/${OWNER}/kaneo"
+IMAGE="ghcr.io/${OWNER}/kaneo-pm"
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "You have uncommitted changes. Commit or stash them so the tag matches what is built." >&2
   exit 1
 fi
 
-TAG="$(git rev-parse --short=8 HEAD)"
+TAG="$(git rev-parse HEAD)"
 echo "Building ${IMAGE}:${TAG} for ${PLATFORM} ..."
 
 if ! docker buildx build --platform "${PLATFORM}" -f Dockerfile.kaneo \
-  -t "${IMAGE}:${TAG}" --push .; then
+  -t "${IMAGE}:${TAG}" -t "${IMAGE}:main" --push .; then
   echo >&2
   echo "The build or push failed. If it says 'unauthorized' or 'denied', run:" >&2
   echo "  docker login ghcr.io -u <your-github-username>" >&2
@@ -38,5 +38,5 @@ if ! docker buildx build --platform "${PLATFORM}" -f Dockerfile.kaneo \
 fi
 
 echo
-echo "Published ${IMAGE}:${TAG}"
-echo "Next: set 'image: ${IMAGE}:${TAG}' in compose.coolify.fork.yml and redeploy."
+echo "Published ${IMAGE}:${TAG} and ${IMAGE}:main"
+echo "Next: redeploy the Kaneo app in Coolify."
