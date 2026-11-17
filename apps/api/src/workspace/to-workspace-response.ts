@@ -1,3 +1,4 @@
+import { resolveWorkspaceFeatures } from "@kaneo/permissions";
 import { workspaceTable } from "../database/schema";
 import { resolveWorkspaceDescription } from "./resolve-workspace-description";
 
@@ -8,6 +9,7 @@ export const workspaceColumns = {
   logo: workspaceTable.logo,
   description: workspaceTable.description,
   metadata: workspaceTable.metadata,
+  features: workspaceTable.features,
   createdAt: workspaceTable.createdAt,
 };
 
@@ -18,6 +20,7 @@ export function toWorkspaceResponse(row: {
   logo: string | null;
   description: string | null;
   metadata: string | null;
+  features: unknown;
   createdAt: Date;
   role: string | null;
 }) {
@@ -27,6 +30,7 @@ export function toWorkspaceResponse(row: {
     slug: row.slug,
     logo: row.logo,
     description: resolveWorkspaceDescription(row),
+    features: resolveWorkspaceFeatures(row.features),
     createdAt: row.createdAt,
     role: row.role,
   };

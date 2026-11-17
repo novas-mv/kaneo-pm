@@ -51,6 +51,7 @@ vi.mock("@/hooks/queries/workspace/use-get-full-workspace", () => ({
 vi.mock("@/hooks/use-workspace-permission", () => ({
   useWorkspacePermission: () => ({
     canManageWorkspace: () => true,
+    canManageSettings: () => true,
     canDeleteWorkspace: () => m.canDelete,
     isOwner: m.isOwner,
   }),
@@ -64,6 +65,10 @@ vi.mock("@/hooks/mutations/workspace/use-delete-workspace", () => ({
 vi.mock("@/hooks/mutations/workspace/use-transfer-workspace-ownership", () => ({
   default: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
+vi.mock(
+  "@/components/settings/workspace-features/workspace-features-section",
+  () => ({ WorkspaceFeaturesSection: () => null }),
+);
 vi.mock("@/lib/toast", () => ({
   toast: { success: m.success, error: m.error },
 }));

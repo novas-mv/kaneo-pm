@@ -7,6 +7,7 @@ import { OwnershipSection } from "@/components/settings/workspace-general/owners
 import { useWorkspaceAutosave } from "@/components/settings/workspace-general/use-workspace-autosave";
 import { WorkspaceDangerZone } from "@/components/settings/workspace-general/workspace-danger-zone";
 import { WorkspaceDetailsSection } from "@/components/settings/workspace-general/workspace-details-section";
+import { WorkspaceFeaturesSection } from "@/components/settings/workspace-features/workspace-features-section";
 import { getWorkspaceDescription } from "@/components/settings/workspace-general/workspace-form-values";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import useGetFullWorkspace from "@/hooks/queries/workspace/use-get-full-workspace";
@@ -19,7 +20,7 @@ export function WorkspaceGeneralPage() {
   const { data: fullWorkspace } = useGetFullWorkspace({
     workspaceId: workspace?.id,
   });
-  const { canManageWorkspace, canDeleteWorkspace, isOwner } =
+  const { canManageWorkspace, canManageSettings, canDeleteWorkspace, isOwner } =
     useWorkspacePermission();
   const canEdit = canManageWorkspace();
   const canDelete = canDeleteWorkspace();
@@ -44,6 +45,10 @@ export function WorkspaceGeneralPage() {
         actions={canEdit ? <AutosaveNote /> : undefined}
       >
         <WorkspaceDetailsSection form={form} canEdit={canEdit} />
+        <WorkspaceFeaturesSection
+          workspaceId={workspace?.id}
+          canEdit={canManageSettings()}
+        />
         {isOwner ? (
           <OwnershipSection
             workspaceId={workspace?.id}

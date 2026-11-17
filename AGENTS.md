@@ -36,6 +36,15 @@ The common mistake is finishing one path while leaving another stale. Check the 
 - UI: Put user-facing copy in static i18n keys, with `i18n/en-US.json` as the source. Check accessibility and the reverse action: assign/unassign, connect/disconnect, enable/disable.
 - Other entry points: Consider the mobile app, MCP, API keys, webhooks, Docker, Helm, and docs when the behavior reaches them.
 
+## Construction features
+
+Construction tools are a workspace feature (`construction` in `WORKSPACE_FEATURE_KEYS`, `packages/permissions`), off by default, so normal workspaces stay simple.
+
+- Put construction-only code in `apps/api/src/construction/` and `apps/web/src/components/construction/`, with routes under a construction path and its own tables linked to core tables.
+- Gate it on the server with `requireWorkspaceFeature("construction")` after workspace access, and in the UI with `useWorkspaceFeature("construction")`.
+- Shared files get only one-line hooks: register routes, add a menu entry.
+- Never change shared logic for a construction-only reason. If a normal team would want the capability too, like task templates, build it as a shared feature with no switch and use it from construction.
+
 ## Working safely
 
 - Server configuration comes from the root `.env`; Vite-only overrides go in `apps/web/.env.local`.

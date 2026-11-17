@@ -5035,6 +5035,9 @@
               "null"
             ]
           },
+          "features": {
+            "$ref": "#/components/schemas/WorkspaceFeatures"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -5053,9 +5056,22 @@
           "slug",
           "logo",
           "description",
+          "features",
           "createdAt",
           "role"
         ]
+      },
+      "WorkspaceFeatures": {
+        "type": "object",
+        "properties": {
+          "construction": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "construction"
+        ],
+        "description": "Opt-in features and whether each is on in the workspace. Every known feature is listed; features are off until turned on."
       },
       "WorkspaceMember": {
         "type": "object",
@@ -26361,6 +26377,113 @@
           },
           "404": {
             "description": "Workspace or member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/workspace/{workspaceId}/features/{key}": {
+      "put": {
+        "operationId": "updateWorkspaceFeature",
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Turn a workspace feature on or off",
+        "description": "Turn one opt-in feature on or off for the workspace. Needs workspace:manage_settings. Routes that belong to a feature that is off respond 404.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "construction"
+              ],
+              "description": "The feature to turn on or off."
+            },
+            "required": true,
+            "description": "The feature to turn on or off.",
+            "name": "key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "true turns the feature on, false turns it off."
+                  }
+                },
+                "required": [
+                  "enabled"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Every feature in the workspace, after the change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceFeatures"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown feature or invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing workspace:manage_settings permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found",
             "content": {
               "application/json": {
                 "schema": {

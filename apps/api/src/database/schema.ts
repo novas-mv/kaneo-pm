@@ -171,6 +171,13 @@ export const workspaceTable = pgTable("workspace", {
   logo: text("logo"),
   metadata: text("metadata"),
   description: text("description"),
+  // Opt-in workspace features, `{ [WorkspaceFeatureKey]: boolean }`. Owned by
+  // Kaneo, not better-auth: it's absent from the organization schema so only
+  // the validated features endpoint can change it.
+  features: jsonb("features")
+    .$type<Record<string, boolean>>()
+    .notNull()
+    .default({}),
   createdAt: timestamp("created_at", { mode: "date" }).notNull(),
 });
 
