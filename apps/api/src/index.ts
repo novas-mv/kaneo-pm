@@ -113,6 +113,7 @@ import { requireWorkspacePermission } from "./utils/require-workspace-permission
 import { PROJECT_READ_PERMISSIONS } from "./ws/project-read-permissions";
 import { apiKeyResponseHeaders } from "./utils/rate-limit-headers";
 import { readApiKeyCheck, verifyApiKey } from "./utils/verify-api-key";
+import taskTemplate from "./task-template";
 import workflowRule from "./workflow-rule";
 import workspace from "./workspace";
 import {
@@ -859,6 +860,7 @@ export function createApp() {
   const resourceLinkApi = api.route("/resource-link", resourceLink);
   const contactApi = api.route("/contact", contact);
   const workflowRuleApi = api.route("/workflow-rule", workflowRule);
+  const taskTemplateApi = api.route("/task-template", taskTemplate);
   const invitationApi = api.route("/invitation", invitation);
   const workspaceApi = api.route("/workspace", workspace);
   const customFieldApi = api.route("/custom-field", customField);
@@ -1004,6 +1006,7 @@ export function createApp() {
     userApi,
     adminApi,
     workflowRuleApi,
+    taskTemplateApi,
     workspaceApi,
     customFieldApi,
     importApi,
@@ -1140,6 +1143,7 @@ const {
   userApi,
   adminApi,
   workflowRuleApi,
+  taskTemplateApi,
   workspaceApi,
   customFieldApi,
   importApi,
@@ -1185,6 +1189,7 @@ export type AppType =
   | typeof resourceLinkApi
   | typeof contactApi
   | typeof workflowRuleApi
+  | typeof taskTemplateApi
   | typeof invitationApi
   | typeof workspaceApi
   | typeof customFieldApi

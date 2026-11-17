@@ -150,6 +150,10 @@ export const boardTaskSchema = z
         description:
           "Direct subtasks in the workspace; completed means a final column in the child project. Public boards count only children in public projects.",
       }),
+    parentTaskId: z.string().nullable().openapi({
+      description:
+        "The task this one is a subtask of, when that parent is in the same project. Null otherwise.",
+    }),
     labels: z.array(taskLabelSchema),
     externalLinks: z.array(taskExternalLinkSchema),
   })
@@ -347,3 +351,13 @@ export const assignedTasksSchema = z
     }),
   })
   .openapi("AssignedTasks");
+
+export const shiftTaskDatesResultSchema = z
+  .object({
+    task: taskSchema.openapi({ description: "The task after the move." }),
+    subtasks: z.array(taskSchema).openapi({
+      description:
+        "Subtasks whose dates moved. Subtasks without a start or due date are left out.",
+    }),
+  })
+  .openapi("ShiftTaskDatesResult");

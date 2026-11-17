@@ -1,6 +1,6 @@
 import { pagingNumber, z } from "../openapi";
 import { MAX_TASK_POSITION } from "./controllers/next-task-position";
-import { taskRecurrenceSchema } from "./recurrence/schema";
+import { isTimeZone, taskRecurrenceSchema } from "./recurrence/schema";
 import { TICKET_ID_PATTERN } from "./ticket-id";
 import { VALID_PRIORITIES } from "./validate-task-fields";
 
@@ -177,6 +177,24 @@ export const updateTaskContactBody = z.object({
     .openapi({ description: "Contact to link; null removes the link." }),
 });
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
+export const shiftTaskDatesBody = z.object({
+  days: z.number().int().min(-3650).max(3650).openapi({
+    description:
+      "Whole days to move the dates by. Negative moves them earlier, 0 changes nothing.",
+  }),
+  includeSubtasks: z.boolean().openapi({
+    description:
+      "Also move the task's direct subtasks that are in projects the caller can open.",
+  }),
+  timeZone: z
+    .string()
+    .refine(isTimeZone, { message: "Unknown time zone" })
+    .optional()
+    .openapi({
+      description:
+        "The viewer's IANA time zone. Dates then keep their local time of day across a DST change; without it they keep their UTC time.",
+    }),
+});
 export const updateRecurrenceBody = z.object({
   recurrence: z
     .union([taskRecurrenceSchema, z.null()])

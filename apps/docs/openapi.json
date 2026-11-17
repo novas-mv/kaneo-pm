@@ -312,6 +312,13 @@
             ],
             "description": "Direct subtasks in the workspace; completed means a final column in the child project. Public boards count only children in public projects."
           },
+          "parentTaskId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The task this one is a subtask of, when that parent is in the same project. Null otherwise."
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -345,6 +352,7 @@
           "assignees",
           "projectId",
           "subtaskCounts",
+          "parentTaskId",
           "labels",
           "externalLinks"
         ]
@@ -1693,6 +1701,32 @@
           "successful",
           "failed",
           "tasks"
+        ]
+      },
+      "ShiftTaskDatesResult": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Task"
+              },
+              {
+                "description": "The task after the move."
+              }
+            ]
+          },
+          "subtasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "description": "Subtasks whose dates moved. Subtasks without a start or due date are left out."
+          }
+        },
+        "required": [
+          "task",
+          "subtasks"
         ]
       },
       "Column": {
@@ -4783,6 +4817,103 @@
           "columnId",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "TaskTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "offsetDays": {
+                  "type": "integer",
+                  "description": "Days from the post date: negative is before, 0 is the same day, positive is after."
+                }
+              },
+              "required": [
+                "title",
+                "offsetDays"
+              ]
+            },
+            "description": "Steps in creation order."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "steps",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TaskTemplateStepInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Title of the task created for this step."
+          },
+          "offsetDays": {
+            "type": "integer",
+            "minimum": -365,
+            "maximum": 365,
+            "description": "Days from the post date to the step's due date. Negative is before the post date, 0 is the same day, positive is after."
+          }
+        },
+        "required": [
+          "title",
+          "offsetDays"
+        ]
+      },
+      "AppliedTaskTemplate": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Task"
+              },
+              {
+                "description": "The task for the post, due on the post date."
+              }
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "description": "One task per template step, in template order, each linked as a subtask of the parent."
+          }
+        },
+        "required": [
+          "parent",
+          "steps"
         ]
       },
       "PendingInvitation": {
@@ -13399,6 +13530,111 @@
           },
           "400": {
             "description": "Invalid date",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing task:update permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/task/{id}/shift-dates": {
+      "post": {
+        "operationId": "shiftTaskDates",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Shift task dates",
+        "description": "Move a task's start and due dates by a number of days, keeping their time of day, and optionally its direct subtasks' dates too. Unset dates stay unset. Each moved task emits the same events as a due date edit.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "days": {
+                    "type": "integer",
+                    "minimum": -3650,
+                    "maximum": 3650,
+                    "description": "Whole days to move the dates by. Negative moves them earlier, 0 changes nothing."
+                  },
+                  "includeSubtasks": {
+                    "type": "boolean",
+                    "description": "Also move the task's direct subtasks that are in projects the caller can open."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The viewer's IANA time zone. Dates then keep their local time of day across a DST change; without it they keep their UTC time."
+                  }
+                },
+                "required": [
+                  "days",
+                  "includeSubtasks"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The task and the subtasks that moved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTaskDatesResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
             "content": {
               "application/json": {
                 "schema": {
@@ -25113,6 +25349,451 @@
           },
           "404": {
             "description": "Workflow rule not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/task-template/project/{projectId}": {
+      "get": {
+        "operationId": "listTaskTemplates",
+        "tags": [
+          "Task Templates"
+        ],
+        "summary": "List task templates",
+        "description": "Get a project's task templates, sorted by name. A template is a list of steps, each due a number of days before or after a post date.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project's task templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskTemplate"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing read permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTaskTemplate",
+        "tags": [
+          "Task Templates"
+        ],
+        "summary": "Create task template",
+        "description": "Add a task template to a project.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Shown when picking a template, e.g. `Instagram post`."
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TaskTemplateStepInput"
+                    },
+                    "maxItems": 20,
+                    "description": "Up to 20 steps, in the order they are created."
+                  }
+                },
+                "required": [
+                  "name",
+                  "steps"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing project:update permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/task-template/{templateId}": {
+      "patch": {
+        "operationId": "updateTaskTemplate",
+        "tags": [
+          "Task Templates"
+        ],
+        "summary": "Update task template",
+        "description": "Rename a template, replace its steps, or both. Tasks already created from it are not changed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "templateId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Shown when picking a template, e.g. `Instagram post`."
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TaskTemplateStepInput"
+                    },
+                    "maxItems": 20,
+                    "description": "Up to 20 steps, in the order they are created."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing project:update permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task template not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTaskTemplate",
+        "tags": [
+          "Task Templates"
+        ],
+        "summary": "Delete task template",
+        "description": "Delete a template. Tasks already created from it are kept. Returns the deleted template.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "templateId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTemplate"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing project:update permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task template not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiKeyRateLimited"
+          }
+        }
+      }
+    },
+    "/task-template/{templateId}/apply": {
+      "post": {
+        "operationId": "applyTaskTemplate",
+        "tags": [
+          "Task Templates"
+        ],
+        "summary": "Apply task template",
+        "description": "Create a parent task due on `postDate` and one task per step, each due `offsetDays` from `postDate` at the same time of day and linked to the parent as a subtask. Tasks are created through the normal task path, so numbering, activity, notifications, integrations and live updates behave as for hand-made tasks. The tasks are created one after another, not atomically.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "templateId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Title of the parent task, e.g. the post's name."
+                  },
+                  "postDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The post date as an ISO 8601 date-time. It becomes the parent task's due date; each step is due this many days before or after, at the same time of day."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Column slug for the parent and step tasks. Defaults to the project's first column."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The viewer's IANA time zone. Steps then keep the post date's local time of day across a DST change; without it they keep its UTC time."
+                  }
+                },
+                "required": [
+                  "title",
+                  "postDate"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The parent task and the step tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppliedTaskTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, unknown status, or the project requires custom fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No access to the project, or missing task:create permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task template not found",
             "content": {
               "application/json": {
                 "schema": {

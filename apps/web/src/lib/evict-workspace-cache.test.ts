@@ -51,6 +51,7 @@ it("cancels unknown project settings reads when membership is revoked", async ()
     "calendar-feeds",
     "columns",
     "workflow-rules",
+    "task-templates",
     "custom-fields",
   ]) {
     let finish!: (value: string) => void;

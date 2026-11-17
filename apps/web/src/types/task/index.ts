@@ -53,6 +53,8 @@ type Task = {
   projectId: string;
   columnId?: string | null;
   subtaskCounts?: { completed: number; total: number };
+  /** The same-project task this one is a subtask of, from the board list. */
+  parentTaskId?: string | null;
   labels?: TaskLabel[];
   externalLinks?: TaskExternalLink[];
   customFieldValues?: TaskCustomFieldValue[];

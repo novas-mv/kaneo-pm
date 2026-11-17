@@ -4,7 +4,17 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CalendarToolbar from "@/components/calendar/calendar-toolbar";
 import MonthAgenda from "@/components/calendar/month-agenda";
-import MonthGrid from "@/components/calendar/month-grid";
+import MonthGrid, {
+  type MonthGridQuickCreate,
+} from "@/components/calendar/month-grid";
+import {
+  type ResizeEdge,
+  resizeTaskDates,
+  shiftTaskDates,
+} from "@/components/calendar/shift-task-dates";
+import { buildPostGroups } from "@/components/calendar/post-groups";
+import { useMoveCalendarPost } from "@/components/calendar/use-move-calendar-post";
+import { useSaveCalendarTaskDates } from "@/components/calendar/use-save-calendar-task-dates";
 import { buildMonthWeeks } from "@/components/calendar/month-grid-model";
 import ProjectLayout from "@/components/common/project-layout";
 import PageTitle from "@/components/page-title";
@@ -16,11 +26,14 @@ import { ProjectToolbar } from "@/components/project/toolbar/project-toolbar";
 import { TaskCount } from "@/components/project/toolbar/task-count";
 import { useProjectTaskView } from "@/components/project/toolbar/use-project-task-view";
 import { LayoutSwitch } from "@/components/project/views/layout-switch";
+import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { useGetGroupTasks } from "@/hooks/queries/task/use-get-group-tasks";
 import { useTaskSheetProjectId } from "@/hooks/use-task-sheet-project-id";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { toScheduledTasks } from "@/lib/task-schedule";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { type Scheduled, toScheduledTasks } from "@/lib/task-schedule";
+import type Task from "@/types/task";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 
 type CalendarSearchParams = {
@@ -64,11 +77,31 @@ function RouteComponent() {
   const [visibleMonth, setVisibleMonth] = useState(() =>
     startOfMonth(new Date()),
   );
+  const { canCreateTasks, canUpdateTasks } = useWorkspacePermission();
+  const saveTaskDates = useSaveCalendarTaskDates();
+  const movePost = useMoveCalendarPost();
+  const [createDraft, setCreateDraft] = useState<{
+    title: string;
+    day: Date;
+  } | null>(null);
 
   const allScheduledTasks = useMemo(() => toScheduledTasks(project), [project]);
+  // Unfiltered, so a step still names its post when a filter hides the post.
+  const boardTasks = useMemo(
+    () => [
+      ...(project?.columns.flatMap((column) => column.tasks) ?? []),
+      ...(project?.plannedTasks ?? []),
+    ],
+    [project],
+  );
+  const postGroups = useMemo(() => buildPostGroups(boardTasks), [boardTasks]);
   const scheduledTasks = useMemo(
-    () => toScheduledTasks(view.filters.filteredProject),
-    [view.filters.filteredProject],
+    () =>
+      toScheduledTasks(view.filters.filteredProject).map((task) => {
+        const post = postGroups.get(task.id);
+        return post ? { ...task, post } : task;
+      }),
+    [view.filters.filteredProject, postGroups],
   );
 
   const weeks = useMemo(
@@ -98,6 +131,39 @@ function RouteComponent() {
   const handleCloseTaskSheet = useCallback(() => {
     navigate({ to: ".", search: {}, replace: true });
   }, [navigate]);
+
+  // A post moves together with its steps; any other task moves alone.
+  const handleMoveTask = useCallback(
+    (task: Scheduled<Task>, deltaDays: number) => {
+      const steps = boardTasks.filter(
+        (other) => other.parentTaskId === task.id,
+      );
+      if (steps.length > 0) {
+        void movePost(task, steps, deltaDays);
+        return;
+      }
+      void saveTaskDates(task, shiftTaskDates(task, deltaDays));
+    },
+    [boardTasks, movePost, saveTaskDates],
+  );
+
+  const handleResizeTask = useCallback(
+    (task: Scheduled<Task>, edge: ResizeEdge, targetDay: Date) => {
+      void saveTaskDates(task, resizeTaskDates(task, edge, targetDay));
+    },
+    [saveTaskDates],
+  );
+
+  const quickCreate = useMemo<MonthGridQuickCreate | undefined>(
+    () =>
+      canCreateTasks()
+        ? {
+            projectId,
+            onMoreOptions: (title, day) => setCreateDraft({ title, day }),
+          }
+        : undefined,
+    [canCreateTasks, projectId],
+  );
 
   return (
     <ProjectLayout
@@ -204,8 +270,19 @@ function RouteComponent() {
               maxLanes={MAX_LANES_DESKTOP}
               projectSlug={project?.slug}
               onOpenTask={handleOpenTask}
+              onMoveTask={canUpdateTasks() ? handleMoveTask : undefined}
+              onResizeTask={canUpdateTasks() ? handleResizeTask : undefined}
+              quickCreate={quickCreate}
             />
           )}
+
+          <CreateTaskModal
+            open={createDraft !== null}
+            onClose={() => setCreateDraft(null)}
+            projectId={projectId}
+            initialTitle={createDraft?.title}
+            initialDueDate={createDraft?.day}
+          />
 
           <TaskDetailsSheet
             taskId={taskId}
