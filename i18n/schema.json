@@ -12870,6 +12870,65 @@
 						},
 						"noTasksThisMonth": {
 							"type": "string"
+						},
+						"noTitle": {
+							"type": "string"
+						},
+						"createOnDayAriaLabel": {
+							"type": "string"
+						},
+						"updateDatesError": {
+							"type": "string"
+						},
+						"resizeStart": {
+							"type": "string"
+						},
+						"resizeDue": {
+							"type": "string"
+						},
+						"quickCreate": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"dialogLabel": {
+									"type": "string"
+								},
+								"titleLabel": {
+									"type": "string"
+								},
+								"titlePlaceholder": {
+									"type": "string"
+								},
+								"moreOptions": {
+									"type": "string"
+								},
+								"save": {
+									"type": "string"
+								},
+								"createError": {
+									"type": "string"
+								},
+								"template": {
+									"type": "string"
+								},
+								"noTemplate": {
+									"type": "string"
+								},
+								"stepsLabel": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"dialogLabel",
+								"titleLabel",
+								"titlePlaceholder",
+								"moreOptions",
+								"save",
+								"createError",
+								"template",
+								"noTemplate",
+								"stepsLabel"
+							]
 						}
 					},
 					"required": [
@@ -12884,7 +12943,13 @@
 						"dayTasksAriaLabel",
 						"taskAriaLabel",
 						"taskInProjectAriaLabel",
-						"noTasksThisMonth"
+						"noTasksThisMonth",
+						"noTitle",
+						"createOnDayAriaLabel",
+						"updateDatesError",
+						"resizeStart",
+						"resizeDue",
+						"quickCreate"
 					]
 				},
 				"gantt": {

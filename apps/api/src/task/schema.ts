@@ -177,6 +177,16 @@ export const updateTaskContactBody = z.object({
     .openapi({ description: "Contact to link; null removes the link." }),
 });
 export const updateDueDateBody = z.object({ dueDate: z.string().optional() });
+export const shiftTaskDatesBody = z.object({
+  days: z.number().int().min(-3650).max(3650).openapi({
+    description:
+      "Whole days to move the dates by. Negative moves them earlier, 0 changes nothing.",
+  }),
+  includeSubtasks: z.boolean().openapi({
+    description:
+      "Also move the task's direct subtasks that are in projects the caller can open.",
+  }),
+});
 export const updateRecurrenceBody = z.object({
   recurrence: z
     .union([taskRecurrenceSchema, z.null()])

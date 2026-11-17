@@ -47,6 +47,7 @@ import getTasks from "./controllers/get-tasks";
 import importTasks from "./controllers/import-tasks";
 import moveTask from "./controllers/move-task";
 import reorderTasks from "./controllers/reorder-tasks";
+import shiftTaskDates from "./controllers/shift-task-dates";
 import {
   stageTaskAssetUpload,
   finalizeStagedTaskAsset,
@@ -80,6 +81,7 @@ import {
   finalizedAssetSchema,
   imageUploadSchema,
   moveTaskResultSchema,
+  shiftTaskDatesResultSchema,
   taskByTicketIdSchema,
   taskExportSchema,
   taskImportResultSchema,
@@ -102,6 +104,7 @@ import {
   moveTaskBody,
   projectIdParam,
   reorderTasksBody,
+  shiftTaskDatesBody,
   taskParam,
   ticketIdParam,
   ticketIdQuery,
@@ -678,6 +681,39 @@ const updateTaskDueDateRoute = createRoute({
   },
 });
 
+const shiftTaskDatesRoute = createRoute({
+  method: "post",
+  operationId: "shiftTaskDates",
+  path: "/{id}/shift-dates",
+  tags: ["Tasks"],
+  summary: "Shift task dates",
+  description:
+    "Move a task's start and due dates by a number of days, keeping their time of day, and optionally its direct subtasks' dates too. Unset dates stay unset. Each moved task emits the same events as a due date edit.",
+  middleware: [
+    workspaceAccess.fromTask(),
+    requireWorkspacePermission({ task: ["update"] }),
+    requireEntitlement,
+  ] as const,
+  request: {
+    params: taskParam,
+    body: {
+      required: true,
+      content: { "application/json": { schema: shiftTaskDatesBody } },
+    },
+  },
+  responses: {
+    200: jsonResponse(
+      "The task and the subtasks that moved",
+      shiftTaskDatesResultSchema,
+    ),
+    400: errorResponse("Invalid body"),
+    403: errorResponse(
+      "No access to the project, or missing task:update permission",
+    ),
+    404: errorResponse("Task not found"),
+  },
+});
+
 const updateTaskRecurrenceRoute = createRoute({
   method: "put",
   operationId: "updateTaskRecurrence",
@@ -1182,6 +1218,20 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
     });
 
     return c.json(task, 200);
+  })
+  .openapi(shiftTaskDatesRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { days, includeSubtasks } = c.req.valid("json");
+    return c.json(
+      await shiftTaskDates({
+        taskId: id,
+        days,
+        includeSubtasks,
+        userId: c.get("userId"),
+        workspaceId: c.get("workspaceId"),
+      }),
+      200,
+    );
   })
   .openapi(updateTaskRecurrenceRoute, async (c) => {
     const { id } = c.req.valid("param");

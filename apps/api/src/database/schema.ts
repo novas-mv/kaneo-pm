@@ -17,6 +17,7 @@ import {
 import type { GitHubImportState } from "../github-integration/import-state";
 import type { ImportRunProject } from "../import/import-run-project";
 import type { TaskRecurrence } from "../task/recurrence/schema";
+import type { TaskTemplateStep } from "../task-template/template-step";
 
 // Timestamp columns without a time zone hold UTC (Drizzle reads and writes
 // them as UTC). A bare now() default would be cast through the session time
@@ -521,6 +522,31 @@ export const workflowRuleTable = pgTable(
     index("workflow_rule_projectId_idx").on(table.projectId),
     index("workflow_rule_columnId_idx").on(table.columnId),
   ],
+);
+
+export const taskTemplateTable = pgTable(
+  "task_template",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    name: text("name").notNull(),
+    steps: jsonb("steps").$type<TaskTemplateStep[]>().notNull(),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .default(utcNow)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .default(utcNow)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("task_template_projectId_idx").on(table.projectId)],
 );
 
 export const calendarFeedTable = pgTable(

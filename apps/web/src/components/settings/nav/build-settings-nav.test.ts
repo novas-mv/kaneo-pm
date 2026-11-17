@@ -93,6 +93,7 @@ describe("buildSettingsNav", () => {
       "/dashboard/settings/projects/p1/general",
       "/dashboard/settings/projects/p1/workflow",
       "/dashboard/settings/projects/p1/custom-fields",
+      "/dashboard/settings/projects/p1/templates",
       "/dashboard/settings/projects/p1/visibility",
       "/dashboard/settings/projects/p1/integrations",
       "/dashboard/settings/projects/p1/calendar",
@@ -116,6 +117,11 @@ describe("buildSettingsNav", () => {
         ?.links.map((link) => link.id.replace(`project-${id}-`, ""));
 
     expect(sections("team")).toContain("integrations");
-    expect(sections("mine")).toEqual(["general", "workflow", "custom-fields"]);
+    expect(sections("mine")).toEqual([
+      "general",
+      "workflow",
+      "custom-fields",
+      "templates",
+    ]);
   });
 });

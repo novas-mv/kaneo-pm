@@ -92,6 +92,10 @@ type CreateTaskModalProps = {
   status?: string;
   projectId?: string;
   instant?: boolean;
+  /** Prefills the title, e.g. from the calendar's quick-create draft. */
+  initialTitle?: string;
+  /** Prefills the due date, e.g. the calendar day that was clicked. */
+  initialDueDate?: Date;
 };
 
 type Priority = "no-priority" | "low" | "medium" | "high" | "urgent";
@@ -149,6 +153,8 @@ function CreateTaskModalContent({
   status,
   projectId,
   instant = false,
+  initialTitle,
+  initialDueDate,
 }: CreateTaskModalProps) {
   const { t } = useTranslation();
   const { project, setProject } = useProjectStore();
@@ -240,14 +246,14 @@ function CreateTaskModalContent({
   const canCreateTaskCapability = canCreateTasks();
   const canCreateLabelCapability = canCreateLabels();
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle ?? "");
   const titleRef = useAutoGrowTextarea(title);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("no-priority");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [contactId, setContactId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [dueDate, setDueDate] = useState<Date | undefined>(initialDueDate);
   const [recurrence, setRecurrence] = useState<TaskRecurrence | null>(null);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
