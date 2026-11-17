@@ -1,11 +1,11 @@
 # Kaneo on Coolify, run from a prebuilt image of this repository (a fork with local changes).
 #
 # Same stack as compose.coolify.yml, but the kaneo service uses this fork's own image,
-# ghcr.io/novas-mv/kaneo, instead of ghcr.io/usekaneo/kaneo, so the server never has to build.
+# ghcr.io/novas-mv/kaneo-pm, instead of ghcr.io/usekaneo/kaneo, so the server never has to build.
 #
-# To ship a change: check out the commit you want, run ./deploy/publish-image.sh on a computer
-# with Docker (it builds, tags the image with the first 8 characters of the commit and pushes it),
-# then set that tag on the image line below and redeploy. Take a database backup first.
+# To ship a change: run the "Publish Kaneo image" workflow on main (Actions tab). It builds the
+# image, pushes it as :main and tells Coolify to redeploy. To roll back, run it with "rollback_to"
+# set to an earlier commit SHA. Take a database backup before shipping a migration.
 #
 #   Public Repository -> https://github.com/novas-mv/kaneo-pm
 #   Build Pack: Docker Compose | Base Directory: / | Compose Location: /compose.coolify.fork.yml
@@ -31,7 +31,8 @@ services:
       retries: 5
 
   kaneo:
-    image: ghcr.io/novas-mv/kaneo:39bef2d1
+    image: ghcr.io/novas-mv/kaneo-pm:main
+    pull_policy: always
     environment:
       - KANEO_CLIENT_URL=${KANEO_CLIENT_URL:?}
       - AUTH_SECRET=${SERVICE_HEX_64_KANEO:?}
