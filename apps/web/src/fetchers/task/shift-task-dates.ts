@@ -7,7 +7,11 @@ async function shiftTaskDates(
 ) {
   const response = await client.task[":id"]["shift-dates"].$post({
     param: { id: taskId },
-    json: data,
+    // The viewer's zone keeps local times of day across a DST change.
+    json: {
+      ...data,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
+    },
   });
 
   if (!response.ok) {

@@ -84,7 +84,13 @@ export default function DayQuickCreate({
         await applyTemplate({
           templateId: template.id,
           projectId,
-          data: { title: trimmed, postDate: day.toISOString() },
+          data: {
+            title: trimmed,
+            postDate: day.toISOString(),
+            // So steps stay on their local day across a DST change.
+            timeZone:
+              Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
+          },
         });
         onClose();
         return;

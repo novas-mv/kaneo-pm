@@ -1221,12 +1221,13 @@ const task = apiRouter<BaseVariables & { workspaceId: string }>()
   })
   .openapi(shiftTaskDatesRoute, async (c) => {
     const { id } = c.req.valid("param");
-    const { days, includeSubtasks } = c.req.valid("json");
+    const { days, includeSubtasks, timeZone } = c.req.valid("json");
     return c.json(
       await shiftTaskDates({
         taskId: id,
         days,
         includeSubtasks,
+        timeZone,
         userId: c.get("userId"),
         workspaceId: c.get("workspaceId"),
       }),

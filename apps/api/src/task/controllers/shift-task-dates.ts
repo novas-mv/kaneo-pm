@@ -41,12 +41,14 @@ async function shiftTaskDates({
   taskId,
   days,
   includeSubtasks,
+  timeZone,
   userId,
   workspaceId,
 }: {
   taskId: string;
   days: number;
   includeSubtasks: boolean;
+  timeZone?: string;
   userId: string;
   workspaceId: string;
 }) {
@@ -69,11 +71,15 @@ async function shiftTaskDates({
     const result = [];
     for (const before of locked) {
       if (!before.startDate && !before.dueDate) continue;
-      const dueDate = before.dueDate ? addDays(before.dueDate, days) : null;
+      const dueDate = before.dueDate
+        ? addDays(before.dueDate, days, timeZone)
+        : null;
       const [after] = await tx
         .update(taskTable)
         .set({
-          startDate: before.startDate ? addDays(before.startDate, days) : null,
+          startDate: before.startDate
+            ? addDays(before.startDate, days, timeZone)
+            : null,
           dueDate,
         })
         .where(eq(taskTable.id, before.id))

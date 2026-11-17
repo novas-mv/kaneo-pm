@@ -184,13 +184,14 @@ const taskTemplate = apiRouter<BaseVariables & { workspaceId: string }>()
     c.json(await deleteTaskTemplate(c.req.valid("param").templateId), 200),
   )
   .openapi(applyTaskTemplateRoute, async (c) => {
-    const { title, postDate, status } = c.req.valid("json");
+    const { title, postDate, status, timeZone } = c.req.valid("json");
     return c.json(
       await applyTaskTemplate({
         templateId: c.req.valid("param").templateId,
         title,
         postDate: new Date(postDate),
         status,
+        timeZone,
         userId: c.get("userId"),
         workspaceId: c.get("workspaceId"),
       }),

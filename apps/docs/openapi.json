@@ -13608,6 +13608,10 @@
                   "includeSubtasks": {
                     "type": "boolean",
                     "description": "Also move the task's direct subtasks that are in projects the caller can open."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The viewer's IANA time zone. Dates then keep their local time of day across a DST change; without it they keep their UTC time."
                   }
                 },
                 "required": [
@@ -25733,6 +25737,10 @@
                   "status": {
                     "type": "string",
                     "description": "Column slug for the parent and step tasks. Defaults to the project's first column."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The viewer's IANA time zone. Steps then keep the post date's local time of day across a DST change; without it they keep its UTC time."
                   }
                 },
                 "required": [

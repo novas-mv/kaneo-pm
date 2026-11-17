@@ -23,6 +23,7 @@ async function applyTaskTemplate({
   title,
   postDate,
   status,
+  timeZone,
   userId,
   workspaceId,
 }: {
@@ -30,6 +31,7 @@ async function applyTaskTemplate({
   title: string;
   postDate: Date;
   status?: string;
+  timeZone?: string;
   userId: string;
   workspaceId: string;
 }) {
@@ -52,7 +54,7 @@ async function applyTaskTemplate({
   });
 
   const steps = [];
-  for (const step of stepDueDates(postDate, template.steps)) {
+  for (const step of stepDueDates(postDate, template.steps, timeZone)) {
     const task = await createTask({
       projectId: template.projectId,
       currentUserId: userId,

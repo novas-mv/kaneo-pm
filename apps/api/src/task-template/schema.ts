@@ -1,4 +1,5 @@
 import { z } from "../openapi";
+import { isTimeZone } from "../task/recurrence/schema";
 
 export const projectIdParam = z.object({ projectId: z.string() });
 
@@ -46,4 +47,12 @@ export const applyTaskTemplateBody = z.object({
     description:
       "Column slug for the parent and step tasks. Defaults to the project's first column.",
   }),
+  timeZone: z
+    .string()
+    .refine(isTimeZone, { message: "Unknown time zone" })
+    .optional()
+    .openapi({
+      description:
+        "The viewer's IANA time zone. Steps then keep the post date's local time of day across a DST change; without it they keep its UTC time.",
+    }),
 });

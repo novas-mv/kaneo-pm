@@ -9,7 +9,7 @@ const RECURRENCE_FREQUENCIES = [
 
 // Intl.supportedValuesOf lists canonical zones only; browsers may report
 // aliases such as Etc/UTC, which are just as usable.
-function isTimeZone(value: string) {
+export function isTimeZone(value: string) {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone: value });
     return true;
